@@ -11,27 +11,37 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body >
-    <script src="js/libs/gl-matrix-min.js"></script>
-    <script src="js/libs/litegraph_new.js"></script>
+    <!--Behaviour planner core and its de dependencies-->
+    <script src="../src/libs/gl-matrix-min.js"></script>
+    <script src="../src/libs/litegraph.js"></script>
+    <script src="../src/libs/HBTree.js"></script>
+    <script src="../src/HBTfacade.js"></script>
+    <script src="../src/graphNodes.js"></script>
+    <script src="../src/streamer.js"></script>
+
+    <!--Web app dependencies-->
     <script src="js/libs/litegui.js"></script>
-    <script src="js/libs/HBTree.js"></script>
     <script src="js/libs/HBTEditor.js"></script>
     <script src="js/libs/timeline.js"></script>
+
+    <!--Web app core-->
     <script src="js/globals.js"></script>
     <script src="js/graphManager.js"></script>
-    <script src="js/graphNodes.js"></script>
-    <script src="js/facade.js"></script>
-    <script src="js/streamer.js"></script>
     <script src="js/graphWidget.js"></script>
+
     <script src="js/modules/agent.js"></script>
     <script src="js/modules/user.js"></script>
     <script src="js/modules/gestureMap.js"></script>
-    <script src = "js/modules/chat.js"></script>
+    <script src="js/modules/chat.js"></script>
     <script src="js/modules/interface.js"></script>
-    <script src="js/modules/app.js"></script>
     <script src="js/modules/entity.js"></script>
+    <script src="js/modules/app.js"></script>
 
+    <div>
+      <iframe id="iframe-character" src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FLatestBehavourPlanner.scene.json"></iframe>
+       <!-- src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FVirtualClerk.scene.json"></iframe>--> <!--BehaviourPlanner-->
+       <!-- src="https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"></iframe>--> <!--VirtualClerk-->
+    </div>
 
-    <script>CORE.init();</script>
     </body>
 </html>
