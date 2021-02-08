@@ -48,20 +48,20 @@ var ResourceManager = RM = {
 
 init: function()
 {
-    console.log("%cLoading application, please wait...","color: #76cccc; font-size: 16px" );
     this.setup();
     this.onInit();
 },
 
 setup: function()
 {
+    console.log("%cLoading Web App","color: #76cccc; font-size: 16px" );
     console.log(navigator.userAgent);
 },
 
 onInit: function()
 {
     LiteGUI.request({
-        url: "src/config.json?nocache=" + performance.now(),
+        url: "config.json?nocache=" + performance.now(),
         dataType: "json",
         nocache: true,
         success: this.onRequest.bind(this)
@@ -112,21 +112,18 @@ onReadImports: function( config )
         var last_loaded = loaded_scripts[ loaded_scripts.length - 1 ];
         var name = last_loaded.original_src.split('?')[0];
         // console.log(name);
-        
 
         CORE.init();
     }
 
     function onProgress(name, num)
     {
-
        // console.log(name);
-
     }
 
     function onError(error, name)
     {
-        console.error("Error loading script " + name);
+        console.error("Error loading script: " + name);
     }
 }
 };
