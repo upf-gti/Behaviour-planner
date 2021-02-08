@@ -201,7 +201,7 @@ class Chat{
 
     console.log(that.final_transcript)
 
-    that.userMessage( that.final_transcript );
+  //  that.userMessage( that.final_transcript );
 
 
 
