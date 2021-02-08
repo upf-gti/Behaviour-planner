@@ -1,8 +1,13 @@
+window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+
 class Chat{
   constructor(){
       this.state = STOP;
-
-
+      this.recognition = new window.SpeechRecognition();
+      this.recognition.lang = 'en-US'
+      this.recognition.onresult = this.onSpeechRecieved.bind(this);
+      this.start_recognition = false;
+      this.final_transcript = "";
   }
   createGUI()
   {
@@ -49,16 +54,45 @@ class Chat{
       sendBtn.id = "send";
       sendBtn.innerHTML = '<span class="material-icons">send</span>';
       sendBtn.addEventListener("click",function(e){
-         var that = this;
-          if(that.input.value == "")
-              return;
-         /* if(that.input.value[0] == "/")
-              that.processCommand( that.input.value.substr(1) );
-          else*/
-          that.userMessage( that.input.value );
-          that.input.value = "";
+        var that = this;
+        if(that.input.value == "")
+            return;
+       /* if(that.input.value[0] == "/")
+            that.processCommand( that.input.value.substr(1) );
+        else*/
+        that.userMessage( that.input.value );
+        that.input.value = "";
       }.bind(this));
+
       typing.appendChild(sendBtn);
+
+      var microBtn = document.createElement("BUTTON");
+      microBtn.id = "mic";
+      microBtn.innerHTML = '<span class="material-icons" style= "width:18px!important">micro</span>';
+
+      microBtn.addEventListener("click",function(e){
+        var that = this;
+        if(that.start_recognition){
+					that.recognition.stop();
+					that.start_recognition = false;
+          microBtn.classList.remove("animated");
+				}
+				else{
+					that.recognition.start();
+					that.start_recognition = true;
+					microBtn.classList.add("animated");
+					that.input.value = "";
+				}
+        if(that.input.value == "")
+            return;
+       /* if(that.input.value[0] == "/")
+            that.processCommand( that.input.value.substr(1) );
+        else*/
+      ///  that.userMessage( that.input.value );
+      //  that.input.value = "";
+      }.bind(this));
+      typing.appendChild(microBtn);
+
       typing_console.appendChild(typing);
 
       var start = document.createElement("DIV");
@@ -128,4 +162,54 @@ class Chat{
   //  setTimeout(this.getMessage(), 30000)
 
 	}
+  onSpeechRecieved(event) {
+    console.log("Result")
+    var that = this;
+    var interim_transcript = '';
+    if (typeof(event.results) == 'undefined') {
+      //recognition.onend = null;
+      //recognition.stop();
+
+      return;
+    }
+    console.log(event.results);
+
+    for (var i = event.resultIndex; i < event.results.length; ++i) {
+
+      if (event.results[i].isFinal) {
+        that.recognition.stop();
+        that.start_recognition = false;
+        document.getElementById("mic").classList.remove("animated");
+
+        that.final_transcript += event.results[i][0].transcript;
+        interim_transcript = "";
+
+
+      }
+      else {
+        interim_transcript += event.results[i][0].transcript;
+
+      }
+      //recognition.stop();
+
+
+    }
+    //that.startRecognition();
+    that.final_transcript = capitalize(that.final_transcript);
+
+    that.input.value = that.final_transcript;
+
+    console.log(that.final_transcript)
+
+  //  that.userMessage( that.final_transcript );
+
+
+
+    that.final_transcript = "";
+
+  }
+}
+var first_char = /\S/;
+function capitalize(s) {
+  return s.replace(first_char, function(m) { return m.toUpperCase(); });
 }

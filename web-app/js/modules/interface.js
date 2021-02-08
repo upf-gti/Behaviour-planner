@@ -1,6 +1,6 @@
 class Interface{
     constructor(){
-        this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"100%"});
+        this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"calc(100% - 30px)"});
         this.contentTabs = new LiteGUI.Tabs({id: "content-tabs", height:"100%"});
         this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
         this.tree = null;
