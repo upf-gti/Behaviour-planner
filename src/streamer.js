@@ -100,7 +100,7 @@ function processArrayBuffer( buffer )
 	var buffer_array = new Uint8Array( buffer );
 	var header = buffer_array.subarray(0,32);
 	var data = buffer.slice(32);
-	var header_str = SillyClient.arrayToString( new Uint8Array(header) );
+	var header_str = UTILS.arrayToString( new Uint8Array(header) );
 	var tokens = header_str.split("|"); //author id | cmd | data
 	//author_id, cmd, data, on_message
 
