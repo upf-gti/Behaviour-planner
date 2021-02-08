@@ -1,11 +1,7 @@
 /*
-* David Moreno - UPF
+* Implementation of Facade methods of HBTree
 */
 
-function Facade ()
-{
-	
-}
 
 /* 
 * Receives as a parmaeter a game/system entity, a scene node which is being evaluated
@@ -37,43 +33,6 @@ Facade.prototype.getEntityPropertyValue = function( property_name, entity )
     }
 	return my_comp.local_properties[property_name];
 	//Search for the value of the property "property_name" in the system
-}
-
-/*
-* Returns an Array of the existing entities in the scene
-* The type of the entity is irrelevant
-*/
-Facade.prototype.getListOfAgents = function(  )
-{
-	console.warn("getListOfAgents() Must be implemented to use HBTree system");
-}
-/*
-* Check if a concrete entity is in a certain position
-* The entity must have a global position (or the possibility to access to it)
-* The target can be a vec3 directly or an object containing the position of the target
-*/
-Facade.prototype.entityInTarget = function( enitity, target, threshold)
-{
-	console.warn("entityInTarget() Must be implemented to use HBTree system");
-}
-
-//For the Patrol Node
-/*
-* Check and find the next control point of a path (to patrol)
-* If not path, return false
-*/
-Facade.prototype.checkNextTarget = function( enitity )
-{
-	console.warn("entityInTarget() Must be implemented to use HBTree system");
-}
-
-//For the EQSNearestAgent Node
-/*
-* Return the existing types of interest points
-*/
-Facade.prototype.entityHasProperty = function(  )
-{
-	console.warn("entityInTarget() Must be implemented to use HBTree system");
 }
 
 //For the SimpleAnimate Node
@@ -143,3 +102,10 @@ Facade.prototype.setEntityProperty = function( entity, property, value )
 		entity.inspector.refresh()
 	console.warn("entityInTarget() Must be implemented to use HBTree system");
 }
+
+
+//Not implemented:
+//Facade.prototype.getListOfAgents
+//Facade.prototype.entityInTarget
+//Facade.prototype.checkNextTarget
+//Facade.prototype.entityHasProperty

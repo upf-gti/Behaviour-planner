@@ -17,6 +17,7 @@ function Streamer(url)
 		this.connect(url)
 
 }
+
 Streamer.prototype.connect = function( url, on_connected, on_error )
 {
     var that = this;
@@ -132,11 +133,13 @@ Streamer.prototype.sendData = function(msg)
 
 	this.ws.send(msg);
 }
+
 Streamer.prototype.onClose = function()
 {
 	var btn = document.getElementById("stream-btn");
 	btn.style.display = "none";
 }
+
 Streamer.prototype.onReady = function()
 {
 	this.is_connected = true;
