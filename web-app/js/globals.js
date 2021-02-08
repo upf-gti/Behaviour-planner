@@ -78,14 +78,14 @@ onRequest: function(config)
     if(config.nocache)
         this.nocache = config.nocache;
 
-    if(config.resources && config.resources.constructor === Array)
+    if(config.imports && config.imports.constructor === Array)
         this.onReadImports(config);
 },
 
 onReadImports: function( config )
 {
     var that = this;
-    var import_list = config.resources;
+    var import_list = config.imports;
 
     var userAgent = (navigator && navigator.userAgent || '').toLowerCase();
 
