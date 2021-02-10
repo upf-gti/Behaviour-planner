@@ -2,7 +2,6 @@
 * Implementation of Facade methods of HBTree
 */
 
-
 /* 
 * Receives as a parmaeter a game/system entity, a scene node which is being evaluated
 * Returns a vec3 with the position

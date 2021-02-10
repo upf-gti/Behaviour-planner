@@ -5,11 +5,12 @@
         "../src/libs/gl-matrix-min.js",
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
-        "../src/HBTfacade.js",
+        "js/HBTfacade.js",
+        "js/HBTEditor.js",
         "../src/graphNodes.js",
         "../src/streamer.js",
+        
 
-        "js/libs/HBTEditor.js",
         "js/libs/timeline.js",
         "js/globals.js",
         "js/graphManager.js",
