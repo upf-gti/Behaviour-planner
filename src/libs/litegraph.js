@@ -6,6 +6,31 @@
     // *************************************************************
 
     /**
+     * glMatrix import
+     */
+    var glmatrix;
+    if(typeof require === "function"){
+        try{
+            glmatrix = require("gl-matrix");
+        }catch{
+            glmatrix = {};
+        }
+    }else{
+        glmatrix = global.glMatrix;
+    }
+    
+    var glMatrix = global.glMatrix =  glmatrix.glMatrix;
+    var mat2 = global.mat2 = glmatrix.mat2;
+    var mat2d = global.mat2d = glmatrix.mat2d;
+    var mat3 = global.mat3 = glmatrix.mat3;
+    var mat4 = global.mat4 = glmatrix.mat4;
+    var quat = global.quat = glmatrix.quat;
+    var quat2 = global.quat2 = glmatrix.quat2;
+    var vec2 = global.vec2 = glmatrix.vec2;
+    var vec3 = global.vec3 = glmatrix.vec3;
+    var vec4 = global.vec4 = glmatrix.vec4;
+
+    /**
      * The Global Scope. It contains all the registered node classes.
      *
      * @class LiteGraph
@@ -16115,6 +16140,17 @@ if (typeof exports != "undefined") {
 
     //if glMatrix is installed...
     if (global.glMatrix) {
+        var glMatrix = global.glMatrix;
+        var mat2 = global.mat2;
+        var mat2d = global.mat2d;
+        var mat3 = global.mat3;
+        var mat4 = global.mat4;
+        var quat = global.quat;
+        var quat2 = global.quat2;
+        var vec2 = global.vec2;
+        var vec3 = global.vec3;
+        var vec4 = global.vec4;
+
         function Math3DQuaternion() {
             this.addOutput("quat", "quat");
             this.properties = { x: 0, y: 0, z: 0, w: 1, normalize: false };
