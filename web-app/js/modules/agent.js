@@ -190,7 +190,7 @@ class Agent{
     }
     applyBehaviour(behaviour)
     {
-        if(behaviour.type == B_TYPE.setProperty)
+        if(behaviour.type == HBTree.B_TYPE.setProperty)
         {
             var name = behaviour.data.name;
             var value = behaviour.data.value;

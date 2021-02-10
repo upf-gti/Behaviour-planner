@@ -653,37 +653,37 @@ class Interface{
             var behaviour = data[i];
             var type = "";
             switch(behaviour.type){
-                case B_TYPE.moveToLocation:
+                case HBTree.B_TYPE.moveToLocation:
                     type = "Move to location";
                     break;
-                case B_TYPE.lookAt:
+                case HBTree.B_TYPE.lookAt:
                     type = "Look at";
                     break;
-                case B_TYPE.animateSimple:
+                case HBTree.B_TYPE.animateSimple:
                     type = "Animate simple";
                     break;
-                case B_TYPE.wait:
+                case HBTree.B_TYPE.wait:
                     type = "Wait";
                     break;
-                case B_TYPE.nextTarget:
+                case HBTree.B_TYPE.nextTarget:
                     type = "Next target";
                     break;
-                case B_TYPE.setMotion:
+                case HBTree.B_TYPE.setMotion:
                     type = "Set motion";
                     break;
-                case B_TYPE.setProperty:
+                case HBTree.B_TYPE.setProperty:
                     type = "Set property";
                     break;
-                case B_TYPE.succeeder:
+                case HBTree.B_TYPE.succeeder:
                     type = "Succeeder";
                     break;
-                case B_TYPE.action:
+                case HBTree.B_TYPE.action:
                     type = "Action";
                     break;
-                case B_TYPE.conditional:
+                case HBTree.B_TYPE.conditional:
                     type = "Conditional";
                     break;
-                case B_TYPE.facialExpression:
+                case HBTree.B_TYPE.facialExpression:
                     type = "Facial expression";
                     break;
             }

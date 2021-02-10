@@ -45,8 +45,9 @@ class App{
                ]};
 
         this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
+
         this.chat = new Chat();
-				this.iframe = null;
+		this.iframe = null;
 
     }
 
@@ -168,7 +169,7 @@ class App{
                         character_.applyBehaviour( tmp.behaviour[b]);
                         if(tmp.behaviour[b].type == 6)
                             character_.properties[tmp.behaviour[b].data.name] = tmp.behaviour[b].data.value;
-											  if(tmp.behaviour[b].type == B_TYPE.intent)
+											  if(tmp.behaviour[b].type == HBTree.B_TYPE.intent)
 												{
 													this.chat.showMessage(tmp.behaviour[b].data.text, "me")
 
@@ -181,7 +182,7 @@ class App{
 													}
 													tmp.behaviour.splice(b,1);
 												}
-												else if(tmp.behaviour[b].type == B_TYPE.action)
+												else if(tmp.behaviour[b].type == HBTree.B_TYPE.action)
 												{
 													var expressions = {
 														angry:[-0.76,-0.64],
@@ -286,8 +287,6 @@ class App{
                         this.streamer.ws = node._server;
                         node._server.onReady = this.streamer.onReady;
                         this.streamer.is_connected = node._server.is_connected;
-                        var btn = document.getElementById("stream-btn");
-                        btn.style.display="block";
                     }
                 }
 
