@@ -1,4 +1,20 @@
 
+/**
+ * This library expands HBTree with new nodes
+ */
+
+function graphNodes(global){
+
+var LiteGraph = global.LiteGraph;
+
+var HBTree = global.HBTree;
+var HBTGraph = HBTree.HBTGraph;
+var STATUS = HBTree.STATUS;
+var onConfig = HBTree.onConfig;
+var getLinkById = HBTree.getLinkById;
+var nodePreviouslyEvaluated = HBTree.nodePreviouslyEvaluated;
+var highlightLink = HBTree.highlightLink;
+
 //Input for a subgraph
 function HBTreeInput() {
 
@@ -475,7 +491,7 @@ LiteGraph.GestureMap = GestureMap;
 LiteGraph.registerNodeType("btree/GestureMap", GestureMap);
 
 /*LGraphCanvas overwrite onShowNodePanel*/
-LGraphCanvas.prototype.onShowNodePanel = function(n)
+LiteGraph.LGraphCanvas.prototype.onShowNodePanel = function(n)
 {
     if(n.onInspect)
     {
@@ -1206,12 +1222,15 @@ TimelineNode.prototype.onInspect = function()
 }
 LiteGraph.registerNodeType("btree/Timeline", TimelineNode );
 /* ------------------------------ GRAPH EDITOR ---------------------------------------- */
+//TODO move to web-app
 function GraphEditor(data )
 {
   if(this.constructor !== GraphEditor)
 	 throw("You must use new to create a GraphEditor");
 	this._ctor(data);
 }
+
+global.GraphEditor = GraphEditor;
 
 GraphEditor.prototype._ctor = function(id)
 {
@@ -1686,7 +1705,7 @@ Property.prototype.onSerialize = function(o)
 LiteGraph.registerNodeType("basic/property", Property);
 
 /*HBTree library changed*/
-Selector.prototype.tick = function(agent, dt, info)
+LiteGraph.Nodes.Selector.prototype.tick = function(agent, dt, info)
 {
 	//there is a task node in running state
 	if(agent.bt_info.running_node_index != null && agent.bt_info.running_node_id == this.id)
@@ -1780,7 +1799,7 @@ Selector.prototype.tick = function(agent, dt, info)
 
 }
 
-Sequencer.prototype.tick = function(agent, dt, info)
+LiteGraph.Nodes.Sequencer.prototype.tick = function(agent, dt, info)
 {
 
 	//check if this node was executed the previous evaluation
@@ -1876,7 +1895,7 @@ Sequencer.prototype.tick = function(agent, dt, info)
 		}
 	}
 }
-Parallel.prototype.tick = function(agent, dt, info)
+LiteGraph.Nodes.Parallel.prototype.tick = function(agent, dt, info)
 {
 	this.behaviour.STATUS = STATUS.fail;
 	var children = this.getOutputNodes(0);
@@ -1950,4 +1969,16 @@ HBTGraph.prototype.processEvent = function(e)
     }
   }
   return false;
+}
+
+}
+
+if(typeof module !== "undefined"){
+	module.exports = function(LiteGraph, HBTree){
+		var global = {LiteGraph: LiteGraph, HBTree: HBTree};
+		graphNodes(global);
+		return global;
+	}
+}else{
+	graphNodes(this);
 }

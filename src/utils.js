@@ -1,4 +1,5 @@
-var UTILS = {
+(function(global){
+global.UTILS = {
     
     arrayToString: function(array)
     {
@@ -8,4 +9,4 @@ var UTILS = {
         return str;
     }
 }
-
+})(this);

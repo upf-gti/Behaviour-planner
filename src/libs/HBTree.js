@@ -2,8 +2,17 @@
 * David Moreno - UPF
 */
 
+function HBT(global){
+
+var HBTree = global.HBTree = {};
+
+/**
+ * LiteGraph import
+ **/
+var LiteGraph = global.LiteGraph;
+
 /*Structure used in the HBTNodes*/
-STATUS = {
+var STATUS = HBTree.STATUS = {
 
 	success:0, 
 	running:1, 
@@ -30,7 +39,8 @@ function onConfig(info, graph)
             var type = link.type;
         }
     }
-}  
+}
+HBTree.onConfig = onConfig;
 
 function getLinkById(id,graph)
 {
@@ -41,6 +51,7 @@ function getLinkById(id,graph)
             return link;
     }
 }
+HBTree.getLinkById = getLinkById;
 
 //to know if a node was executed the previous evaluation
 function nodePreviouslyEvaluated(agent, node_id)
@@ -50,6 +61,7 @@ function nodePreviouslyEvaluated(agent, node_id)
 			return true;
 	return false;
 }
+HBTree.nodePreviouslyEvaluated = nodePreviouslyEvaluated;
 
 function resetHBTreeProperties(agent)
 {
@@ -77,6 +89,7 @@ function highlightLink(node, child)
 		graph.description_stack.push(child.description); 
 	} 
 }
+HBTree.highlightLink = highlightLink;
 
 function Blackboard()
 {
@@ -84,6 +97,8 @@ function Blackboard()
 	 throw("You must use new to create a Blackboard");
 	this._ctor();
 }
+
+HBTree.Blackboard = global.Blackboard = Blackboard;
 
 Blackboard.prototype._ctor = function()
 {
@@ -114,6 +129,8 @@ function HBTContext ()
 		throw("You must use new to create an HBTContext");
 	this._ctor();
 }
+
+HBTree.HBTContext = global.HBTContext = HBTContext;
 
 HBTContext.prototype._ctor = function()
 {
@@ -199,6 +216,8 @@ function InterestPoint( info )
 	this._ctor( info );
 }
 
+HBTree.InterestPoint = global.InterestPoint = InterestPoint;
+
 InterestPoint.prototype._ctor = function( o )
 {	
 	if(o)
@@ -239,6 +258,8 @@ function HBTGraph(name)
 		throw("You must use new to create an HBTGraph");
 	this._ctor(name);
 }
+
+HBTree.HBTGraph = global.HBTGraph = HBTGraph;
 
 HBTGraph.prototype._ctor = function( name )
 {
@@ -340,6 +361,7 @@ function HBTproperty()
 	this._component = null;
 	this.serialize_widgets = true;
 }
+
 HBTproperty.prototype.onNodeAdded = function()
 {
 	this.properties.property_type = this.property_type;
@@ -514,6 +536,7 @@ function Conditional()
 	this.behaviour = new Behaviour();
 	
 }
+
 //reorder
 Conditional.prototype.onStart = Conditional.prototype.onDeselected = function()
 {
@@ -710,6 +733,7 @@ function BoolConditional()
 	
 
 }
+
 //reorder
 BoolConditional.prototype.onStart = BoolConditional.prototype.onDeselected =function()
 {
@@ -866,6 +890,7 @@ function LineOfSight()
 	this.serialize_widgets = true;
 
 }
+
 //reorder
 LineOfSight.prototype.onStart = LineOfSight.prototype.onDeselected = function()
 {
@@ -2968,8 +2993,7 @@ Parallel.prototype.tick = function(agent, dt)
 LiteGraph.registerNodeType("btree/Parallel", Parallel);
 
 //just leaf nodes
-var B_TYPE = 
-{
+var B_TYPE = HBTree.B_TYPE = {
 	moveToLocation:0, 
 	lookAt:1,
 	animateSimple:2, 
@@ -2989,6 +3013,8 @@ function Behaviour()
 		throw("You must use new to create a Behaviour");
 	this._ctor(  );
 }
+
+HBTree.Behaviour = global.Behaviour = Behaviour;
 
 Behaviour.prototype._ctor = function()
 {
@@ -3037,6 +3063,8 @@ function Facade ()
 {
 	
 }
+
+HBTree.Facade = global.Facade = Facade;
 
 /* 
 * Receives as a parmaeter a game/system entity, a scene node which is being evaluated
@@ -3131,4 +3159,14 @@ Facade.prototype.getAnimation = function( filename)
 	console.warn("entityInTarget() Must be implemented to use HBTree system");
 }
 
+}
 
+if(typeof module !== "undefined"){
+	module.exports = function(LiteGraph){
+		var global = {LiteGraph: LiteGraph};
+		HBT(global);
+		return global.HBTree;
+	}
+}else{
+	HBT(this);
+}

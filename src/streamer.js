@@ -1,3 +1,10 @@
+
+(function(global) {
+
+/**
+ * Websocket client
+ */
+
 function Streamer(url)
 {
 	if (this.constructor !== Streamer)
@@ -9,7 +16,7 @@ function Streamer(url)
 
 	this.onConnect = null;
 	this.onDataReceived = null; //callback to receive data from the server
-	this.onDisconnect = null; //callback when connection lost
+	this.onClose = null; //callback when connection closed
 	this.streaming = false;
 	this.ws = null;
 	this.headersize = 18;
@@ -17,6 +24,7 @@ function Streamer(url)
 		this.connect(url)
 
 }
+global.Streamer = Streamer;
 
 Streamer.prototype.connect = function( url, on_connected, on_error )
 {
@@ -134,13 +142,5 @@ Streamer.prototype.sendData = function(msg)
 	this.ws.send(msg);
 }
 
-Streamer.prototype.onClose = function()
-{
-	var btn = document.getElementById("stream-btn");
-	btn.style.display = "none";
-}
+})(this);
 
-Streamer.prototype.onReady = function()
-{
-	this.is_connected = true;
-}
