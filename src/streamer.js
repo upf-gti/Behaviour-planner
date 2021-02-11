@@ -83,10 +83,9 @@ Streamer.prototype.processMessage = function(data)
 		if(tokens.length < 3)
 		{
 			console.log("Received: " + data); //Awesome!
-		}else if (CORE.App.onDataRecvieved)
+		}else if (this.onDataRecvieved)
 		{
-			console.log(data);
-			CORE.App.onDataReceived(data);
+			this.onDataReceived(data);
 		}
 
 	}

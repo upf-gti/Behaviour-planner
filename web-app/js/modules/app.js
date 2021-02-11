@@ -45,6 +45,7 @@ class App{
                ]};
 
         this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
+        this.streamer.onDataReceived = this.onDataReceived;
         this.chat = new Chat();
 				this.iframe = null;
 
@@ -347,6 +348,11 @@ class App{
 			var type = data.type;
 			switch(type)
 			{
+                case "info":
+                    //Server messages
+                    console.log(data.data);
+                    break;
+
 				case "user-data":
 					this.currentContext.user.update(data.data);
 					var text = data.data.text;
