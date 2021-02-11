@@ -1,14 +1,15 @@
 {
     "nocache": false,
-    
+
     "imports" : [
         "../src/libs/gl-matrix-min.js",
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
         "../src/HBTfacade.js",
         "../src/graphNodes.js",
+        "../src/utils.js",
         "../src/streamer.js",
-        
+
         "js/libs/litefileserver.js",
         "js/libs/HBTEditor.js",
         "js/libs/timeline.js",

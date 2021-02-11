@@ -63,7 +63,7 @@ class Interface{
             }else
             {
                 this.menu.add("Account/Profile", {callback: null});
-                this.menu.add("Account/Logout", {callback: function(e){ 
+                this.menu.add("Account/Logout", {callback: function(e){
                     var FS = CORE.modules["FileSystem"];
                     FS.session.logout(FS.onLogout.bind(FS, function(){
                         menu.refresh();
@@ -519,7 +519,7 @@ class Interface{
         pass_widget.lastElementChild.
         lastElementChild.lastElementChild.
         addEventListener("keyup", function(e){
-            
+
             if(e.keyCode === 13)
             {
                 e.stopPropagation();
@@ -530,7 +530,7 @@ class Interface{
         inspector.widgets_per_row = 2;
         inspector.addButton(null, "Register", {name_width: "30%", callback: (function(){
             this.showCreateAccountDialog();
-            dialog.close();    
+            dialog.close();
         }).bind(this)});
         inspector.addButton(null, "Login", {name_width: "30%", callback: function(){
             LOG_IN();
@@ -561,7 +561,7 @@ class Interface{
     }
     showCreateAccountDialog()
     {
-        let user = "", pass = "", 
+        let user = "", pass = "",
         pass2 = "", email = "";
         let errors = false;
 
@@ -664,8 +664,10 @@ class Interface{
         switch(type)
         {
             case "download-env":
-            var obj = {env: {agents:[], graphs: []}}
+              var obj = {env: {agents:[], graphs: []}}
                 var env = CORE.App.env_tree;
+                if(env.token)
+                  obj.env.token = env.token;
                 for(var i in env.children)
                 {
                     var item = env.children[i];
@@ -888,16 +890,30 @@ class Interface{
         switch(type)
         {
             case "env":
-                var btn = inspector.addButton(null, "Add Agent", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
+              inspector.on_refresh = function()
+              {
+                var that = this;
+                inspector.clear();
+
+                inspector.addSection("Environment properties");
+                inspector.addString("Token", CORE.App.env_tree.token, {width:"calc(100% - 45px)",callback: function(v){
+                  CORE.App.env_tree.token = v;
+                  that.tree.tree.token = v;
+                  inspector.refresh();
+                  /*TO DO*/
+                  //update token to STREAMER
+                }})
+              /*  var btn = inspector.addButton(null, "Add Agent", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
                 btn.getElementsByTagName("button")[0].className = "btn btn-str";
                 var btn = inspector.addButton(null, "Add User", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
                 btn.getElementsByTagName("button")[0].className = "btn btn-str";
-                if(!this.tree.getItem("Gesture Manager", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})}))
+                if(!that.tree.getItem("Gesture Manager", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})}))
                 {
                     var btn = inspector.addButton(null, "Add Gesture Manager", { callback: that.createNode.bind(this, {id: "Environment"}) });
                     btn.getElementsByTagName("button")[0].className = "btn btn-str";
-                }
-
+                }*/
+              }.bind(this)
+              inspector.refresh();
               /*  if(inspec_area.childNodes.length>0)
                     inspec_area.removeChild(inspec_area.childNodes[0])*/
               //  inspec_area.append(inspector.root);

@@ -40,7 +40,7 @@ class App{
         this.currentHBTGraph = null;
         this.graphManager = GraphManager;
         this.interface = CORE.Interface;
-        this.env_tree = { id: "Environment", type:"env",
+        this.env_tree = { id: "Environment", type:"env", token: UTILS.rand(),
             children: [
                ]};
 
@@ -247,7 +247,12 @@ class App{
     loadEnvironment(data)
     {
         var that = this;
-        that.env_tree = { id: "Environment", type:"env",
+				var env = data.env;
+				if(!env.token)
+					env.token = that.interface.tree.tree.token;
+				else
+					that.interface.tree.tree.token = env.token;
+        that.env_tree = { id: "Environment", type:"env", token: env.token,
             children: [
                ]};
         that.interface.tree.clear(true);
@@ -255,7 +260,7 @@ class App{
         UserManager.removeAllUsers();
         GraphManager.removeAllGraphs();
 
-        var env = data.env;
+
         for(var i in env.graphs)
         {
             var graph = env.graphs[i];

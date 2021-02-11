@@ -1,6 +1,6 @@
 /*
 *   Alex Rodríguez
-*   @jxarco 
+*   @jxarco
 */
 
 var CORE = {
@@ -70,7 +70,7 @@ onInit: function()
 
 onRequest: function(config)
 {
-    if(!config) 
+    if(!config)
     throw("Configuration file not found");
 
     this.config = config;
