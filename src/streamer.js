@@ -86,7 +86,7 @@ Streamer.prototype.processMessage = function(data)
 		}else if (CORE.App.onDataRecvieved)
 		{
 			console.log(data);
-			this.onDataReceived(data);
+			CORE.App.onDataReceived(data);
 		}
 
 	}
