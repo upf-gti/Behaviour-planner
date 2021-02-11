@@ -298,7 +298,9 @@ FacialExpression.prototype.onInputAdded = function(v)
 
 LiteGraph.FacialExpression = FacialExpression;
 LiteGraph.registerNodeType("graph/FacialExpression", FacialExpression);
-var B_TYPE =
+
+//overwrite
+var B_TYPE = HBTree.B_TYPE =
 {
 	moveToLocation:0,
 	lookAt:1,
