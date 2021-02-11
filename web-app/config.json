@@ -8,16 +8,17 @@
         "../src/HBTfacade.js",
         "../src/graphNodes.js",
         "../src/streamer.js",
-
+        
+        "js/libs/litefileserver.js",
         "js/libs/HBTEditor.js",
         "js/libs/timeline.js",
-        "js/globals.js",
         "js/graphManager.js",
         "js/graphWidget.js",
         "js/modules/agent.js",
         "js/modules/user.js",
         "js/modules/gestureMap.js",
         "js/modules/chat.js",
+        "js/modules/filesystem.js",
         "js/modules/interface.js",
         "js/modules/entity.js",
         "js/modules/app.js"

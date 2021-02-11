@@ -40,16 +40,39 @@ class Interface{
 
         // Create a menu bar
         var menu = new LiteGUI.Menubar();
-        // Add some items to it
-        menu.add("Project/New"); //clear all
-        menu.add("Project/Load");
-        menu.add("Project/Import/From File", { callback: this.openImportFromFileDialog.bind(this)});
-        menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
-        menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
-        menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
-        menu.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
-        menu.add("Actions")
-        menu.add("Login", {callback: this.showLoginDialog})
+        this.menu = menu;
+
+        menu.refresh = (function()
+        {
+            // Clean first
+            this.menu.clear();
+
+            // Add some items to it
+            this.menu.add("Project/New"); //clear all
+            this.menu.add("Project/Load");
+            this.menu.add("Project/Import/From File", { callback: this.openImportFromFileDialog.bind(this)});
+            this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
+            this.menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
+            this.menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
+            this.menu.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
+            this.menu.add("Actions");
+
+            if(!CORE.modules["FileSystem"].session)
+            {
+                this.menu.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
+            }else
+            {
+                this.menu.add("Account/Profile", {callback: null});
+                this.menu.add("Account/Logout", {callback: function(e){ 
+                    var FS = CORE.modules["FileSystem"];
+                    FS.session.logout(FS.onLogout.bind(FS, function(){
+                        menu.refresh();
+                    }));
+                }});
+            }
+        }).bind(this);
+
+        menu.refresh();
         left_area.add(menu);
 
         var div = document.createElement("DIV");
@@ -482,21 +505,106 @@ class Interface{
 		dialog.adjustSize(2);
 		dialog.show();
 	}
-  showLoginDialog()
-  {
-    var dialog = new LiteGUI.Dialog({ title:"Login", width: 200, closable:true });
-    var inspector = new LiteGUI.Inspector();
-    inspector.addString("Username", "", {id:"user-name"})
-    inspector.addString("Password", "", {password: true,id:"user-pswd"})
-    inspector.addButton("", "Login", {callback:""})
-    dialog.add(inspector)
+    showLoginDialog()
+    {
+        let user = "", pass = "";
 
-    dialog.show();
-  }
-  showConnectionDialog()
-  {
-    LiteGUI.prompt("URL", function(url){CORE.App.streamer.connect(url)},{title: "Websocket connection"});
-  }
+        var dialog = new LiteGUI.Dialog({ title:"Login", width: 300, closable:true });
+        var inspector = new LiteGUI.Inspector();
+        var error_inspector = new LiteGUI.Inspector();
+        inspector.addString("Username", user, {callback: function(v){ user = v; }});
+        var pass_widget = inspector.addString("Password", pass, {password: true, callback: function(v){ pass = v; }});
+
+        // hacky to get input of element
+        pass_widget.lastElementChild.
+        lastElementChild.lastElementChild.
+        addEventListener("keyup", function(e){
+            
+            if(e.keyCode === 13)
+            {
+                e.stopPropagation();
+                LOG_IN();
+            }
+        });
+
+        inspector.widgets_per_row = 2;
+        inspector.addButton(null, "Register", {name_width: "30%", callback: (function(){
+            this.showCreateAccountDialog();
+            dialog.close();    
+        }).bind(this)});
+        inspector.addButton(null, "Login", {name_width: "30%", callback: function(){
+            LOG_IN();
+        }});
+
+        function LOG_IN()
+        {
+            var FS = CORE.modules["FileSystem"];
+            LFS.login( user, pass, FS.onLogin.bind(FS, function(valid, msg_info){
+
+                if(valid)
+                {
+                    dialog.close();
+                    CORE.modules["Interface"].menu.refresh();
+                }
+                else
+                {
+                    error_inspector.clear();
+                    error_inspector.addInfo(null, "-- " + msg_info);
+                }
+            }));
+        }
+
+        dialog.add(inspector);
+        dialog.add(error_inspector);
+
+        dialog.show();
+    }
+    showCreateAccountDialog()
+    {
+        let user = "", pass = "", 
+        pass2 = "", email = "";
+        let errors = false;
+
+        var dialog = new LiteGUI.Dialog({ title:"Register", width: 350, closable:true });
+        var inspector = new LiteGUI.Inspector();
+        var error_inspector = new LiteGUI.Inspector();
+        inspector.addString("Username", user, {callback: function(v){ user = v; }});
+        inspector.addString("Email", email, {callback: function(v){ email = v; }});
+        inspector.addString("Password", pass, {password: true, callback: function(v){ pass = v; }});
+        inspector.addString("Confirm password", pass2, {password: true, callback: function(v){ pass2 = v; }});
+        inspector.addButton(null, "Register", {callback: function(){
+            if(pass === pass2)
+            {
+                var req = LFS.createAccount(user, pass, email, function(valid, request){
+                    if(valid)
+                    {
+                        var FS = CORE.modules["FileSystem"];
+                        LFS.login( user, pass, FS.onLogin.bind(FS, function(){
+                            dialog.close();
+                            CORE.modules["Interface"].menu.refresh();
+                        }));
+                    }else
+                    {
+                        error_inspector.clear();
+                        error_inspector.addInfo(null, "-- " + request.msg);
+                        console.error(request.msg);
+                    }
+                });
+            }else
+            {
+                error_inspector.clear();
+                error_inspector.addInfo(null, "-- Please confirm password");
+                console.error("Wrong pass confirmation");
+            }
+        }});
+        dialog.add(inspector);
+        dialog.add(error_inspector);
+        dialog.show();
+    }
+    showConnectionDialog()
+    {
+        LiteGUI.prompt("URL", function(url){CORE.App.streamer.connect(url)},{title: "Websocket connection"});
+    }
 
     showStreaming(url, room)
     {

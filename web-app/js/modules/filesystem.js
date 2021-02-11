@@ -1,46 +1,73 @@
 
-class FileSystem{
+// FILESYSTEM FOR PRESENT PROJECT 
 
+class FileSystem{
+    
     constructor(user, pass, callback)
     {
-        this.lfs = LFS.setup("https://webglstudio.org/users/evalls/dialog-manager/dev/data");//, this.onReady.bind(this, user, pass, callback) );
         this.session = null;
         this.parsers = {};
-        this.root = "https://webglstudio.org/users/hermann/files/sauce_dev/files/";
-        this.onReady();
+        this.root = "https://webglstudio.org/projects/present/repository/files/";
+
+        // init server
+        LFS.setup("https://webglstudio.org/projects/present/repository/src/", this.onReady.bind(this));
     }
-
-
+   
     init(){
       console.log(this);
     }
 
     onFileDrop( files ){
-
+        
         console.log(files);
         for(var i = 0; i < files.items.length; i++){
 
             let fileReader = new FileReader(),
             file = files.items[i].getAsFile(),
             ext = (file.name).substr((file.name).lastIndexOf(".")+1),
-            folder = "others";
+            folder = "other";
 
-            this.uploadFile("hdre", files.items[i], ["hdre"]);
+            // select folder
+            // ...
+
+            this.uploadFile(folder, files.items[i], [ext]);
         }
 
     }
 
-    onReady(u, p, callback){
-        LFS.login( "admin", "foo", this.onLogin.bind(this, callback) );
+    onReady(u, p, callback) {
+        
+        // something to do here?
     }
 
-    onLogin( callback, session ){
+    onLogin( callback, session, req ){
+
         if(!session)
-            throw("error in login");
-        this.session = session;
+            throw("error in server login");
+
+        if(req.status == -1) // Error in login
+        {
+            console.error(req.msg);
+        }
+        else
+        {
+            this.session = session;
+            console.log("%cLOGGED " + session.user.username,"color: #7676cc; font-size: 16px" );
+        }
 
         if(callback)
-        callback();
+        callback(req.status != -1, req.msg);
+    }
+
+    onLogout( callback, closed ){
+
+        if(closed)
+        {
+            this.session = null;
+            console.log("%cLOGGED OUT","color: #7676cc; font-size: 16px" );
+            if(callback)
+                callback();    
+        }
     }
 
     async getTags( folder, session ){
@@ -50,24 +77,24 @@ class FileSystem{
             var session = this.session;
 
             session.request(
-                session.server_url,
+                session.server_url, 
                 { action: "tags/getTags"}, e=>{
                 console.log(e);
                 resolve(e);
             }, reject, e => {});
         });
     }
-
+    
     async uploadFile(folder, file, metadata){
 
 
         return new Promise((resolve, reject) => {
 
-            let path = "8efb30d54aee665af72c445acf53284b/"+folder+"/"+ file.name;
+            let path = "present/" + folder + "/" + file.name;
             var session = this.session;
 
-			session.uploadFile( path, file,
-                    { "metadata": metadata },
+			session.uploadFile( path, file, 
+                    { "metadata": metadata }, 
                     function(e){console.log("complete",e); resolve()},
                     e => console.log("error",e)); //,
 //                    e => console.log("progress",e));
@@ -79,11 +106,11 @@ class FileSystem{
 
         return new Promise((resolve, reject) => {
 
-            let path = "8efb30d54aee665af72c445acf53284b/"+folder+"/"+ filename;
+            let path = "present/" + folder + "/" + filename;
             var session = this.session;
 
-			session.uploadFile( path, data,
-                    { "metadata": metadata },
+			session.uploadFile( path, data, 
+                    { "metadata": metadata }, 
                     function(e){console.log("complete",e); resolve()},
                     e => console.log("error",e)); //,
 //                    e => console.log("progress",e));
@@ -92,11 +119,11 @@ class FileSystem{
 
     async getFiles( folder ){
         return new Promise( (resolve, reject)=>{
-
+        
             function onError(e){
                 reject(e);
             }
-
+    
             function onFiles(f){
                 if(!f)
                     return onError("Error: folder \""+folder+"\" not found.");
@@ -104,18 +131,18 @@ class FileSystem{
             }
 
             var session = this.session;
+            var unit_name = session.user.username + " unit";
 
-            session.request(
+            session.request( 
                 session.server_url,
-                { action: "tags/getFilesInFolder", unit: "HDR4EU", folder: folder }, function(resp){
+                { action: "tags/getFilesInFolder", unit: unit_name, folder: folder }, function(resp){
 
                 if(resp.status < 1){
                     onError(resp.msg);
                     return;
                 }
                 //resp.data = JSON.parse(resp.data);
-                LiteFileServer.Session.processFileList( resp.data, "HDR4EU" + "/" + folder );
-
+                LiteFileServer.Session.processFileList( resp.data, unit_name + "/" + folder );
                 onFiles(resp.data, resp);
             });
 
@@ -123,5 +150,7 @@ class FileSystem{
         });
     }
 
-
+    
 }
+
+CORE.registerModule( FileSystem );
