@@ -171,7 +171,7 @@ class FileSystem{
         });
     }
 
-    async getFiles( folder ){
+    async getFiles( unit, folder ){
         return new Promise( (resolve, reject)=>{
         
             function onError(e){
@@ -185,18 +185,17 @@ class FileSystem{
             }
 
             var session = this.session;
-            var unit_name = session.user.username + " unit";
 
             session.request( 
                 session.server_url,
-                { action: "tags/getFilesInFolder", unit: unit_name, folder: folder }, function(resp){
+                { action: "tags/getFilesInFolder", unit: unit, folder: folder }, function(resp){
 
                 if(resp.status < 1){
                     onError(resp.msg);
                     return;
                 }
                 //resp.data = JSON.parse(resp.data);
-                LiteFileServer.Session.processFileList( resp.data, unit_name + "/" + folder );
+                LiteFileServer.Session.processFileList( resp.data, unit + "/" + folder );
                 onFiles(resp.data, resp);
             });
 

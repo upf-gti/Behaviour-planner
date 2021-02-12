@@ -54,7 +54,7 @@ class Interface {
             // Server options
             this.menu.add("Project/Save", { callback: this.showExportDialog.bind(this)});
             this.menu.add("Project/Load/Example", {callback: this.importFromURL.bind(this, example_url)});
-            this.menu.add("Project/Load/From Server");
+            this.menu.add("Project/Load/From Server", { callback: this.showLoadFromServerDialog.bind(this)});
             
             // Disc options
             this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
@@ -637,6 +637,139 @@ class Interface {
             }).bind(this));
             
         });
+    }
+
+    showLoadFromServerDialog() {
+
+        var curr_session = CORE["FileSystem"].getSession();
+        if(!curr_session)
+        return;
+
+        var user_name = curr_session.user.username;
+        var files = {};
+        var file_selected = "";
+        var folder_selected = "";
+        var path = "";
+
+        curr_session.getFolders(user_name, (function(data) { 
+    
+            function __getFolderFiles(unit, folder, callback) {
+
+                CORE["FileSystem"].getFiles(unit, folder).then(function(data) {
+                    data.forEach(e => files[e.filename] = e);
+                    widgets.refresh();
+                });
+            }
+
+            /*
+                recursive function to get each item parent
+            */
+            function __getParent(id)
+            {
+                var parent = litetree.getParent(id);
+                if(parent)
+                {
+                    var parent_id = parent.data.id;
+                    path = parent_id + "/" + path;
+                    __getParent(parent_id);
+                }
+            }
+
+            /*
+                recursive function to get all folders in unit 
+                as a data tree
+            */
+            function __showFolders(object, parent)
+            {
+                for(var f in object)
+                {
+                    if(f === "thb") // discard thumb previews for folders
+                    continue;
+                    litetree.insertItem({id: f}, parent);
+                    if(object[f])
+                        __showFolders(object[f], f);
+                }
+            }
+
+            var selected = null;
+            var litetree = new LiteGUI.Tree({id: user_name});
+            LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                selected = item.detail.data.id;
+                
+                path = "";
+                files = {};
+                file_selected = null;
+                
+                // get full path
+                __getParent(selected);
+                path += selected;
+                var tk = path.split("/");
+                tk.shift();
+                path = tk.join("/");
+                if(!path.length)
+                    path = null;
+
+                // fetch files in folder
+                folder_selected = user_name + "/" + path;
+                __getFolderFiles(user_name, path);
+            });    
+    
+            __showFolders(data, user_name);
+        
+            var id = "Load from Server";
+            var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
+            var w = 500;
+            var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
+            dialog.makeModal('fade');
+            var widgets = new LiteGUI.Inspector();
+        
+            var oncomplete = function( data ){
+                dialog.close();
+            }
+        
+            widgets.on_refresh = function(){
+        
+                widgets.clear();
+        
+                widgets.widgets_per_row = 2;
+                widgets.root.appendChild(litetree.root);
+                widgets.addList( null, files, {height: "150px", callback: function(v) {
+                    file_selected = v;
+                    widgets.on_refresh();
+                } });
+        
+                var thb = widgets.addContainer("thb");
+                thb.style.width = "50%";
+                thb.style.height = "150px";
+                thb.style.display = "inline-block";
+                if(file_selected) {
+                    var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");    
+                    thb.innerHTML = "<img height='100%' src='" + src + "'>";
+
+                }
+            
+                widgets.widgets_per_row = 1;
+                widgets.addSeparator();
+                widgets.addButton( null, "Load", {callback: function() {
+        
+                    // if(!selected)
+                    //     return;
+                    
+                    // LiteGUI.requestJSON( CORE.FS.root + selected.fullpath, oncomplete );
+                    
+                } });
+                widgets.addSeparator();
+        
+            }
+        
+            __getFolderFiles(user_name, null);
+
+            widgets.on_refresh();
+            dialog.add(widgets);  
+            var w = 400;
+            dialog.setPosition( window.innerWidth/2 - w/1.5, window.innerHeight/2 - 150 );
+
+        }));
     }
 
     showLoginDialog( session_type )
