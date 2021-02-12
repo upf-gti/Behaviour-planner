@@ -1,5 +1,10 @@
 PLAYING = 1;
 STOP = 0;
+
+SESSION = {
+IS_GUEST: 0
+};
+
 EVENTS = {
 	textRecieved: 0,
 	imageRecieved: 1,
@@ -122,12 +127,45 @@ class App{
         }
         return false;
     }
+
     changeState(){
-        if(CORE.App.state == STOP)
-            CORE.App.state = PLAYING;
+        if(this.state == STOP)
+            this.state = PLAYING;
         else
-            CORE.App.state = STOP;
+            this.state = STOP;
     }
+
+    onPlayClicked() {
+
+        var play_button = document.getElementById("play-btn");
+        var stream_button = document.getElementById("stream-btn");
+        var icons = CORE["Interface"].icons;
+
+        this.changeState();
+        if(this.state == PLAYING)
+        {
+            play_button.innerHTML= icons.stop;
+
+            if(stream_button.lastElementChild.classList.contains("active"))
+            {
+                stream_button.lastElementChild.classList.remove("active");
+                stream_button.lastElementChild.classList.add("play");
+            }
+
+        }
+        else
+        {
+            play_button.innerHTML= icons.play;
+            if(stream_button.lastElementChild.classList.contains("play"))
+            {
+                stream_button.lastElementChild.classList.remove("play");
+                stream_button.lastElementChild.classList.add("active");
+            }
+        }
+
+
+    }
+
     animate() {
         var that = this;
         requestAnimationFrame(that.animate.bind(that));
@@ -138,16 +176,17 @@ class App{
         that.update(dt);
 
     }
+
     update(dt)
     {
-			var LS = null;
-			if(iframeWindow)
-			{
-				var iframe = iframeWindow.document.querySelector("#iframe-character");
-				this.iframe = iframe;
-				if(this.iframe && this.iframe.contentWindow)
-					LS = this.iframe.contentWindow.LS;
-			}
+        var LS = null;
+        if(iframeWindow)
+        {
+            var iframe = iframeWindow.document.querySelector("#iframe-character");
+            this.iframe = iframe;
+            if(this.iframe && this.iframe.contentWindow)
+                LS = this.iframe.contentWindow.LS;
+        }
 
         //AgentManager.agent_selected = this.currentContext.agent_selected
         if(this.state == PLAYING)
@@ -181,46 +220,46 @@ class App{
                         character_.applyBehaviour( tmp.behaviour[b]);
                         if(tmp.behaviour[b].type == 6)
                             character_.properties[tmp.behaviour[b].data.name] = tmp.behaviour[b].data.value;
-											  if(tmp.behaviour[b].type == B_TYPE.intent)
-												{
-													this.chat.showMessage(tmp.behaviour[b].data.text, "me")
+                        if(tmp.behaviour[b].type == B_TYPE.intent)
+                        {
+                            this.chat.showMessage(tmp.behaviour[b].data.text, "me")
 
 
-													if(LS)
-													{
-														//state = LS.Globals.SPEAKING;
-														var obj = { speech: { text: tmp.behaviour[b].data.text }, control: LS.Globals.SPEAKING }; //speaking
-														LS.Globals.processMsg(JSON.stringify(obj), true);
-													}
-													tmp.behaviour.splice(b,1);
-												}
-												else if(tmp.behaviour[b].type == B_TYPE.action)
-												{
-													var expressions = {
-														angry:[-0.76,-0.64],
-														happy:[0.95,-0.25],
-														sad:[-0.81,0.57],
-														surprised:[0.22,-0.98],
-														sacred:[-0.23,-0.97],
-														disgusted:[-0.97,-0.23],
-														contempt:[-0.98,0.21],
-														neutral:[0,0]
-													}
-													var va = [0,0];
-													if(tmp.behaviour[b].data.animation_to_merge)
-													{
-														var g = tmp.behaviour[b].data.animation_to_merge.toLowerCase();
+                            if(LS)
+                            {
+                                //state = LS.Globals.SPEAKING;
+                                var obj = { speech: { text: tmp.behaviour[b].data.text }, control: LS.Globals.SPEAKING }; //speaking
+                                LS.Globals.processMsg(JSON.stringify(obj), true);
+                            }
+                            tmp.behaviour.splice(b,1);
+                        }
+                        else if(tmp.behaviour[b].type == B_TYPE.action)
+                        {
+                            var expressions = {
+                                angry:[-0.76,-0.64],
+                                happy:[0.95,-0.25],
+                                sad:[-0.81,0.57],
+                                surprised:[0.22,-0.98],
+                                sacred:[-0.23,-0.97],
+                                disgusted:[-0.97,-0.23],
+                                contempt:[-0.98,0.21],
+                                neutral:[0,0]
+                            }
+                            var va = [0,0];
+                            if(tmp.behaviour[b].data.animation_to_merge)
+                            {
+                                var g = tmp.behaviour[b].data.animation_to_merge.toLowerCase();
 
-														va = expressions[g];
-													}
-													var obj = {facialExpression: {va: va}}
-													if(tmp.behaviour[b].data.speed)
-														obj.facialExpression.duration = tmp.behaviour[b].data.speed;
-													if(LS)
-														LS.Globals.processMsg(JSON.stringify(obj), true);
+                                va = expressions[g];
+                            }
+                            var obj = {facialExpression: {va: va}}
+                            if(tmp.behaviour[b].data.speed)
+                                obj.facialExpression.duration = tmp.behaviour[b].data.speed;
+                            if(LS)
+                                LS.Globals.processMsg(JSON.stringify(obj), true);
 
-													tmp.behaviour.splice(b,1);
-												}
+                            tmp.behaviour.splice(b,1);
+                        }
                     }
 										triggerEvent = false;
                 }
@@ -244,19 +283,21 @@ class App{
 					this.chat.clearChat()
         }
     }
-		onEvent(e)
-		{
-			var character_ = AgentManager.agent_selected;
-			var agent_graph = currentHBTGraph = this.graphManager.graphs[character_.hbtgraph];
-			if(!agent_graph)
-					var agent_graph = currentHBTGraph = this.graphManager.graphs[0];
-			var node = agent_graph.processEvent(e);
-			if(node)
-			{
-				tmp.behaviour = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
-				triggerEvent=true;
-			}
-		}
+
+    onEvent(e)
+    {
+        var character_ = AgentManager.agent_selected;
+        var agent_graph = currentHBTGraph = this.graphManager.graphs[character_.hbtgraph];
+        if(!agent_graph)
+                var agent_graph = currentHBTGraph = this.graphManager.graphs[0];
+        var node = agent_graph.processEvent(e);
+        if(node)
+        {
+            tmp.behaviour = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
+            triggerEvent=true;
+        }
+    }
+
     loadEnvironment(data)
     {
         var that = this;
@@ -387,6 +428,85 @@ class App{
 
                 break;
         }
+    }
+
+    toJSON( type, name) {
+
+        var data = null;
+        switch(type)
+        {
+            case "download-env":
+              var obj = {env: {agents:[], graphs: []}}
+                var env = this.env_tree;
+                if(env.token)
+                  obj.env.token = env.token;
+                for(var i in env.children)
+                {
+                    var item = env.children[i];
+                    if(item.type == "agent")
+                    {
+                        var agent = AgentManager.getAgentById(item.id);
+                        agent = agent.serialize();
+                        obj.env.agents.push(agent);
+                    }
+                    else if(item.type == "user")
+                    {
+                        var user = UserManager.getUserById(item.id);
+                        user = user.serialize();
+                        obj.env.user = user;
+                    }
+                    else if(item.type == "gesture")
+                    {
+                        var gest = GestureManager.serialize();
+                        obj.env.gestures = gest;
+                    }
+                }
+                for(var i in GraphManager.graphs)
+                {
+                    var graph = GraphManager.graphs[i];
+
+                    if(graph.type == GraphManager.HBTGRAPH)
+                        data = GraphManager.exportBehaviour(graph.graph);
+                    else if(graph.type == GraphManager.BASICGRAPH)
+                        data = GraphManager.exportBasicGraph(graph.graph);
+                    obj.env.graphs[i] = data;
+                }
+                data = obj;
+                break;
+            case "download-graph":
+                var graph = GraphManager.graphSelected;
+                if(!graph)
+                    return;
+                if(graph.type == GraphManager.HBTGRAPH)
+                    data = GraphManager.exportBehaviour(graph.graph);
+                else if(graph.type == GraphManager.BASICGRAPH)
+                    data = GraphManager.exportBasicGraph(graph.graph);
+                break;
+        }
+
+        return data;
+    }
+
+    downloadJSON( type, name) {
+
+        if(!name)
+            return;
+
+        var data = this.toJSON(type, name);
+
+        if(!data) {
+            console.error("no data to export in json");
+            return;
+        }
+
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        var downloadAnchorNode = document.createElement('a');
+        var filename = name || "graph_data";
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", filename + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
     }
 }
 CORE.registerModule( App );

@@ -139,15 +139,17 @@ class FileSystem{
 
         return new Promise((resolve, reject) => {
 
-            let path = "present/" + folder + "/" + file.name;
             var session = this.session;
+            var unit_name = session.user.username;
+            let path = unit_name + "/" + folder + "/" + file.name;
 
 			session.uploadFile( path, file, 
                     { "metadata": metadata }, 
                     function(e){console.log("complete",e); resolve()},
-                    e => console.log("error",e)); //,
-//                    e => console.log("progress",e));
+                    function(e, req){console.error("error",e, req);},
+            );
         });
+                //                    e => console.log("progress",e));
     }
 
     async uploadData(folder, data, filename, metadata){
@@ -155,8 +157,9 @@ class FileSystem{
 
         return new Promise((resolve, reject) => {
 
-            let path = "present/" + folder + "/" + filename;
             var session = this.session;
+            var unit_name = session.user.username + " unit";
+            let path = unit_name + "/" + folder + "/" + filename;
 
 			session.uploadFile( path, data, 
                     { "metadata": metadata }, 
