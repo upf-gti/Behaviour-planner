@@ -1685,6 +1685,7 @@ Property.prototype.onSerialize = function(o)
 LiteGraph.registerNodeType("basic/property", Property);
 
 //TODO add widget to change type string and add/create widget to allow the addition of name:string pairs on parameters
+//TODO dinamically create inputs to set a value for each parameter (if desired)
 function CustomRequest(){
   this.shape = 2;
   this.color = "#907300";

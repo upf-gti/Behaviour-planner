@@ -1,5 +1,6 @@
-class Interface{
-    constructor(){
+class Interface {
+
+    constructor() {
         this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"calc(100% - 30px)"});
         this.contentTabs = new LiteGUI.Tabs({id: "content-tabs", height:"100%"});
         this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
@@ -25,8 +26,8 @@ class Interface{
         }
 
     }
-    preInit()
-    {
+
+    preInit() {
         //create a left panel
         LiteGUI.init();
 
@@ -42,27 +43,34 @@ class Interface{
         var menu = new LiteGUI.Menubar();
         this.menu = menu;
 
+        var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
+
         menu.refresh = (function()
         {
             // Clean first
             this.menu.clear();
 
-            // Add some items to it
             this.menu.add("Project/New"); //clear all
-            this.menu.add("Project/Load");
-            this.menu.add("Project/Import/From File", { callback: this.openImportFromFileDialog.bind(this)});
+            // Server options
+            this.menu.add("Project/Save", { callback: this.showExportDialog.bind(this)});
+            this.menu.add("Project/Load/Example", {callback: this.importFromURL.bind(this, example_url)});
+            this.menu.add("Project/Load/From Server", { callback: this.showLoadFromServerDialog.bind(this)});
+            
+            // Disc options
+            this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
             this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
             this.menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
             this.menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
+            // Other
             this.menu.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
-            this.menu.add("Actions");
+            // this.menu.add("Actions");
 
             if(!CORE.modules["FileSystem"].session)
             {
                 this.menu.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
             }else
             {
-                this.menu.add("Account/Profile", {callback: null});
+                this.menu.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
                 this.menu.add("Account/Logout", {callback: function(e){
                     var FS = CORE.modules["FileSystem"];
                     FS.session.logout(FS.onLogout.bind(FS, function(){
@@ -102,43 +110,44 @@ class Interface{
         this.graphinspector = new LiteGUI.Inspector({id:"edit-inspector"})
         insp_area.add(this.graphinspector)
         edit_tab.add(edit_area  )
-
-
-        /*ACTIONS*/
-        var actions_tab = this.sceneTabs.addTab("actions", { title: this.icons.folder, width:"100%", height:"calc(100% - 26px)"});
-        actions_tab.tab.title = "Files";
-        actions_tab.content.className+=" content";
-        var actions_inspector = new LiteGUI.Inspector( {width:"100%"});
-
-        /*Import section*/
-        actions_inspector.addSection("Import", {width:"100%"});
-        actions_inspector.addInfo("Environment", "");
-        var env_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-        var env_fromURL = this.addButton("From URL", {className:"btn btn-str"});
-        actions_inspector.current_section.children[1].append(env_fromfile);
-        actions_inspector.current_section.children[1].append(env_fromURL);
-
-        actions_inspector.addInfo("Graphs", "");
-        var graph_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-        var graph_fromURL = this.addButton("From URL", {className:"btn btn-str"});
-        actions_inspector.current_section.children[1].append(graph_fromfile);
-        actions_inspector.current_section.children[1].append(graph_fromURL);
-
-        actions_inspector.addInfo("Corpus", "");
-        var corpus_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-        var corpus_fromURL = this.addButton("From URL", {className:"btn btn-str", callback:   this.openImportURLDialog.bind(this)});
-        actions_inspector.current_section.children[1].append(corpus_fromfile);
-        actions_inspector.current_section.children[1].append(corpus_fromURL);
-
-        /*Export section*/
-        actions_inspector.addSection("Export", {width:"100%"});
-        var env_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-env", callback: this.showDownloadDialog.bind(this)});
-        actions_inspector.addInfo("Environment",env_download, {height:"20px"});
-        var graph_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-graph", callback: this.showDownloadDialog.bind(this)});
-        actions_inspector.addInfo("Graph selected",graph_download, {height:"20px"});
-        actions_tab.add(actions_inspector);
-
-
+        
+        /* 
+        FILE ACTIONS
+        */
+        if ( 0 ) {
+            var actions_tab = this.sceneTabs.addTab("actions", { title: this.icons.folder, width:"100%", height:"calc(100% - 26px)"});
+            actions_tab.tab.title = "Files";
+            actions_tab.content.className+=" content";
+            var actions_inspector = new LiteGUI.Inspector( {width:"100%"});
+    
+            /*Import section*/
+            actions_inspector.addSection("Import", {width:"100%"});
+            actions_inspector.addInfo("Environment", "");
+            var env_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
+            var env_fromURL = this.addButton("From URL", {className:"btn btn-str"});
+            actions_inspector.current_section.children[1].append(env_fromfile);
+            actions_inspector.current_section.children[1].append(env_fromURL);
+    
+            actions_inspector.addInfo("Graphs", "");
+            var graph_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
+            var graph_fromURL = this.addButton("From URL", {className:"btn btn-str"});
+            actions_inspector.current_section.children[1].append(graph_fromfile);
+            actions_inspector.current_section.children[1].append(graph_fromURL);
+    
+            actions_inspector.addInfo("Corpus", "");
+            var corpus_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
+            var corpus_fromURL = this.addButton("From URL", {className:"btn btn-str", callback:   this.openImportURLDialog.bind(this)});
+            actions_inspector.current_section.children[1].append(corpus_fromfile);
+            actions_inspector.current_section.children[1].append(corpus_fromURL);
+    
+            /*Export section*/
+            actions_inspector.addSection("Export", {width:"100%"});
+            var env_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-env", callback: this.showDownloadDialog.bind(this)});
+            actions_inspector.addInfo("Environment",env_download, {height:"20px"});
+            var graph_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-graph", callback: this.showDownloadDialog.bind(this)});
+            actions_inspector.addInfo("Graph selected",graph_download, {height:"20px"});
+            actions_tab.add(actions_inspector);
+        }
 
         /*-------------------------------------------------------------------------------------------*/
         /* Right area */
@@ -160,7 +169,9 @@ class Interface{
         var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
         stream_btn.style.display="none";
         var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: GraphManager.clearCurrentGraph});
-        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right",innerHTML: this.icons.play, callback: this.onPlayClicked.bind(this)});
+        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right",innerHTML: this.icons.play, callback: function(){
+            CORE.App.onPlayClicked();
+        }});
 
         div.append(clear_btn);
         div.append(play_btn);
@@ -211,12 +222,20 @@ class Interface{
         mainarea.add(this.sceneTabs);
         LiteGUI.add( mainarea );
         this.tabsRefresh()
-        // Create a menu bar
+        
+        // assign drop area -> only once
+        let that = this;
+        var FS = CORE["FileSystem"];
+        var canvas = document.getElementsByClassName("graph-content");
+        LiteGUI.createDropArea( canvas[0], FS.onDrop.bind(FS, function(file){
+
+            that.openImportDialog(file);
+
+        }));
 
     }
 
-    onExpandInspector(area,e)
-    {
+    onExpandInspector(area,e) {
         var that = this;
         if(e.currentTarget.classList.contains("invert"))
         {
@@ -234,8 +253,7 @@ class Interface{
         GraphManager.resize();
     }
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
-    newTab(g)
-    {
+    newTab(g)  {
         var that = this;
         that.graphTabs.removeTab("plus-tab");
         var graph_area = document.createElement("DIV");
@@ -253,11 +271,9 @@ class Interface{
 
     }
 
-    tabsRefresh(id)
-    {
+    tabsRefresh(id) {
+        
         var that = this;
-        var canvas = document.getElementsByClassName("graph-content");
-        LiteGUI.createDropArea( canvas[0],this.dropHandler.bind(this));
 
         this.graphTabs.clear();
         var tab;
@@ -289,23 +305,25 @@ class Interface{
 
         this.graphTabs.selectTab(tab)
 
+        var canvas = document.getElementsByClassName("graph-content");
         canvas[0].appendChild(this.graphTabs.root)
     }
-    onContextTab(id)
-    {
+
+    onContextTab(id) {
         var that = this;
         var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: that.renameTab.bind(this,id)})
     }
-    renameTab(id)
-    {
+
+    renameTab(id) {
         var that = this;
         LiteGUI.prompt("Enter name", function(v){
             var tab = that.graphTabs.getTab(id);
             tab.setTitle(v);
         },{title: "Rename tab"});
     }
-    onCloseTab(data)
-    {
+
+    onCloseTab(data) {
+
         var that = this;
         GraphManager.removeGraph(data.id);
         //that.tabsRefresh()
@@ -320,13 +338,13 @@ class Interface{
             }
         }
     }
-    newGraphDialog()
-    {
+
+    newGraphDialog() {
         var that = this;
         LiteGUI.choice("Select type", ["HBT Graph", "Basic Graph"], that.onNewGraphSelected.bind(that), {title:"New graph"} )
     }
-    onNewGraphSelected(data)
-    {
+
+    onNewGraphSelected(data) {
         var type;
         switch(data){
             case "HBT Graph":
@@ -342,44 +360,8 @@ class Interface{
             CORE.App.agent_selected.hbt_graph = graph.name;
        // this.newTab(graph);
     }
-    dropHandler(ev) {
-        var that = this;
-        console.log('File(s) dropped');
-
-        // Prevent default behavior (Prevent file from being opened)
-        ev.preventDefault();
-
-        if (ev.dataTransfer.items) {
-            var that = this;
-          // Use DataTransferItemList interface to access the file(s)
-          for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-            // If dropped items aren't files, reject them
-            if (ev.dataTransfer.items[i].kind === 'file') {
-              var file = ev.dataTransfer.items[i].getAsFile();
-              console.log('... file[' + i + '].name = ' + file.name);
-              var fileElement = document.getElementsByClassName("file");
-              if(fileElement)
-                fileElement.files = file;
-            var reader = new FileReader();
-			 reader.onload = function(e2){
-                file.data = e2.target.result;
-                fileElement.innerText = file.name;
-                //Inspector.onWidgetChange.call( GraphManager.inspector, element, name, file, options );
-                that.openImportDialog(file);
-             }
-             reader.readAsText( file );
-              ///CORE.Interface.openImportDialog(file);
-            }
-          }
-        } else {
-          // Use DataTransfer interface to access the file(s)
-          for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-            console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-          }
-        }
-    }
-    openImportDialog(data)
-    {
+    
+    openImportDialog(data, session_type) {
 
         var title = "Replace current graph?";
         if(!data)
@@ -394,53 +376,51 @@ class Interface{
         if(data.constructor != Object)
             data = JSON.parse(data.data);
 
-
         var type = "Basic graph";
         if(data.behaviour) type = "HBT graph";
         if(data.env) type = "Environment"
         if(data.type) type = data.type;
 
-        var choice = LiteGUI.choice("", ["Import", "Cancel"], function(v){
-            if(v == "Import")
-            {
-                //var filename = file.name.split(".");
-                /*if( filename[filename.length-1].toLowerCase()== "json")
+        function processFile(data, type)
+        {
+            if(type == "Environment")
+                CORE.App.loadEnvironment(data);
+            else if(type == "dialogue-corpus")
+                CORE.App.loadCorpusData(data);
+            else
+                GraphManager.putGraphOnEditor( data )
+        }
+
+        if(session_type !== SESSION.IS_GUEST)
+        {
+            var choice = LiteGUI.choice("", ["Import", "Cancel"], function(v){
+                if(v == "Import")
                 {
-                    if(!data)
-                        return;
-                   /* if(!data.behaviour)
-                    {
-                        var graphData = {behaviour : data};
-                        data = graphData;
-
-                    }  */
-
-
-               /* }*/
-                if(type == "Environment")
-                    CORE.App.loadEnvironment(data);
-                else if(type == "dialogue-corpus")
-                  CORE.App.loadCorpusData(data);
-                else
-                    GraphManager.putGraphOnEditor( data )
-            }
-
-        }, { title: title});
-
-        var import_inspector = new LiteGUI.Inspector();
-        import_inspector.clear();
-        import_inspector.addInfo("Type ", type, {name_width:"40%"});
-        if(file.name || file.filename) import_inspector.addInfo("Filename  ", file.name || file.filename, {name_width:"40%"});
-        if(file.size) import_inspector.addInfo("Size", file.size/1000 + " KB", {name_width:"40%"});
-
-        choice.content.prepend(import_inspector.root);
+                    processFile(data, type);
+                }
+    
+            }, { title: title});
+    
+            var import_inspector = new LiteGUI.Inspector();
+            import_inspector.clear();
+            import_inspector.addInfo("Type ", type, {name_width:"40%"});
+            if(file.name || file.filename) import_inspector.addInfo("Filename  ", file.name || file.filename, {name_width:"40%"});
+            if(file.size) import_inspector.addInfo("Size", file.size/1000 + " KB", {name_width:"40%"});
+    
+            choice.content.prepend(import_inspector.root);
+        }else
+        {
+            processFile(data, type);
+        }
 
     }
+
     openImportURLDialog( )
     {
-        LiteGUI.prompt("Enter name", this.importFromURL.bind(this),{title: "Import from URL"});
+        LiteGUI.prompt("URL name", this.importFromURL.bind(this),{title: "Import from URL"});
     }
-    importFromURL(url)
+
+    importFromURL(url, session_type)
     {
         var that = this;
         if(!url)
@@ -462,14 +442,15 @@ class Interface{
                   console.log(data.type + " imported")
                 }
                 else console.log("Behaviour graph imported")
-                that.openImportDialog(data);
+                that.openImportDialog(data, session_type);
                 //GraphManager.putGraphOnEditor( data )
             });
     }
+
     openImportFromFileDialog()
 	{
         var that = this;
-		var dialog = new LiteGUI.Dialog({ title:"Load File", width: 200 });
+		var dialog = new LiteGUI.Dialog({ title:"Load File", width: 200, closable: true });
 		var inspector = new LiteGUI.Inspector();
 		var file = null;
 		inspector.addFile("Select File","",{ read_file: true, callback: function(v){
@@ -503,13 +484,299 @@ class Interface{
 		});
 		dialog.add( inspector );
 		dialog.adjustSize(2);
-		dialog.show();
+		dialog.makeModal();
 	}
-    showLoginDialog()
+
+    showExportDialog() {
+        
+        var curr_session = CORE["FileSystem"].getSession();
+        if(!curr_session)
+        return;
+
+        if(curr_session.user.username === "guest"
+            && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
+        ) {
+            LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
+            return;
+        }
+
+        var canvas = GraphManager.currentCanvas.canvas2D;
+        var tbh_data, boo;
+	    var filename = "export", path = "/";
+        var width = 400;
+
+        var inner = function(v) {
+
+            if(!filename.length) {
+                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+                return;
+            }
+
+            try
+            {
+                boo = CORE.App.toJSON(
+                    v === "Graph" ? "download-graph" : "download-env",
+                    filename
+                );
+                boo = JSON.stringify(boo);
+            }
+            catch (e)
+            {
+                console.error("Error creating json", e);
+                LiteGUI.alert("Something went wrong");
+                return;
+            }
+
+            var FS = CORE["FileSystem"];
+            
+            // upload file
+            FS.uploadFile(path, new File([boo], filename + ".json"), []);
+                    
+            // upload thb
+            if(tbh_data){
+                // change file extension and folder for thb
+                var tkn = path.split("/");
+                var _name = tkn.pop().replace("json", "png"); // name.png
+                path = tkn.join("/") + "/thb/" + _name;
+                FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
+            }
+            
+        };
+
+        if(!canvas) {
+            console.warn("nothing to export");
+            return;
+        }
+
+        canvas.toBlob(function(v){ 
+		
+            tbh_data = v;
+            var user_name = curr_session.user.username;
+            var url =  URL.createObjectURL( tbh_data );
+            var choice = LiteGUI.choice("<img src='" + url + "' width='100%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
+    
+            var widgets = new LiteGUI.Inspector();
+            var r_widgets = new LiteGUI.Inspector();
+            widgets.addInfo( null, "Filename");
+            window.filename_w = widgets.addString( null, filename );
+
+            filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                filename = filename_w.getValue();
+                r_widgets.refresh();
+            });
+
+            widgets.addSeparator();
+            
+            curr_session.getFolders(user_name, (function(data) {
+
+                var selected = null;
+                var litetree = new LiteGUI.Tree({id: user_name});
+                LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                    selected = item.detail.data.id;
+                    r_widgets.refresh();
+                });     
+
+                /*
+                    recursive function to get all folders in unit 
+                    as a data tree
+                */
+                function __showFolders(object, parent)
+                {
+                    for(var f in object)
+                    {
+                        if(f === "thb") // discard thumb previews for folders
+                        continue;
+                        litetree.insertItem({id: f}, parent);
+                        if(object[f])
+                            __showFolders(object[f], f);
+                    }
+                }
+
+                __showFolders(data, user_name);
+                widgets.root.appendChild(litetree.root);
+
+                /*
+                    recursive function to get each item parent
+                */
+                function __getParent(id)
+                {
+                    var parent = litetree.getParent(id);
+                    if(parent)
+                    {
+                        var parent_id = parent.data.id;
+                        path = parent_id + "/" + path;
+                        __getParent(parent_id);
+                    }
+                }
+
+                r_widgets.refresh = function() {
+
+                    r_widgets.clear();
+                    let curr = selected;
+
+                    if(curr) {
+                        path = curr;
+                        __getParent(selected);
+                    }
+                    else {
+                        path = user_name;
+                    }
+
+                    path += "/" + filename + ".json";
+                    
+                    r_widgets.addString( null, path, {disabled: true} );
+                    r_widgets.addSeparator();
+                }
+
+                r_widgets.refresh();
+               
+                choice.add( r_widgets.root, true );
+                choice.add( widgets.root, true );
+                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 ); 
+                
+            }).bind(this));
+            
+        });
+    }
+
+    showLoadFromServerDialog() {
+
+        var curr_session = CORE["FileSystem"].getSession();
+        if(!curr_session)
+        return;
+
+        var user_name = curr_session.user.username;
+        var files = {};
+        var file_selected = "";
+        var folder_selected = "";
+        var path = "";
+
+        curr_session.getFolders(user_name, (function(data) { 
+    
+            function __getFolderFiles(unit, folder, callback) {
+
+                CORE["FileSystem"].getFiles(unit, folder).then(function(data) {
+                    data.forEach(e => files[e.filename] = e);
+                    widgets.refresh();
+                });
+            }
+
+            /*
+                recursive function to get each item parent
+            */
+            function __getParent(id)
+            {
+                var parent = litetree.getParent(id);
+                if(parent)
+                {
+                    var parent_id = parent.data.id;
+                    path = parent_id + "/" + path;
+                    __getParent(parent_id);
+                }
+            }
+
+            /*
+                recursive function to get all folders in unit 
+                as a data tree
+            */
+            function __showFolders(object, parent)
+            {
+                for(var f in object)
+                {
+                    if(f === "thb") // discard thumb previews for folders
+                    continue;
+                    litetree.insertItem({id: f}, parent);
+                    if(object[f])
+                        __showFolders(object[f], f);
+                }
+            }
+
+            var selected = null;
+            var litetree = new LiteGUI.Tree({id: user_name});
+            LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                selected = item.detail.data.id;
+                
+                path = "";
+                files = {};
+                file_selected = null;
+                
+                // get full path
+                __getParent(selected);
+                path += selected;
+                var tk = path.split("/");
+                tk.shift();
+                path = tk.join("/");
+                if(!path.length)
+                    path = null;
+
+                // fetch files in folder
+                folder_selected = user_name + "/" + path;
+                __getFolderFiles(user_name, path);
+            });    
+    
+            __showFolders(data, user_name);
+        
+            var id = "Load from Server";
+            var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
+            var w = 500;
+            var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
+            dialog.makeModal('fade');
+            var widgets = new LiteGUI.Inspector();
+        
+            var oncomplete = function( data ){
+                dialog.close();
+            }
+        
+            widgets.on_refresh = function(){
+        
+                widgets.clear();
+        
+                widgets.widgets_per_row = 2;
+                widgets.root.appendChild(litetree.root);
+                widgets.addList( null, files, {height: "150px", callback: function(v) {
+                    file_selected = v;
+                    widgets.on_refresh();
+                } });
+        
+                var thb = widgets.addContainer("thb");
+                thb.style.width = "50%";
+                thb.style.height = "150px";
+                thb.style.display = "inline-block";
+                if(file_selected) {
+                    var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");    
+                    thb.innerHTML = "<img height='100%' src='" + src + "'>";
+
+                }
+            
+                widgets.widgets_per_row = 1;
+                widgets.addSeparator();
+                widgets.addButton( null, "Load", {callback: function() {
+        
+                    // if(!selected)
+                    //     return;
+                    
+                    // LiteGUI.requestJSON( CORE.FS.root + selected.fullpath, oncomplete );
+                    
+                } });
+                widgets.addSeparator();
+        
+            }
+        
+            __getFolderFiles(user_name, null);
+
+            widgets.on_refresh();
+            dialog.add(widgets);  
+            var w = 400;
+            dialog.setPosition( window.innerWidth/2 - w/1.5, window.innerHeight/2 - 150 );
+
+        }));
+    }
+
+    showLoginDialog( session_type )
     {
         let user = "", pass = "";
 
-        var dialog = new LiteGUI.Dialog({ title:"Login", width: 300, closable:true });
+        var dialog = new LiteGUI.Dialog({ id:"login-dialog", title:"Login", width: 300, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
@@ -530,21 +797,36 @@ class Interface{
         inspector.widgets_per_row = 2;
         inspector.addButton(null, "Register", {name_width: "30%", callback: (function(){
             this.showCreateAccountDialog();
-            dialog.close();
+            document.querySelector("#login-dialog").remove();
         }).bind(this)});
         inspector.addButton(null, "Login", {name_width: "30%", callback: function(){
             LOG_IN();
         }});
+        inspector.widgets_per_row = 1;
+        inspector.addSeparator();
+        inspector.addButton(null, "Login as guest", {callback: (function(){
+            LOG_IN("guest", "guest");
+        }).bind(this)});
+        inspector.addSeparator();
 
-        function LOG_IN()
+        function LOG_IN(u, p)
         {
+            let lg_user = u || user;
+            let lg_pass = p || pass;
+
             var FS = CORE.modules["FileSystem"];
-            LFS.login( user, pass, FS.onLogin.bind(FS, function(valid, msg_info){
+            LFS.login( lg_user, lg_pass, FS.onLogin.bind(FS, function(valid, msg_info){
 
                 if(valid)
                 {
+                    if(lg_user === "guest")
+                    CORE["Interface"].importFromURL(
+                        baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json",
+                        SESSION.IS_GUEST
+                    );
+
                     dialog.close();
-                    CORE.modules["Interface"].menu.refresh();
+                    CORE["Interface"].menu.refresh();
                 }
                 else
                 {
@@ -557,7 +839,7 @@ class Interface{
         dialog.add(inspector);
         dialog.add(error_inspector);
 
-        dialog.show();
+        dialog.makeModal();
     }
     showCreateAccountDialog()
     {
@@ -565,7 +847,7 @@ class Interface{
         pass2 = "", email = "";
         let errors = false;
 
-        var dialog = new LiteGUI.Dialog({ title:"Register", width: 350, closable:true });
+        var dialog = new LiteGUI.Dialog({ id:"register-dialog", title:"Register", width: 350, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
@@ -581,7 +863,7 @@ class Interface{
                         var FS = CORE.modules["FileSystem"];
                         LFS.login( user, pass, FS.onLogin.bind(FS, function(){
                             dialog.close();
-                            CORE.modules["Interface"].menu.refresh();
+                            CORE["Interface"].menu.refresh();
                         }));
                     }else
                     {
@@ -599,8 +881,40 @@ class Interface{
         }});
         dialog.add(inspector);
         dialog.add(error_inspector);
-        dialog.show();
+        dialog.makeModal();
     }
+
+    showAccountInfo()
+    {
+        var dialog = new LiteGUI.Dialog({ title:"Account profile", width: 350, closable:true });
+        var inspector = new LiteGUI.Inspector();
+
+        var session = CORE["FileSystem"].getSession();
+        if(!session) {
+            console.warn("no logged account");
+            return;
+        }
+
+        var user = session.user;
+
+        inspector.addInfo("Username", user.username);
+        inspector.addInfo("Email", user.email);
+        inspector.addSeparator();
+        inspector.addInfo("Unit size", user.total_space / 1e6 + " MB");
+
+        var roles = [];
+
+        for(var o in user.roles)
+            if(user.roles[o] === true)
+                roles.push(o);
+
+        inspector.addList("Roles", roles, {disabled: true});
+       
+        dialog.adjustSize();
+        dialog.add(inspector);
+        dialog.makeModal();
+    }
+
     showConnectionDialog()
     {
         LiteGUI.prompt("URL", function(url){CORE.App.streamer.connect(url)},{title: "Websocket connection"});
@@ -628,6 +942,7 @@ class Interface{
         node._server.onReady = CORE.App.streamer.onReady;
         CORE.App.streamer.is_connected = node._server.is_connected;
     }
+
     onStream()
     {
         CORE.App.streamer.streaming = !CORE.App.streamer.streaming;
@@ -646,112 +961,27 @@ class Interface{
             this.lastChild.classList.remove("active")
         }
     }
+    
     /* ----------------------------------------------------DOWNLOAD------------------------------------------------------------*/
+    
     showDownloadDialog(data)
     {
-        var that = this;
-        var id = data.srcElement.getAttribute("id");
+        var id = data["id"];
         if(!id)
-            id = data.srcElement.parentElement.getAttribute("id");
+            console.warn("no file type");
+        //    id = data.srcElement.parentElement.getAttribute("id");
 
-        LiteGUI.prompt("Enter name", that.downloadJSON.bind(this,id),{title: "Export file"});
+        LiteGUI.prompt(
+            "File name", 
+            CORE.App.downloadJSON.bind(CORE.App, id),
+            {
+                title: "Export file"
+            }
+        );
     }
-    downloadJSON( type, name)
-    {
-        if(!name)
-            return;
-        var data = null;
-        switch(type)
-        {
-            case "download-env":
-              var obj = {env: {agents:[], graphs: []}}
-                var env = CORE.App.env_tree;
-                if(env.token)
-                  obj.env.token = env.token;
-                for(var i in env.children)
-                {
-                    var item = env.children[i];
-                    if(item.type == "agent")
-                    {
-                        var agent = AgentManager.getAgentById(item.id);
-                        agent = agent.serialize();
-                        obj.env.agents.push(agent);
-                    }
-                    else if(item.type == "user")
-                    {
-                        var user = UserManager.getUserById(item.id);
-                        user = user.serialize();
-                        obj.env.user = user;
-                    }
-                    else if(item.type == "gesture")
-                    {
-                        var gest = GestureManager.serialize();
-                        obj.env.gestures = gest;
-                    }
-                }
-                for(var i in GraphManager.graphs)
-                {
-                    var graph = GraphManager.graphs[i];
-
-                    if(graph.type == GraphManager.HBTGRAPH)
-                        data = GraphManager.exportBehaviour(graph.graph);
-                    else if(graph.type == GraphManager.BASICGRAPH)
-                        data = GraphManager.exportBasicGraph(graph.graph);
-                    obj.env.graphs[i] = data;
-                }
-                data = obj;
-                break;
-            case "download-graph":
-                var graph = GraphManager.graphSelected;
-                if(!graph)
-                    return;
-                if(graph.type == GraphManager.HBTGRAPH)
-                    data = GraphManager.exportBehaviour(graph.graph);
-                else if(graph.type == GraphManager.BASICGRAPH)
-                    data = GraphManager.exportBasicGraph(graph.graph);
-                break;
-        }
-
-
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-        var downloadAnchorNode = document.createElement('a');
-        var filename = name || "graph_data";
-        downloadAnchorNode.setAttribute("href",     dataStr);
-        downloadAnchorNode.setAttribute("download", filename + ".json");
-        document.body.appendChild(downloadAnchorNode); // required for firefox
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
+    
     /* ----------------------------------------------------------------------------------------------------------------------- */
-    onPlayClicked(){
 
-        var play_button = document.getElementById("play-btn");
-        var stream_button = document.getElementById("stream-btn");
-
-        CORE.App.changeState();
-        if(CORE.App.state == PLAYING)
-        {
-            play_button.innerHTML= this.icons.stop;
-
-            if(stream_button.lastElementChild.classList.contains("active"))
-            {
-                stream_button.lastElementChild.classList.remove("active");
-                stream_button.lastElementChild.classList.add("play");
-            }
-
-        }
-        else
-        {
-            play_button.innerHTML= this.icons.play;
-            if(stream_button.lastElementChild.classList.contains("play"))
-            {
-                stream_button.lastElementChild.classList.remove("play");
-                stream_button.lastElementChild.classList.add("active");
-            }
-        }
-
-
-    }
     showContent(data)
     {
         var b_content = document.getElementById("behaviour-content");//document.querySelector('[data-id="behaviour-content"]');
@@ -967,7 +1197,9 @@ class Interface{
         }
         return button;
     }
-    addInputTags(name, tags, options){
+
+    addInputTags(name, tags, options) { 
+
         var area = document.createElement("DIV");
         var title = document.createElement("DIV");
         title.setAttribute("style", "padding: 2px 5px");
@@ -999,19 +1231,20 @@ class Interface{
 		}.bind(this));
 */
 
-    input.addEventListener( "keydown" , function(e) {
-      var that = this
-			if(e.keyCode == 13 || e.keyCode == 188) //, or ENTER
-			{
-      //  e.stopPropagation()
-        that.createTag(e.target.value, inputtags, options)
-        e.target.value = "";
-			}
-		}.bind(this));
+        input.addEventListener( "keydown" , function(e) {
+            var that = this
+            if(e.keyCode == 13 || e.keyCode == 188) //, or ENTER
+            {
+            //  e.stopPropagation()
+                that.createTag(e.target.value, inputtags, options)
+                e.target.value = "";
+            }
+        }.bind(this));
         inputtags.appendChild(input)
         area.appendChild(inputtags)
         return area;
     }
+
     createTag(value, inspector, options){
         var value = value.replace(/[^a-zA-Z0-9\+\-\.\#]/g, ''); // allowed characters list
         if (value)
@@ -1033,115 +1266,122 @@ class Interface{
         }
     }
 }
+
 function autocomplete(inp, arr, words, options) {
-  /*the autocomplete function takes two arguments,
-  the text field element and an array of possible autocompleted values:*/
-  var currentFocus;
-  /*execute a function when someone writes in the text field:*/
-  inp.addEventListener("input", function(e) {
-      var a, b, i, val = this.value!=undefined? this.value : this.getValue();
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    var currentFocus;
+    /*execute a function when someone writes in the text field:*/
+    inp.addEventListener("input", function(e) {
+        var a, b, i, val = this.value!=undefined? this.value : this.getValue();
 
-    var values = val.split(" ");
-    val = values[values.length-1]
+        var values = val.split(" ");
+        val = values[values.length-1]
 
-      /*close any already open lists of autocompleted values*/
-      closeAllLists();
-      if (!val) { return false;}
-      currentFocus = -1;
-      /*create a DIV element that will contain the items (values):*/
-      a = document.createElement("DIV");
-      a.setAttribute("id", this.id + "autocomplete-list");
-      a.setAttribute("class", "autocomplete-items");
-      /*append the DIV element as a child of the autocomplete container:*/
-      this.parentNode.appendChild(a);
-      /*for each item in the array...*/
-      for (i = 0; i < arr.length; i++) {
-        /*check if the item starts with the same letters as the text field value:*/
-        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-          /*create a DIV element for each matching element:*/
-          b = document.createElement("DIV");
-          /*make the matching letters bold:*/
-          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-          b.innerHTML += arr[i].substr(val.length);
-          /*insert a input field that will hold the current array item's value:*/
-          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-          /*execute a function when someone clicks on the item value (DIV element):*/
-              b.addEventListener("click", function(e) {
-              /*insert the value for the autocomplete text field:*/
-              var w = this.getElementsByTagName("input")[0].value;
-              if(words)
-                words.push(w);
-              values.pop();
-              values.push(w);
-              var current = values.join(" ")
-              if(inp.value!=undefined)
-                inp.value = current;
-              else
-                inp.setValue(current);
-              /*close the list of autocompleted values,
-              (or any other open lists of autocompleted values:*/
-              closeAllLists();
-              if(options && options.callback)
-                options.callback.call()
-          });
-          a.appendChild(b);
+        /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        if (!val) { return false;}
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        this.parentNode.appendChild(a);
+        /*for each item in the array...*/
+        for (i = 0; i < arr.length; i++) {
+            /*check if the item starts with the same letters as the text field value:*/
+            if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("DIV");
+            /*make the matching letters bold:*/
+            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML += arr[i].substr(val.length);
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+                b.addEventListener("click", function(e) {
+                /*insert the value for the autocomplete text field:*/
+                var w = this.getElementsByTagName("input")[0].value;
+                if(words)
+                    words.push(w);
+                values.pop();
+                values.push(w);
+                var current = values.join(" ")
+                if(inp.value!=undefined)
+                    inp.value = current;
+                else
+                    inp.setValue(current);
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+                if(options && options.callback)
+                    options.callback.call()
+            });
+            a.appendChild(b);
+            }
         }
-      }
-  });
-  /*execute a function presses a key on the keyboard:*/
-  inp.addEventListener("keydown", function(e) {
-      var x = document.getElementById(this.id + "autocomplete-list");
-      if (x) x = x.getElementsByTagName("div");
-      if (e.keyCode == 40) {
-        /*If the arrow DOWN key is pressed,
-        increase the currentFocus variable:*/
-        currentFocus++;
-        /*and and make the current item more visible:*/
-        addActive(x);
-      } else if (e.keyCode == 38) { //up
-        /*If the arrow UP key is pressed,
-        decrease the currentFocus variable:*/
-        currentFocus--;
-        /*and and make the current item more visible:*/
-        addActive(x);
-      } else if (e.keyCode == 13) {
-        /*If the ENTER key is pressed, prevent the form from being submitted,*/
-        e.preventDefault();
-        if (currentFocus > -1) {
-          /*and simulate a click on the "active" item:*/
-          if (x) x[currentFocus].click();
+    });
+    
+    /*execute a function presses a key on the keyboard:*/
+    inp.addEventListener("keydown", function(e) {
+        var x = document.getElementById(this.id + "autocomplete-list");
+        if (x) x = x.getElementsByTagName("div");
+        if (e.keyCode == 40) {
+            /*If the arrow DOWN key is pressed,
+            increase the currentFocus variable:*/
+            currentFocus++;
+            /*and and make the current item more visible:*/
+            addActive(x);
+        } else if (e.keyCode == 38) { //up
+            /*If the arrow UP key is pressed,
+            decrease the currentFocus variable:*/
+            currentFocus--;
+            /*and and make the current item more visible:*/
+            addActive(x);
+        } else if (e.keyCode == 13) {
+            /*If the ENTER key is pressed, prevent the form from being submitted,*/
+            e.preventDefault();
+            if (currentFocus > -1) {
+            /*and simulate a click on the "active" item:*/
+            if (x) x[currentFocus].click();
+            }
         }
-      }
-  });
-  function addActive(x) {
-    /*a function to classify an item as "active":*/
-    if (!x) return false;
-    /*start by removing the "active" class on all items:*/
-    removeActive(x);
-    if (currentFocus >= x.length) currentFocus = 0;
-    if (currentFocus < 0) currentFocus = (x.length - 1);
-    /*add class "autocomplete-active":*/
-    x[currentFocus].classList.add("autocomplete-active");
-  }
-  function removeActive(x) {
-    /*a function to remove the "active" class from all autocomplete items:*/
-    for (var i = 0; i < x.length; i++) {
-      x[i].classList.remove("autocomplete-active");
+    });
+
+    function addActive(x) {
+        /*a function to classify an item as "active":*/
+        if (!x) return false;
+        /*start by removing the "active" class on all items:*/
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (x.length - 1);
+        /*add class "autocomplete-active":*/
+        x[currentFocus].classList.add("autocomplete-active");
     }
-  }
-  function closeAllLists(elmnt) {
-    /*close all autocomplete lists in the document,
-    except the one passed as an argument:*/
-    var x = document.getElementsByClassName("autocomplete-items");
-    for (var i = 0; i < x.length; i++) {
-      if (elmnt != x[i] && elmnt != inp) {
-      x[i].parentNode.removeChild(x[i]);
+
+    function removeActive(x) {
+        /*a function to remove the "active" class from all autocomplete items:*/
+        for (var i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+        }
     }
-  }
+
+    function closeAllLists(elmnt) {
+        /*close all autocomplete lists in the document,
+        except the one passed as an argument:*/
+        var x = document.getElementsByClassName("autocomplete-items");
+        for (var i = 0; i < x.length; i++) {
+            if (elmnt != x[i] && elmnt != inp) {
+                x[i].parentNode.removeChild(x[i]);
+            }
+        }
+    }
+
+    /*execute a function when someone clicks in the document:*/
+    document.addEventListener("click", function (e) {
+        closeAllLists(e.target);
+    });
 }
-/*execute a function when someone clicks in the document:*/
-document.addEventListener("click", function (e) {
-    closeAllLists(e.target);
-});
-}
+
 CORE.registerModule( Interface );

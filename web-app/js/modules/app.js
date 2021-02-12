@@ -1,5 +1,10 @@
 PLAYING = 1;
 STOP = 0;
+
+SESSION = {
+IS_GUEST: 0
+};
+
 EVENTS = {
 	textRecieved: 0,
 	imageRecieved: 1,
@@ -90,9 +95,7 @@ class App{
        // this.interface.createNodeInspector("agent");
 
         var last = now = performance.now();
-        //this.interface.importFromURL();
-        this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
-		//this.interface.loadCorpusData(baseURL+"/users/evalls/dialog-manager/data/corpus.json");
+        
         //this.agent_selected = agent;
         AgentManager.agent_selected = this.agent_selected;
 		
@@ -100,12 +103,18 @@ class App{
 			var iframe = iframeWindow.document.querySelector("#iframe-character");
 			this.iframe = iframe;
 		}
-		
         //iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"//"https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FLaraFacialAnimations.scene.json";
 
         requestAnimationFrame(this.animate.bind(this));
     }
 
+    postInit() {
+        
+        // this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
+        
+        CORE["Interface"].showLoginDialog();
+    }
+    
 	onWSconnected(){
 		this.streamer.createRoom(this.env_tree.token);
 	}
@@ -126,6 +135,37 @@ class App{
         }else{
             CORE.App.state = STOP;
         }
+    }
+
+    onPlayClicked(){
+
+        var play_button = document.getElementById("play-btn");
+        var stream_button = document.getElementById("stream-btn");
+        var icons = CORE["Interface"].icons;
+
+        this.changeState();
+        if(this.state == PLAYING)
+        {
+            play_button.innerHTML= icons.stop;
+
+            if(stream_button.lastElementChild.classList.contains("active"))
+            {
+                stream_button.lastElementChild.classList.remove("active");
+                stream_button.lastElementChild.classList.add("play");
+            }
+
+        }
+        else
+        {
+            play_button.innerHTML= icons.play;
+            if(stream_button.lastElementChild.classList.contains("play"))
+            {
+                stream_button.lastElementChild.classList.remove("play");
+                stream_button.lastElementChild.classList.add("active");
+            }
+        }
+
+
     }
 
     animate(){
@@ -300,17 +340,20 @@ class App{
 
     loadEnvironment(data){
         var that = this;
-				var env = data.env;
-				if(!env.token){
-					env.token = that.interface.tree.tree.token;
-                }else{
-					that.interface.tree.tree.token = env.token;
-					that.streamer.createRoom(env.token);
-				}
+        var env = data.env;
+        if(!env.token){
+            env.token = that.interface.tree.tree.token;
+        }else{
+            that.interface.tree.tree.token = env.token;
+            that.streamer.createRoom(env.token);
+        }
 
-        that.env_tree = { id: "Environment", type:"env", token: env.token,
-            children: [
-               ]};
+        that.env_tree = {
+            id: "Environment",
+            type:"env",
+            token: env.token,
+            children: []
+        };
         that.interface.tree.clear(true);
 
         AgentManager.removeAllAgents();
@@ -397,30 +440,111 @@ class App{
 		}
 	}
 
-	onDataReceived(data){
-		var type = data.type;
-		switch(type){
+    onDataReceived(data)
+    {
+        var type = data.type;
+        switch(type)
+        {
             case "info":
                 //Server messages
                 console.log(data.data);
                 break;
 
-			case "user-data":
-				this.currentContext.user.update(data.data);
-				var text = data.data.text;
-				if(text){
-					var event = {
-				        type: EVENTS.textRecieved,
-				        data:{text: text}
-				    }
-				    this.onEvent(event);
-					if(this.chat){
-						this.chat.showMessage(text);
+            case "user-data":
+                this.currentContext.user.update(data.data);
+                var text = data.data.text;
+                if(text)
+                {
+                    var event = {
+                    type: EVENTS.textRecieved,
+                    data:{text: text}
+                }
+                this.onEvent(event);
+                    if(this.chat)
+                        this.chat.showMessage(text);
+                }
+                break;
+        }
+    }
+
+    toJSON( type, name) {
+
+        var data = null;
+        switch(type)
+        {
+            case "download-env":
+              var obj = {env: {agents:[], graphs: []}}
+                var env = this.env_tree;
+                if(env.token)
+                  obj.env.token = env.token;
+                for(var i in env.children)
+                {
+                    var item = env.children[i];
+                    if(item.type == "agent")
+                    {
+                        var agent = AgentManager.getAgentById(item.id);
+                        agent = agent.serialize();
+                        obj.env.agents.push(agent);
+                    }
+                    else if(item.type == "user")
+                    {
+                        var user = UserManager.getUserById(item.id);
+                        user = user.serialize();
+                        obj.env.user = user;
+                    }
+                    else if(item.type == "gesture")
+                    {
+                        var gest = GestureManager.serialize();
+                        obj.env.gestures = gest;
                     }
                 }
-				break;
-		}
-	}
+                for(var i in GraphManager.graphs)
+                {
+                    var graph = GraphManager.graphs[i];
+
+                    if(graph.type == GraphManager.HBTGRAPH)
+                        data = GraphManager.exportBehaviour(graph.graph);
+                    else if(graph.type == GraphManager.BASICGRAPH)
+                        data = GraphManager.exportBasicGraph(graph.graph);
+                    obj.env.graphs[i] = data;
+                }
+                data = obj;
+                break;
+            case "download-graph":
+                var graph = GraphManager.graphSelected;
+                if(!graph)
+                    return;
+                if(graph.type == GraphManager.HBTGRAPH)
+                    data = GraphManager.exportBehaviour(graph.graph);
+                else if(graph.type == GraphManager.BASICGRAPH)
+                    data = GraphManager.exportBasicGraph(graph.graph);
+                break;
+        }
+
+        return data;
+    }
+
+    downloadJSON( type, name) {
+
+        if(!name)
+            return;
+
+        var data = this.toJSON(type, name);
+
+        if(!data) {
+            console.error("no data to export in json");
+            return;
+        }
+
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        var downloadAnchorNode = document.createElement('a');
+        var filename = name || "graph_data";
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", filename + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
 }
 
 CORE.registerModule( App );
