@@ -46,6 +46,7 @@ class App{
 
         this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
         this.streamer.onDataReceived = this.onDataReceived;
+				this.streamer.onConnect = this.onWSconnected.bind(this);
         this.chat = new Chat();
 				this.iframe = null;
 
@@ -95,11 +96,16 @@ class App{
 					this.iframe = iframe;
 				}
 
+
 				//iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"//"https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FLaraFacialAnimations.scene.json";
 
 
         requestAnimationFrame(this.animate.bind(this))
     }
+		onWSconnected()
+		{
+			this.streamer.createRoom(this.env_tree.token);
+		}
     getUserById(id)
     {
         for(var i in this.users)
@@ -257,6 +263,7 @@ class App{
             children: [
                ]};
         that.interface.tree.clear(true);
+				that.streamer.createRoom(env.token);
         AgentManager.removeAllAgents();
         UserManager.removeAllUsers();
         GraphManager.removeAllGraphs();

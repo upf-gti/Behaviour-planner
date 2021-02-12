@@ -899,6 +899,7 @@ class Interface{
                 inspector.addString("Token", CORE.App.env_tree.token, {width:"calc(100% - 45px)",callback: function(v){
                   CORE.App.env_tree.token = v;
                   that.tree.tree.token = v;
+                  CORE.APP.streamer.createRoom(v);
                   inspector.refresh();
                   /*TO DO*/
                   //update token to STREAMER

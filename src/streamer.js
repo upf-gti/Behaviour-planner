@@ -104,7 +104,14 @@ function processArrayBuffer( buffer )
 	//author_id, cmd, data, on_message
 
 }
-
+Streamer.prototype.createRoom = function(token)
+{
+	if(!this.ws || this.ws.readyState !== WebSocket.OPEN)
+	{
+		setTimeout(100000, this.createRoom(token));
+	}
+	this.ws.send( JSON.stringify({type:"session", data: {token: token, action: "bp_create"}}));
+}
 Streamer.prototype.sendData = function(msg)
 {
 	if(msg === null)
