@@ -13,7 +13,7 @@ var accumulate_time = 0;
 var execution_t = 1;
 var triggerEvent = false;
 var corpus;
-Object.assign(window, glMatrix)
+Object.assign(window, glMatrix);
 var tmp = {
 	vec : 	vec3.create(),
 	axis : 	vec3.create(),

@@ -9,12 +9,10 @@ function HBTreeInput() {
         value: 0
     };
 
-    var that = this;
-
     this._node = null;
 
     this.shape = 2;
-    this.color = "#1E1E1E"
+    this.color = "#1E1E1E";
     this.boxcolor = "#999";
     this.addOutput("","path");
 
@@ -298,6 +296,7 @@ var B_TYPE =
 	facialExpression:11,
   ParseCompare:15,
   intent: 16,
+  request: 17,
 }
 GestureNode.DURATION = ["Short-term", "Long-term"];
 GestureNode.PRIORITY = ["append","overwrite", "mix", "skip"];
@@ -1684,6 +1683,42 @@ Property.prototype.onSerialize = function(o)
 }
 /* ------------------------------------------ */
 LiteGraph.registerNodeType("basic/property", Property);
+
+function CustomRequest(){
+  this.shape = 2;
+  this.color = "#907300";
+  this.bgcolor = '#796B31';
+  this.boxcolor = "#999";
+  var w = 210;
+  var h = 55;
+
+  this.flags = {};
+  this.properties = {type: "", params: {}};
+  this.data = {};
+	this.size = [w, h];
+
+  this._node = null;
+	this._component = null;
+	this.serialize_widgets = true;
+}
+
+CustomRequest.prototype.tick = function(agent, dt, info){
+  this.behaviour.type = B_TYPE.request;
+  this.behaviour.setData({type: this.properties.type, params: this.properties.params});
+  this.behaviour.STATUS = STATUS.success; 
+  //this.behaviour.priority = this.properties.priority; 
+  this.graph.evaluation_behaviours.push(this.behaviour);
+  return this.behaviour;
+}
+
+
+CustomRequest.prototype.onExecute = function(){
+  //Executed always, usefull to update values
+}
+
+LiteGraph.registerNodeType("tmp/CustomRequest", CustomRequest);
+
+
 
 /*HBTree library changed*/
 Selector.prototype.tick = function(agent, dt, info)
