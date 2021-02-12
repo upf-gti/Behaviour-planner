@@ -9,6 +9,8 @@ class FileSystem{
         this.parsers = {};
         this.root = "https://webglstudio.org/projects/present/repository/files/";
 
+        this.ALLOW_GUEST_UPLOADS = false;
+
         // init server
         LFS.setup("https://webglstudio.org/projects/present/repository/src/", this.onReady.bind(this));
     }
@@ -134,14 +136,14 @@ class FileSystem{
         });
     }
     
-    async uploadFile(folder, file, metadata){
+    async uploadFile(path, file, metadata){
 
 
         return new Promise((resolve, reject) => {
 
             var session = this.session;
-            var unit_name = session.user.username;
-            let path = unit_name + "/" + folder + "/" + file.name;
+            // var unit_name = session.user.username;
+            // let path = unit_name + "/" + folder + "/" + file.name;
 
 			session.uploadFile( path, file, 
                     { "metadata": metadata }, 

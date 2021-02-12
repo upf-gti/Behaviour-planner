@@ -485,12 +485,26 @@ class Interface {
 
     showExportDialog() {
         
+        var curr_session = CORE["FileSystem"].getSession();
+
+        if(curr_session.user.username === "guest"
+            && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
+        ) {
+            LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
+            return;
+        }
+
         var canvas = GraphManager.currentCanvas.canvas2D;
         var tbh_data, boo;
-	    var filename = "export";
-        var width = 340;
+	    var filename = "export", path = "/";
+        var width = 400;
 
         var inner = function(v) {
+
+            if(!filename.length) {
+                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+                return;
+            }
 
             try
             {
@@ -508,13 +522,16 @@ class Interface {
             }
 
             var FS = CORE["FileSystem"];
-
+            
             // upload file
-            FS.uploadFile("projects", new File([boo], filename + ".json"), []);
+            FS.uploadFile(path, new File([boo], filename + ".json"), []);
                     
             // upload thb
-            if(tbh_data)
-                FS.uploadFile("projects", new File([tbh_data], filename + ".png"), [] );
+            if(tbh_data){
+                // change file extension
+                path = path.replace("json", "png");
+                FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
+            }
             
         };
 
@@ -526,37 +543,86 @@ class Interface {
         canvas.toBlob(function(v){ 
 		
             tbh_data = v;
+            var user_name = curr_session.user.username;
             var url =  URL.createObjectURL( tbh_data );
             var choice = LiteGUI.choice("<img src='" + url + "' width='100%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
     
             var widgets = new LiteGUI.Inspector();
+            var r_widgets = new LiteGUI.Inspector();
             widgets.addInfo( null, "Filename");
-            widgets.addString( null, filename, {callback: function(v){ filename = v; }} );
+            window.filename_w = widgets.addString( null, filename );
+
+            filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                filename = filename_w.getValue();
+                r_widgets.refresh();
+            });
+
             widgets.addSeparator();
+            
+            curr_session.getFolders(user_name, (function(data) {
 
-            var curr_session = CORE["FileSystem"].getSession();
-            curr_session.getFolders(curr_session.user.username, (function(data) {
-
-                var litetree = new LiteGUI.Tree({id: "unit"});
-                LiteGUI.bind( litetree.root, "item_selected", function(e) {
-                    console.log(e);
+                var selected = null;
+                var litetree = new LiteGUI.Tree({id: user_name});
+                LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                    selected = item.detail.data.id;
+                    r_widgets.refresh();
                 });     
 
+                /*
+                    recursive function to get all folders in unit 
+                    as a data tree
+                */
                 function __showFolders(object, parent)
                 {
-                    for(var f in o)
+                    for(var f in object)
                     {
-                        litetree.insertItem({id:user.properties.name, type: "user"}, "Environment");
+                        litetree.insertItem({id: f}, parent);
+                        if(object[f])
+                            __showFolders(object[f], f);
                     }
                 }
 
-                __showFolders(data, "unit");
+                __showFolders(data, user_name);
+                widgets.root.appendChild(litetree.root);
 
-                widgets.addSeparator();
+                /*
+                    recursive function to get each item parent
+                */
+                function __getParent(id)
+                {
+                    var parent = litetree.getParent(id);
+                    if(parent)
+                    {
+                        var parent_id = parent.data.id;
+                        path = parent_id + "/" + path;
+                        __getParent(parent_id);
+                    }
+                }
 
-                choice.add( litetree );
+                r_widgets.refresh = function() {
+
+                    r_widgets.clear();
+                    let curr = selected;
+
+                    if(curr) {
+                        path = curr;
+                        __getParent(selected);
+                    }
+                    else {
+                        path = user_name;
+                    }
+
+                    path += "/" + filename + ".json";
+                    
+                    r_widgets.addString( null, path, {disabled: true} );
+                    r_widgets.addSeparator();
+                }
+
+                r_widgets.refresh();
+               
+                choice.add( r_widgets.root, true );
                 choice.add( widgets.root, true );
-                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 200 ); 
+                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 ); 
                 
             }).bind(this));
             
