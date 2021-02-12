@@ -491,6 +491,7 @@ class Interface {
             LOG_IN();
         }});
         inspector.widgets_per_row = 1;
+        inspector.addSeparator();
         inspector.addButton(null, "Login as guest", {callback: (function(){
             LOG_IN("guest", "guest");
         }).bind(this)});
@@ -505,8 +506,12 @@ class Interface {
 
                 if(valid)
                 {
+
+                    if(lg_user === "guest")
+                    CORE["Interface"].importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
+
                     dialog.close();
-                    CORE.modules["Interface"].menu.refresh();
+                    CORE["Interface"].menu.refresh();
                 }
                 else
                 {
@@ -543,7 +548,7 @@ class Interface {
                         var FS = CORE.modules["FileSystem"];
                         LFS.login( user, pass, FS.onLogin.bind(FS, function(){
                             dialog.close();
-                            CORE.modules["Interface"].menu.refresh();
+                            CORE["Interface"].menu.refresh();
                         }));
                     }else
                     {

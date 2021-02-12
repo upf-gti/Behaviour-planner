@@ -85,7 +85,7 @@ class App{
 
         var last = now =performance.now();
         //this.interface.importFromURL();
-        this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json")
+
 			//	this.interface.loadCorpusData(baseURL+"/users/evalls/dialog-manager/data/corpus.json")
         //this.agent_selected = agent;
         AgentManager.agent_selected = this.agent_selected;
@@ -98,6 +98,13 @@ class App{
         //iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"//"https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FLaraFacialAnimations.scene.json";
 
         requestAnimationFrame(this.animate.bind(this))
+    }
+
+    postInit() {
+
+        // this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
+
+        CORE["Interface"].showLoginDialog();
     }
   
     onWSconnected()
