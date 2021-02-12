@@ -9,7 +9,7 @@ class FileSystem{
         this.parsers = {};
         this.root = "https://webglstudio.org/projects/present/repository/files/";
 
-        this.ALLOW_GUEST_UPLOADS = false;
+        this.ALLOW_GUEST_UPLOADS = true;
 
         // init server
         LFS.setup("https://webglstudio.org/projects/present/repository/src/", this.onReady.bind(this));

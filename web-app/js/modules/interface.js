@@ -490,6 +490,8 @@ class Interface {
     showExportDialog() {
         
         var curr_session = CORE["FileSystem"].getSession();
+        if(!curr_session)
+        return;
 
         if(curr_session.user.username === "guest"
             && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
@@ -532,8 +534,10 @@ class Interface {
                     
             // upload thb
             if(tbh_data){
-                // change file extension
-                path = path.replace("json", "png");
+                // change file extension and folder for thb
+                var tkn = path.split("/");
+                var _name = tkn.pop().replace("json", "png"); // name.png
+                path = tkn.join("/") + "/thb/" + _name;
                 FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
             }
             
@@ -580,6 +584,8 @@ class Interface {
                 {
                     for(var f in object)
                     {
+                        if(f === "thb") // discard thumb previews for folders
+                        continue;
                         litetree.insertItem({id: f}, parent);
                         if(object[f])
                             __showFolders(object[f], f);
