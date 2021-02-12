@@ -258,12 +258,16 @@ class App{
 				if(!env.token)
 					env.token = that.interface.tree.tree.token;
 				else
+				{
 					that.interface.tree.tree.token = env.token;
+					that.streamer.createRoom(env.token);
+				}
+
         that.env_tree = { id: "Environment", type:"env", token: env.token,
             children: [
                ]};
         that.interface.tree.clear(true);
-				that.streamer.createRoom(env.token);
+
         AgentManager.removeAllAgents();
         UserManager.removeAllUsers();
         GraphManager.removeAllGraphs();
