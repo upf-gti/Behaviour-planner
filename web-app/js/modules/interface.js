@@ -1,5 +1,6 @@
-class Interface{
-    constructor(){
+class Interface {
+
+    constructor() {
         this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"calc(100% - 30px)"});
         this.contentTabs = new LiteGUI.Tabs({id: "content-tabs", height:"100%"});
         this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
@@ -25,8 +26,8 @@ class Interface{
         }
 
     }
-    preInit()
-    {
+
+    preInit() {
         //create a left panel
         LiteGUI.init();
 
@@ -62,7 +63,7 @@ class Interface{
                 this.menu.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
             }else
             {
-                this.menu.add("Account/Profile", {callback: null});
+                this.menu.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
                 this.menu.add("Account/Logout", {callback: function(e){
                     var FS = CORE.modules["FileSystem"];
                     FS.session.logout(FS.onLogout.bind(FS, function(){
@@ -138,8 +139,6 @@ class Interface{
         actions_inspector.addInfo("Graph selected",graph_download, {height:"20px"});
         actions_tab.add(actions_inspector);
 
-
-
         /*-------------------------------------------------------------------------------------------*/
         /* Right area */
         var right_area = mainarea.getSection(1);
@@ -211,12 +210,20 @@ class Interface{
         mainarea.add(this.sceneTabs);
         LiteGUI.add( mainarea );
         this.tabsRefresh()
-        // Create a menu bar
+        
+        // assign drop area -> only once
+        let that = this;
+        var FS = CORE["FileSystem"];
+        var canvas = document.getElementsByClassName("graph-content");
+        LiteGUI.createDropArea( canvas[0], FS.onDrop.bind(FS, function(file){
+
+            that.openImportDialog(file);
+
+        }));
 
     }
 
-    onExpandInspector(area,e)
-    {
+    onExpandInspector(area,e) {
         var that = this;
         if(e.currentTarget.classList.contains("invert"))
         {
@@ -234,8 +241,7 @@ class Interface{
         GraphManager.resize();
     }
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
-    newTab(g)
-    {
+    newTab(g)  {
         var that = this;
         that.graphTabs.removeTab("plus-tab");
         var graph_area = document.createElement("DIV");
@@ -253,11 +259,9 @@ class Interface{
 
     }
 
-    tabsRefresh(id)
-    {
+    tabsRefresh(id) {
+        
         var that = this;
-        var canvas = document.getElementsByClassName("graph-content");
-        LiteGUI.createDropArea( canvas[0],this.dropHandler.bind(this));
 
         this.graphTabs.clear();
         var tab;
@@ -289,23 +293,25 @@ class Interface{
 
         this.graphTabs.selectTab(tab)
 
+        var canvas = document.getElementsByClassName("graph-content");
         canvas[0].appendChild(this.graphTabs.root)
     }
-    onContextTab(id)
-    {
+
+    onContextTab(id) {
         var that = this;
         var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: that.renameTab.bind(this,id)})
     }
-    renameTab(id)
-    {
+
+    renameTab(id) {
         var that = this;
         LiteGUI.prompt("Enter name", function(v){
             var tab = that.graphTabs.getTab(id);
             tab.setTitle(v);
         },{title: "Rename tab"});
     }
-    onCloseTab(data)
-    {
+
+    onCloseTab(data) {
+
         var that = this;
         GraphManager.removeGraph(data.id);
         //that.tabsRefresh()
@@ -320,13 +326,13 @@ class Interface{
             }
         }
     }
-    newGraphDialog()
-    {
+
+    newGraphDialog() {
         var that = this;
         LiteGUI.choice("Select type", ["HBT Graph", "Basic Graph"], that.onNewGraphSelected.bind(that), {title:"New graph"} )
     }
-    onNewGraphSelected(data)
-    {
+
+    onNewGraphSelected(data) {
         var type;
         switch(data){
             case "HBT Graph":
@@ -342,44 +348,8 @@ class Interface{
             CORE.App.agent_selected.hbt_graph = graph.name;
        // this.newTab(graph);
     }
-    dropHandler(ev) {
-        var that = this;
-        console.log('File(s) dropped');
-
-        // Prevent default behavior (Prevent file from being opened)
-        ev.preventDefault();
-
-        if (ev.dataTransfer.items) {
-            var that = this;
-          // Use DataTransferItemList interface to access the file(s)
-          for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-            // If dropped items aren't files, reject them
-            if (ev.dataTransfer.items[i].kind === 'file') {
-              var file = ev.dataTransfer.items[i].getAsFile();
-              console.log('... file[' + i + '].name = ' + file.name);
-              var fileElement = document.getElementsByClassName("file");
-              if(fileElement)
-                fileElement.files = file;
-            var reader = new FileReader();
-			 reader.onload = function(e2){
-                file.data = e2.target.result;
-                fileElement.innerText = file.name;
-                //Inspector.onWidgetChange.call( GraphManager.inspector, element, name, file, options );
-                that.openImportDialog(file);
-             }
-             reader.readAsText( file );
-              ///CORE.Interface.openImportDialog(file);
-            }
-          }
-        } else {
-          // Use DataTransfer interface to access the file(s)
-          for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-            console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-          }
-        }
-    }
-    openImportDialog(data)
-    {
+    
+    openImportDialog(data) {
 
         var title = "Replace current graph?";
         if(!data)
@@ -394,7 +364,6 @@ class Interface{
         if(data.constructor != Object)
             data = JSON.parse(data.data);
 
-
         var type = "Basic graph";
         if(data.behaviour) type = "HBT graph";
         if(data.env) type = "Environment"
@@ -403,20 +372,6 @@ class Interface{
         var choice = LiteGUI.choice("", ["Import", "Cancel"], function(v){
             if(v == "Import")
             {
-                //var filename = file.name.split(".");
-                /*if( filename[filename.length-1].toLowerCase()== "json")
-                {
-                    if(!data)
-                        return;
-                   /* if(!data.behaviour)
-                    {
-                        var graphData = {behaviour : data};
-                        data = graphData;
-
-                    }  */
-
-
-               /* }*/
                 if(type == "Environment")
                     CORE.App.loadEnvironment(data);
                 else if(type == "dialogue-corpus")
@@ -503,13 +458,13 @@ class Interface{
 		});
 		dialog.add( inspector );
 		dialog.adjustSize(2);
-		dialog.show();
+		dialog.makeModal();
 	}
     showLoginDialog()
     {
         let user = "", pass = "";
 
-        var dialog = new LiteGUI.Dialog({ title:"Login", width: 300, closable:true });
+        var dialog = new LiteGUI.Dialog({ id:"login-dialog", title:"Login", width: 300, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
@@ -535,11 +490,18 @@ class Interface{
         inspector.addButton(null, "Login", {name_width: "30%", callback: function(){
             LOG_IN();
         }});
+        inspector.widgets_per_row = 1;
+        inspector.addButton(null, "Login as guest", {callback: (function(){
+            LOG_IN("guest", "guest");
+        }).bind(this)});
 
-        function LOG_IN()
+        function LOG_IN(u, p)
         {
+            let lg_user = u || user;
+            let lg_pass = p || pass;
+
             var FS = CORE.modules["FileSystem"];
-            LFS.login( user, pass, FS.onLogin.bind(FS, function(valid, msg_info){
+            LFS.login( lg_user, lg_pass, FS.onLogin.bind(FS, function(valid, msg_info){
 
                 if(valid)
                 {
@@ -557,7 +519,7 @@ class Interface{
         dialog.add(inspector);
         dialog.add(error_inspector);
 
-        dialog.show();
+        dialog.makeModal();
     }
     showCreateAccountDialog()
     {
@@ -565,7 +527,7 @@ class Interface{
         pass2 = "", email = "";
         let errors = false;
 
-        var dialog = new LiteGUI.Dialog({ title:"Register", width: 350, closable:true });
+        var dialog = new LiteGUI.Dialog({ id:"register-dialog", title:"Register", width: 350, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
@@ -599,8 +561,40 @@ class Interface{
         }});
         dialog.add(inspector);
         dialog.add(error_inspector);
-        dialog.show();
+        dialog.makeModal();
     }
+
+    showAccountInfo()
+    {
+        var dialog = new LiteGUI.Dialog({ title:"Account profile", width: 350, closable:true });
+        var inspector = new LiteGUI.Inspector();
+
+        var session = CORE["FileSystem"].getSession();
+        if(!session) {
+            console.warn("no logged account");
+            return;
+        }
+
+        var user = session.user;
+
+        inspector.addInfo("Username", user.username);
+        inspector.addInfo("Email", user.email);
+        inspector.addSeparator();
+        inspector.addInfo("Unit size", user.total_space / 1e6 + " MB");
+
+        var roles = [];
+
+        for(var o in user.roles)
+            if(user.roles[o] === true)
+                roles.push(o);
+
+        inspector.addList("Roles", roles, {disabled: true});
+       
+        dialog.adjustSize();
+        dialog.add(inspector);
+        dialog.makeModal();
+    }
+
     showConnectionDialog()
     {
         LiteGUI.prompt("URL", function(url){CORE.App.streamer.connect(url)},{title: "Websocket connection"});

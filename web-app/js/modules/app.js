@@ -83,29 +83,28 @@ class App{
 
        // this.interface.createNodeInspector("agent");
 
-
         var last = now =performance.now();
         //this.interface.importFromURL();
         this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json")
 			//	this.interface.loadCorpusData(baseURL+"/users/evalls/dialog-manager/data/corpus.json")
         //this.agent_selected = agent;
         AgentManager.agent_selected = this.agent_selected;
-				if(iframeWindow)
-				{
-					var iframe = iframeWindow.document.querySelector("#iframe-character");
-					this.iframe = iframe;
-				}
+        if(iframeWindow)
+        {
+            var iframe = iframeWindow.document.querySelector("#iframe-character");
+            this.iframe = iframe;
+        }
 
-
-				//iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"//"https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FLaraFacialAnimations.scene.json";
-
+        //iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"//"https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FLaraFacialAnimations.scene.json";
 
         requestAnimationFrame(this.animate.bind(this))
     }
-		onWSconnected()
-		{
-			this.streamer.createRoom(this.env_tree.token);
-		}
+  
+    onWSconnected()
+    {
+        this.streamer.createRoom(this.env_tree.token);
+    }
+    
     getUserById(id)
     {
         for(var i in this.users)
@@ -254,14 +253,14 @@ class App{
     loadEnvironment(data)
     {
         var that = this;
-				var env = data.env;
-				if(!env.token)
-					env.token = that.interface.tree.tree.token;
-				else
-				{
-					that.interface.tree.tree.token = env.token;
-					that.streamer.createRoom(env.token);
-				}
+        var env = data.env;
+        if(!env.token)
+            env.token = that.interface.tree.tree.token;
+        else
+        {
+            that.interface.tree.tree.token = env.token;
+            that.streamer.createRoom(env.token);
+        }
 
         that.env_tree = { id: "Environment", type:"env", token: env.token,
             children: [
@@ -271,7 +270,6 @@ class App{
         AgentManager.removeAllAgents();
         UserManager.removeAllUsers();
         GraphManager.removeAllGraphs();
-
 
         for(var i in env.graphs)
         {
@@ -318,8 +316,6 @@ class App{
             that.agent_selected.is_selected = true;
             that.env_tree.children.push({id:agent.uid, type: "agent"});
             that.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
-
-
         }
 
         if(env.user)
@@ -328,6 +324,7 @@ class App{
             that.env_tree.children.push({id:user.uid, type: "user"});
             that.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
         }
+
         if(env.gestures)
         {
             that.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
@@ -338,6 +335,7 @@ class App{
 
             GestureManager.createGestureInspector();
         }
+
         if(that.agent_selected)
             that.currentContext.agent_evaluated = that.agent_selected;
         if(user!=null)
@@ -345,41 +343,43 @@ class App{
         that.interface.tree.setSelectedItem(that.env_tree.id, true, that.interface.createNodeInspector({detail:{data:{id: that.env_tree.id, type: that.env_tree.type}}}))
         that.currentContext.user = user;
     }
-		loadCorpusData(data)
-		{
-				corpus = data;
-				corpus.array = [];
-				for(var i in data.data)
-				{
-					corpus.array.push(i);
-				}
-		}
-		onDataReceived(data)
-		{
-			var type = data.type;
-			switch(type)
-			{
-                case "info":
-                    //Server messages
-                    console.log(data.data);
-                    break;
+  
+    loadCorpusData(data)
+    {
+            corpus = data;
+            corpus.array = [];
+            for(var i in data.data)
+            {
+                corpus.array.push(i);
+            }
+    }
 
-				case "user-data":
-					this.currentContext.user.update(data.data);
-					var text = data.data.text;
-					if(text)
-					{
-						var event = {
-				      type: EVENTS.textRecieved,
-				      data:{text: text}
-				    }
-				    this.onEvent(event);
-						if(this.chat)
-							this.chat.showMessage(text);
-					}
+    onDataReceived(data)
+    {
+        var type = data.type;
+        switch(type)
+        {
+            case "info":
+                //Server messages
+                console.log(data.data);
+                break;
 
-					break;
-			}
-		}
+            case "user-data":
+                this.currentContext.user.update(data.data);
+                var text = data.data.text;
+                if(text)
+                {
+                    var event = {
+                    type: EVENTS.textRecieved,
+                    data:{text: text}
+                }
+                this.onEvent(event);
+                    if(this.chat)
+                        this.chat.showMessage(text);
+                }
+
+                break;
+        }
+    }
 }
 CORE.registerModule( App );

@@ -17,7 +17,56 @@ class FileSystem{
       console.log(this);
     }
 
-    onFileDrop( files ){
+    getSession() {
+        return this.session;
+    }
+
+    onDrop (callback, ev) {
+
+        var UI = CORE["Interface"];
+        if(!UI)
+        throw("error: no interface");
+
+        console.log('File(s) dropped');
+
+        // Prevent default behavior (Prevent file from being opened)
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        if (ev.dataTransfer.items) {
+
+          // Use DataTransferItemList interface to access the file(s)
+          for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+            // If dropped items aren't files, reject them
+            if (ev.dataTransfer.items[i].kind === 'file') {
+                var file = ev.dataTransfer.items[i].getAsFile();
+
+                console.log('Processing file[' + i + '] ' + file.name);
+
+                var fileElement = document.getElementsByClassName("file");
+                if(fileElement)
+                    fileElement.files = file;
+                var reader = new FileReader();
+                reader.onload = function(e2){
+                    file.data = e2.target.result;
+                    fileElement.innerText = file.name;
+                    //Inspector.onWidgetChange.call( GraphManager.inspector, element, name, file, options );
+
+                    if(callback)
+                    callback(file);
+                }
+                reader.readAsText( file );
+            }
+          }
+        } else {
+          // Use DataTransfer interface to access the file(s)
+          for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+            console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+            }
+        }
+    }
+
+    depr___onFileDrop( files ){
         
         console.log(files);
         for(var i = 0; i < files.items.length; i++){
@@ -25,7 +74,7 @@ class FileSystem{
             let fileReader = new FileReader(),
             file = files.items[i].getAsFile(),
             ext = (file.name).substr((file.name).lastIndexOf(".")+1),
-            folder = "other";
+            folder = "projects";
 
             // select folder
             // ...
