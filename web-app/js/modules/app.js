@@ -20,7 +20,7 @@ var tmp = {
 	axis2 : vec3.create(),
 	inv_mat : mat4.create(),
 	agent_anim : null,
-	behaviour : null
+	behaviours : null
 }
 var userText = false;
 var currentContext = null;
@@ -51,6 +51,7 @@ class App{
         this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
         this.streamer.onDataReceived = this.onDataReceived;
 		this.streamer.onConnect = this.onWSconnected.bind(this);
+
         this.chat = new Chat();
 		this.iframe = null;
     }
@@ -151,7 +152,6 @@ class App{
         if(this.state == PLAYING){
             accumulate_time+=dt;
             if(accumulate_time>=execution_t){
-
                 //Evaluate each agent on the scene
                 for(var c in AgentManager.agents){
                     var character_ = AgentManager.agents[c];
@@ -171,7 +171,7 @@ class App{
                     */
 
                     if(this.currentContext.last_event_node==null ||this.currentContext.last_event_node==undefined){
-                  		tmp.behaviour = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
+                  		tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
                     }
                     
                     /*
@@ -179,58 +179,93 @@ class App{
 					triggerEvent = true;
                     }*/
 
-                    for(var b in tmp.behaviour){
-                        character_.applyBehaviour( tmp.behaviour[b]);
+                    if(tmp.behaviours && tmp.behaviours.length){
+                        //Temp to manage messages to stream
+                        var behaviours_message = {type: "behaviours", data: []};
+                        var messages_to_stream = [];
 
-                        switch(tmp.behaviour[b].type){
-                            case B_TYPE.setProperty:
-                                character_.properties[tmp.behaviour[b].data.name] = tmp.behaviour[b].data.value;
-                                break;
+                        //Process all behaviours from HBT graph
+                        for(var b in tmp.behaviours){
+                            var behaviour = tmp.behaviours[b];
+                            character_.applyBehaviour( behaviour);
 
-                            case B_TYPE.intent:
-                                this.chat.showMessage(tmp.behaviour[b].data.text, "me");
-                                if(LS){
-									//state = LS.Globals.SPEAKING;
-									var obj = { speech: { text: tmp.behaviour[b].data.text }, control: LS.Globals.SPEAKING }; //speaking
-									LS.Globals.processMsg(JSON.stringify(obj), true);
-								}
-								tmp.behaviour.splice(b,1);
-                                break;
+                            switch(behaviour.type){
+                                case B_TYPE.setProperty:
+                                    character_.properties[behaviour.data.name] = behaviour.data.value;
+                                    break;
 
-                            case B_TYPE.action:
-                                var expressions = {
-									angry:[-0.76,-0.64],
-									happy:[0.95,-0.25],
-									sad:[-0.81,0.57],
-									surprised:[0.22,-0.98],
-									sacred:[-0.23,-0.97],
-									disgusted:[-0.97,-0.23],
-									contempt:[-0.98,0.21],
-									neutral:[0,0]
-								};
-								var va = [0,0];
-								if(tmp.behaviour[b].data.animation_to_merge){
-									var g = tmp.behaviour[b].data.animation_to_merge.toLowerCase();
-                                    va = expressions[g];
-								}
-								var obj = {facialExpression: {va: va}}
-								if(tmp.behaviour[b].data.speed){
-									obj.facialExpression.duration = tmp.behaviour[b].data.speed;
-                                }
-                                if(LS){
-									LS.Globals.processMsg(JSON.stringify(obj), true);
-                                }
-                                tmp.behaviour.splice(b,1);
-                                break;
+                                case B_TYPE.intent:
+                                    this.chat.showMessage(behaviour.data.text, "me");
+                                    if(LS){
+                                        //state = LS.Globals.SPEAKING;
+                                        var obj = { speech: { text: behaviour.data.text }, control: LS.Globals.SPEAKING }; //speaking
+                                        LS.Globals.processMsg(JSON.stringify(obj), true);
+                                    }
+                                    
+                                    //TODO properly process intents and timetables to generate behaviours in protocol format
+                                    var data = behaviour.data.data;
+                                    if(data.text){
+                                        data.type = "speech";
+                                        
+                                    }else{
+                                        data.type = "anAnimation";
+                                    }
+                                    behaviours_message.data.push(data);
 
-                            case B_TYPE.request:
-                                console.log(tmp.behaviour[b].data);
-                                break;
+                                    break;
+
+                                case B_TYPE.action:
+                                    var expressions = {
+                                        angry:[-0.76,-0.64],
+                                        happy:[0.95,-0.25],
+                                        sad:[-0.81,0.57],
+                                        surprised:[0.22,-0.98],
+                                        sacred:[-0.23,-0.97],
+                                        disgusted:[-0.97,-0.23],
+                                        contempt:[-0.98,0.21],
+                                        neutral:[0,0]
+                                    };
+                                    var va = [0,0];
+                                    if(behaviour.data.animation_to_merge){
+                                        var g = behaviour.data.animation_to_merge.toLowerCase();
+                                        va = expressions[g];
+                                    }
+                                    var obj = {facialExpression: {va: va}}
+                                    if(behaviour.data.speed){
+                                        obj.facialExpression.duration = behaviour.data.speed;
+                                    }
+                                    if(LS){
+                                        LS.Globals.processMsg(JSON.stringify(obj), true);
+                                    }
+                                    
+                                    //TODO properly process intents and timetables to generate behaviours in protocol format
+                                    var data = behaviour.data;
+                                    data.type = "facialLexeme";
+                                    data.lexeme = data.animation_to_merge; //Wrong, just a placeholder
+                                    behaviours_message.data.push(data);
+                                    break;
+
+                                case B_TYPE.request:
+                                    console.log(behaviour.data);
+                                    messages_to_stream.push({type: "custom_action", data: behaviour.data});
+                                    break;
+                            }
+
+                            triggerEvent = false;
                         }
 
-					    triggerEvent = false;
+                        if(behaviours_message.data.length) messages_to_stream.push(behaviours_message);
+
+                        //Send messages through streamer
+                        if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+                            for(var m of messages_to_stream){
+                                this.streamer.sendMessage(m.type, m.data);
+                            }
+                        }
                     }
+
                 }
+                tmp.behaviours = [];
 
                 for(var i in GraphManager.graphs){
                     var graph = GraphManager.graphs[i];
@@ -242,10 +277,7 @@ class App{
                 accumulate_time=0;
                 // var behaviours = hbt_graph.runBehaviour(info, hbt_context, dt);
 
-                this.interface.showContent(tmp.behaviour );
-                if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
-                    this.streamer.sendData(tmp.behaviour);
-                }
+                this.interface.showContent(tmp.behaviours );
             }
         }else{
         	this.currentContext.last_event_node = null;
@@ -261,7 +293,7 @@ class App{
         }
 		var node = agent_graph.processEvent(e);
 		if(node){
-			tmp.behaviour = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
+			tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
 			triggerEvent=true;
 		}
 	}
