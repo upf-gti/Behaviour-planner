@@ -1684,6 +1684,7 @@ Property.prototype.onSerialize = function(o)
 /* ------------------------------------------ */
 LiteGraph.registerNodeType("basic/property", Property);
 
+//TODO add widget to change type string and add/create widget to allow the addition of name:string pairs on parameters
 function CustomRequest(){
   this.shape = 2;
   this.color = "#907300";
@@ -1692,21 +1693,25 @@ function CustomRequest(){
   var w = 210;
   var h = 55;
 
+  this.addInput("","path");
+
   this.flags = {};
-  this.properties = {type: "", params: {}};
+  this.properties = {type: "", parameters: {}};
   this.data = {};
 	this.size = [w, h];
+  this.horizontal = true;
 
   this._node = null;
 	this._component = null;
 	this.serialize_widgets = true;
+
+  this.behaviour = new Behaviour();
 }
 
 CustomRequest.prototype.tick = function(agent, dt, info){
   this.behaviour.type = B_TYPE.request;
-  this.behaviour.setData({type: this.properties.type, params: this.properties.params});
-  this.behaviour.STATUS = STATUS.success; 
-  //this.behaviour.priority = this.properties.priority; 
+  this.behaviour.setData({type: this.properties.type, parameters: this.properties.parameters});
+  this.behaviour.STATUS = STATUS.success;
   this.graph.evaluation_behaviours.push(this.behaviour);
   return this.behaviour;
 }
