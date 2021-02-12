@@ -39,6 +39,10 @@ function initClient(client, name){
                 }
             }
             sendBehvior();
+
+            setTimeout(function(){
+                sendMessage("session", {token: 5678, action: "bp_create"});
+            }, 10000);
         }else{
             sendMessage("session", {token: 1234, action: "connect"});
 
@@ -64,4 +68,5 @@ setTimeout(function(){
     io_client1.connect('ws://localhost:9003/');
     io_client2.connect('ws://localhost:9003/');
 }, 2000);
+
 

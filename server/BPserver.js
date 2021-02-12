@@ -65,7 +65,7 @@ Session.prototype.disconnect = function(client){
   }else{
     this.io_clients.splice(this.io_clients.indexOf(client), 1);
   }
-  sendInfo(client, "Info: succesfully disconnected from session " + this.token + ".");
+  sendInfo(client, "Info: succesfully disconnected from session '" + this.token + "'.");
 }
 
 Session.prototype.sendToBP = function(message){
@@ -130,6 +130,10 @@ wss.on('connection', function connection(ws) {
             if(session){
               sendInfo(ws, "Warn: there is already a session with this token.");
             }else{
+              //If in another session disconnect. Inside disconnect if client was bp that session will be removed.
+              if(ws.session){
+                ws.session.disconnect(ws);
+              }
               //Create a session
               sessions[token] = new Session(token, ws);
             }
