@@ -43,6 +43,8 @@ class Interface {
         var menu = new LiteGUI.Menubar();
         this.menu = menu;
 
+        var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
+
         menu.refresh = (function()
         {
             // Clean first
@@ -51,7 +53,9 @@ class Interface {
             this.menu.add("Project/New"); //clear all
             // Server options
             this.menu.add("Project/Save", { callback: this.showExportDialog.bind(this)});
-            this.menu.add("Project/Load");
+            this.menu.add("Project/Load/Example", {callback: this.importFromURL.bind(this, example_url)});
+            this.menu.add("Project/Load/From Server");
+            
             // Disc options
             this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
             this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
