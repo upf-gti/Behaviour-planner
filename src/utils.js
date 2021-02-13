@@ -15,7 +15,7 @@ var UTILS = {
     getFileExtension(filename) {
 
         var tkn = filename.split(".");
-        return tkn[tkn.length - 1].toLowerCase();
+        return tkn.pop().toLowerCase();
     },
 
     replaceAll(str, find, replace) {
