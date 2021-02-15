@@ -9,12 +9,12 @@ function Timeline()
 	this.current_time = 0;
 	this.framerate = 30;
 	this.opacity = 0.8;
-	this.sidebar_width = 200;
+	this.sidebar_width = 120;
 
 	//do not change, it will be updated when called draw
 	this.duration = 100;
 	this.position = [0,0];
-	this.size = [300,150];
+	this.size = [600,300];
 
 	this.current_scroll = 0; //in percentage
 	this.current_scroll_in_pixels = 0; //in pixels
@@ -25,11 +25,12 @@ function Timeline()
 	this._canvas = null;
 	this._grab_time = 0;
 	this._start_time = 0;
-	this._end_time = 1;
+	this._end_time = 5;
 
 	this._last_mouse = [0,0];
 
 	this.onDrawContent = null; //onDrawContent( ctx, time_start, time_end, timeline );
+	this.extended=true
 }
 
 global.Timeline = Timeline;
@@ -65,7 +66,23 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	ctx.globalAlpha = this.opacity;
 	ctx.fillRect(0,0,w,h);
 	ctx.globalAlpha = 1;
-
+	//tracks background
+	var j=0;
+	if(ANIMED.track_height)
+	{
+		for(var i = 0; i<h- ANIMED.track_height; i+=ANIMED.track_height)
+		{
+			var color = "#111111";
+			if(j%2==0)
+					color = "#232323";
+			ctx.save()
+			ctx.fillStyle = color;
+			ctx.fillRect(0,i,w,i+ANIMED.track_height)
+			ctx.fillStyle = "black";
+			ctx.restore();
+			j++;
+		}
+	}
 	//seconds markers
 	var seconds_full_window = (w * P2S); //how many seconds fit in the current window
 	var seconds_half_window = seconds_full_window * 0.5;
@@ -90,7 +107,8 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	//this ones are limited to the true timeline (not the visible area)
 	var start = Math.ceil( Math.max(0,time_start) );
 	var end = Math.floor( Math.min(duration,time_end) + 0.01 );
-	
+
+	//calls using as 0,0 the top-left of the tracks area (not the top-left of the timeline but 20 pixels below)
 	if(this.onDrawContent)
 		this.onDrawContent( ctx, time_start, time_end, this );
 
@@ -284,7 +302,7 @@ Timeline.prototype.drawTrackWithKeyframes = function( ctx, y, track_height, titl
 		}
 }
 
-//converts a time to 
+//converts a time to
 Timeline.prototype.xToTime = function( x, global )
 {
 	if( global )
@@ -313,7 +331,7 @@ Timeline.prototype.setScale = function(v)
 	this._seconds_to_pixels = v;
 	if( this._seconds_to_pixels > 1000 )
 		this._seconds_to_pixels = 1000;
-	this._pixels_to_seconds = 1/this._seconds_to_pixels;		
+	this._pixels_to_seconds = 1/this._seconds_to_pixels;
 }
 
 Timeline.prototype.processMouse = function(e)

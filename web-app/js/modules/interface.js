@@ -5,7 +5,7 @@ class Interface {
         this.contentTabs = new LiteGUI.Tabs({id: "content-tabs", height:"100%"});
         this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
         this.tree = null;
-
+        this.timeline_dialog = null;
         this.icons= {
             clear: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M112.1225,13.8675c-2.70094,0 -5.34812,0.91375 -7.31,2.9025l-91.4825,92.45c-4.03125,4.07156 -4.03125,10.75 0,14.835l32.895,33.2175c0.65844,0.65844 1.54531,0.9675 2.4725,0.9675h92.3425c1.34375,0.20156 2.6875,-0.41656 3.42656,-1.55875c0.73906,-1.14219 0.73906,-2.62031 0,-3.7625c-0.73906,-1.14219 -2.08281,-1.76031 -3.42656,-1.55875h-54.9325l76.0025,-76.755c4.03125,-4.07156 4.03125,-10.76344 0,-14.835l-42.57,-43c-1.96187,-1.98875 -4.71656,-2.9025 -7.4175,-2.9025zM61.92,70.09l49.235,46.1175l-34.7225,35.1525h-26.3375l-31.82,-32.25c-1.35719,-1.38406 -1.35719,-3.57437 0,-4.945z"></path></svg>', //last slash removed to avoid problems comparing in addButtons
             play: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M34.4,18.06v135.86656l115.48188,-67.92656z"></path></svg>',
@@ -111,8 +111,8 @@ class Interface {
         this.graphinspector = new LiteGUI.Inspector({id:"edit-inspector"})
         insp_area.add(this.graphinspector)
         edit_tab.add(edit_area  )
-        
-        /* 
+
+        /*
         FILE ACTIONS
         */
         if ( 0 ) {
@@ -120,7 +120,7 @@ class Interface {
             actions_tab.tab.title = "Files";
             actions_tab.content.className+=" content";
             var actions_inspector = new LiteGUI.Inspector( {width:"100%"});
-    
+
             /*Import section*/
             actions_inspector.addSection("Import", {width:"100%"});
             actions_inspector.addInfo("Environment", "");
@@ -128,19 +128,19 @@ class Interface {
             var env_fromURL = this.addButton("From URL", {className:"btn btn-str"});
             actions_inspector.current_section.children[1].append(env_fromfile);
             actions_inspector.current_section.children[1].append(env_fromURL);
-    
+
             actions_inspector.addInfo("Graphs", "");
             var graph_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
             var graph_fromURL = this.addButton("From URL", {className:"btn btn-str"});
             actions_inspector.current_section.children[1].append(graph_fromfile);
             actions_inspector.current_section.children[1].append(graph_fromURL);
-    
+
             actions_inspector.addInfo("Corpus", "");
             var corpus_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
             var corpus_fromURL = this.addButton("From URL", {className:"btn btn-str", callback:   this.openImportURLDialog.bind(this)});
             actions_inspector.current_section.children[1].append(corpus_fromfile);
             actions_inspector.current_section.children[1].append(corpus_fromURL);
-    
+
             /*Export section*/
             actions_inspector.addSection("Export", {width:"100%"});
             var env_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-env", callback: this.showDownloadDialog.bind(this)});
@@ -223,7 +223,7 @@ class Interface {
         mainarea.add(this.sceneTabs);
         LiteGUI.add( mainarea );
         this.tabsRefresh()
-        
+
         // assign drop area -> only once
         let that = this;
         var FS = CORE["FileSystem"];
@@ -233,6 +233,11 @@ class Interface {
             that.openImportDialog(file);
 
         }));
+        /*Timeline*/
+        this.timeline_dialog = new LiteGUI.Dialog('Intent', { title:'Intent', close: true, minimize: false, width: 900, height: 300, scroll: false, resizable: false, draggable: true });
+        var timeline = ANIMED.init();
+
+        this.timeline_dialog.add(timeline)
 
     }
 
@@ -252,6 +257,10 @@ class Interface {
             e.currentTarget.classList.add("invert");
         }
         GraphManager.resize();
+    }
+    timeline()
+    {
+
     }
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
     newTab(g)  {
@@ -273,7 +282,7 @@ class Interface {
     }
 
     tabsRefresh(id) {
-        
+
         var that = this;
 
         this.graphTabs.clear();
@@ -361,7 +370,7 @@ class Interface {
             CORE.App.agent_selected.hbt_graph = graph.name;
        // this.newTab(graph);
     }
-    
+
     openImportDialog(data, session_type) {
 
         var title = "Replace current graph?";
@@ -399,15 +408,15 @@ class Interface {
                 {
                     processFile(data, type);
                 }
-    
+
             }, { title: title});
-    
+
             var import_inspector = new LiteGUI.Inspector();
             import_inspector.clear();
             import_inspector.addInfo("Type ", type, {name_width:"40%"});
             if(file.name || file.filename) import_inspector.addInfo("Filename  ", file.name || file.filename, {name_width:"40%"});
             if(file.size) import_inspector.addInfo("Size", file.size/1000 + " KB", {name_width:"40%"});
-    
+
             choice.content.prepend(import_inspector.root);
         }else
         {
@@ -432,7 +441,7 @@ class Interface {
         throw("only JSON supported");
 
         LiteGUI.requestJSON( url, function(data) {
-            
+
             if(!data)
             return;
             if(!data.behaviour)
@@ -442,9 +451,9 @@ class Interface {
             else if (data.type) {
                 console.log(data.type + " imported")
             }
-            else 
+            else
                 console.log("Behaviour graph imported")
-            
+
             that.openImportDialog(data, session_type);
         });
 
@@ -511,7 +520,7 @@ class Interface {
 	}
 
     showExportDialog() {
-        
+
         var curr_session = CORE["FileSystem"].getSession();
         if(!curr_session)
         return;
@@ -550,10 +559,10 @@ class Interface {
             }
 
             var FS = CORE["FileSystem"];
-            
+
             // upload file
             FS.uploadFile(path, new File([boo], filename + ".json"), []);
-                    
+
             // upload thb
             if(tbh_data){
                 // change file extension and folder for thb
@@ -562,7 +571,7 @@ class Interface {
                 path = tkn.join("/") + "/thb/" + _name;
                 FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
             }
-            
+
         };
 
         if(!canvas) {
@@ -570,14 +579,14 @@ class Interface {
             return;
         }
 
-        canvas.toBlob(function(v){ 
-		
+        canvas.toBlob(function(v){
+
             tbh_data = v;
             var user_name = curr_session.user.username;
             var url =  URL.createObjectURL( tbh_data );
             var width = 500;
             var choice = LiteGUI.choice("<img src='" + url + "' style='margin-left: 115px;' width='50%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
-    
+
             var widgets = new LiteGUI.Inspector();
             var r_widgets = new LiteGUI.Inspector();
             widgets.addInfo( null, "Filename");
@@ -589,7 +598,7 @@ class Interface {
             });
 
             widgets.addSeparator();
-            
+
             curr_session.getFolders(user_name, (function(data) {
 
                 var selected = null;
@@ -597,10 +606,10 @@ class Interface {
                 LiteGUI.bind( litetree.root, "item_selected", function(item) {
                     selected = item.detail.data.id;
                     r_widgets.refresh();
-                });     
+                });
 
                 /*
-                    recursive function to get all folders in unit 
+                    recursive function to get all folders in unit
                     as a data tree
                 */
                 function __showFolders(object, parent)
@@ -647,19 +656,19 @@ class Interface {
                     }
 
                     path += "/" + filename + ".json";
-                    
+
                     r_widgets.addString( null, path, {disabled: true} );
                     r_widgets.addSeparator();
                 }
 
                 r_widgets.refresh();
-               
+
                 choice.add( r_widgets.root, true );
                 choice.add( widgets.root, true );
-                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 ); 
-                
+                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 );
+
             }).bind(this));
-            
+
         });
     }
 
@@ -675,8 +684,8 @@ class Interface {
         var folder_selected = "";
         var path = "";
 
-        curr_session.getFolders(user_name, (function(data) { 
-    
+        curr_session.getFolders(user_name, (function(data) {
+
             function __getFolderFiles(unit, folder, callback) {
 
                 CORE["FileSystem"].getFiles(unit, folder).then(function(data) {
@@ -700,7 +709,7 @@ class Interface {
             }
 
             /*
-                recursive function to get all folders in unit 
+                recursive function to get all folders in unit
                 as a data tree
             */
             function __showFolders(object, parent)
@@ -719,11 +728,11 @@ class Interface {
             var litetree = new LiteGUI.Tree({id: user_name});
             LiteGUI.bind( litetree.root, "item_selected", function(item) {
                 selected = item.detail.data.id;
-                
+
                 path = "";
                 files = {};
                 file_selected = null;
-                
+
                 // get full path
                 __getParent(selected);
                 path += selected;
@@ -736,25 +745,25 @@ class Interface {
                 // fetch files in folder
                 folder_selected = user_name + "/" + path;
                 __getFolderFiles(user_name, path);
-            });    
-    
+            });
+
             __showFolders(data, user_name);
-        
+
             var id = "Load from Server";
             var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
             var w = 400;
             var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
             dialog.makeModal('fade');
             var widgets = new LiteGUI.Inspector();
-        
+
             var oncomplete = function( data ){
                 dialog.close();
             }
-        
+
             widgets.on_refresh = function(){
-        
+
                 widgets.clear();
-        
+
                 widgets.widgets_per_row = 2;
                 widgets.addTitle( "Path");
                 widgets.root.appendChild(litetree.root);
@@ -763,23 +772,23 @@ class Interface {
                     file_selected = v;
                     widgets.on_refresh();
                 } });
-        
+
                 var thb = widgets.addContainer("thb");
                 thb.style.width = "50%";
                 thb.style.height = "145px";
                 thb.style.display = "inline-block";
                 thb.style.marginTop = "5px";
                 if(file_selected) {
-                    var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");    
+                    var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");
                     thb.innerHTML = "<img height='100%' src='" + src + "'>";
 
                 }
-            
+
                 widgets.widgets_per_row = 1;
                 widgets.addSeparator();
                 widgets.addString(null, file_selected ? folder_selected + "/" + file_selected.filename : "", {disabled: true});
                 widgets.addButton( null, "Load", {callback: function() {
-        
+
                     if(!file_selected)
                         return;
 
@@ -789,16 +798,16 @@ class Interface {
                     // });
 
                     CORE["Interface"].importFromURL( fullpath );
-                    
+
                 } });
                 widgets.addSeparator();
-        
+
             }
-        
+
             __getFolderFiles(user_name, null);
 
             widgets.on_refresh();
-            dialog.add(widgets);  
+            dialog.add(widgets);
             dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 150 );
 
         }));
@@ -941,7 +950,7 @@ class Interface {
                 roles.push(o);
 
         inspector.addList("Roles", roles, {disabled: true});
-       
+
         dialog.adjustSize();
         dialog.add(inspector);
         dialog.makeModal();
@@ -993,9 +1002,9 @@ class Interface {
             this.lastChild.classList.remove("active")
         }
     }
-    
+
     /* ----------------------------------------------------DOWNLOAD------------------------------------------------------------*/
-    
+
     showDownloadDialog(data)
     {
         var id = data["id"];
@@ -1004,14 +1013,14 @@ class Interface {
         //    id = data.srcElement.parentElement.getAttribute("id");
 
         LiteGUI.prompt(
-            "File name", 
+            "File name",
             CORE.App.downloadJSON.bind(CORE.App, id),
             {
                 title: "Export file"
             }
         );
     }
-    
+
     /* ----------------------------------------------------------------------------------------------------------------------- */
 
     showContent(data)
@@ -1230,7 +1239,7 @@ class Interface {
         return button;
     }
 
-    addInputTags(name, tags, options) { 
+    addInputTags(name, tags, options) {
 
         var area = document.createElement("DIV");
         var title = document.createElement("DIV");
@@ -1354,7 +1363,7 @@ function autocomplete(inp, arr, words, options) {
             }
         }
     });
-    
+
     /*execute a function presses a key on the keyboard:*/
     inp.addEventListener("keydown", function(e) {
         var x = document.getElementById(this.id + "autocomplete-list");

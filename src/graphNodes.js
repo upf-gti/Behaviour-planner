@@ -1,14 +1,14 @@
 
 
 //Input for a subgraph
-function HBTreeInput() 
+function HBTreeInput()
 {
     this.name_in_graph = "";
     this.properties    = {
         name: "root",
         type: "path",
         value: 0
-    }; 
+    };
     var that      = this;
     this._node    = null;
     this.shape    = 2;
@@ -18,7 +18,7 @@ function HBTreeInput()
     this.horizontal = true;
     this.widgets_up = true;
 	this.behaviour  = new Behaviour();
-    this.serialize_widgets = true;  
+    this.serialize_widgets = true;
 }
 
 HBTreeInput.title = "HBTreeInput";
@@ -44,7 +44,7 @@ HBTreeInput.prototype.tick = function(agent, dt)
 		{
 			if(agent.is_selected)
 				highlightLink(this,child)
-			
+
 			return value;
 		}
 		else if(value && value.STATUS == STATUS.running)
@@ -52,7 +52,7 @@ HBTreeInput.prototype.tick = function(agent, dt)
 			this.running_node_in_banch = true;
 			if(agent.is_selected)
 				highlightLink(this,child)
-			
+
 			return value;
 		}
 	}
@@ -60,26 +60,26 @@ HBTreeInput.prototype.tick = function(agent, dt)
 	return this.behaviour;
 }
 
-HBTreeInput.prototype.getTitle = function() 
+HBTreeInput.prototype.getTitle = function()
 {
-    if (this.flags.collapsed) 
+    if (this.flags.collapsed)
         return this.properties.name;
-    
+
     return this.title;
 };
 
-HBTreeInput.prototype.onAction = function( action, param ) 
+HBTreeInput.prototype.onAction = function( action, param )
 {
-    if (this.properties.type == LiteGraph.EVENT) 
+    if (this.properties.type == LiteGraph.EVENT)
         this.triggerSlot(0, param);
-    
+
 };
 
 HBTreeInput.prototype.onExecute = function() {
     //read from global input
     var name = this.properties.name;
     var data = this.graph.inputs[name];
-    if (!data) 
+    if (!data)
     {
         this.setOutputData(0, this.properties.value );
         return;
@@ -88,11 +88,11 @@ HBTreeInput.prototype.onExecute = function() {
     this.setOutputData(0, data.value !== undefined ? data.value : this.properties.value );
 };
 
-HBTreeInput.prototype.onRemoved = function() 
+HBTreeInput.prototype.onRemoved = function()
 {
-    if (this.name_in_graph) 
+    if (this.name_in_graph)
         this.graph.removeInput(this.name_in_graph);
-    
+
 };
 HBTreeInput.prototype.onStart = HBTreeInput.prototype.onDeselected = function()
 {
@@ -118,14 +118,14 @@ LiteGraph.HBTreeInput = HBTreeInput;
 LiteGraph.registerNodeType("graph/HBTreeinput", HBTreeInput);
 
 //Output for a subgraph
-function HBTreeOutput() 
+function HBTreeOutput()
 {
     this.name_in_graph = "";
     this.properties    = {
         name: "root",
         type: "path",
         value: 0
-    }; 
+    };
     var that      = this;
     this._node    = null;
     this.shape    = 2;
@@ -135,7 +135,7 @@ function HBTreeOutput()
     this.horizontal = true;
     this.widgets_up = true;
 	this.behaviour  = new Behaviour();
-    this.serialize_widgets = true;  
+    this.serialize_widgets = true;
 }
 
 HBTreeOutput.title = "HBTreeOutput";
@@ -149,7 +149,7 @@ HBTreeOutput.prototype.onAdded = function()
         {
             this.graph.addOutput( this.properties.name, this.properties.type );
             this.graph.description_stack = [];
-        }   
+        }
     }
 }
 
@@ -181,7 +181,7 @@ HBTreeOutput.prototype.tick = function( agent, dt )
                 this.running_node_in_banch = true;
                 if(agent.is_selected)
                     highlightLink(this,child)
-                
+
                 return value;
             }
         }
@@ -196,25 +196,25 @@ HBTreeOutput.prototype.tick = function( agent, dt )
 }
 
 HBTreeOutput.prototype.getTitle = function() {
-    if (this.flags.collapsed) 
+    if (this.flags.collapsed)
         return this.properties.name;
-    
+
     return this.title;
 };
 
-HBTreeOutput.prototype.onAction = function( action, param ) 
+HBTreeOutput.prototype.onAction = function( action, param )
 {
-    if (this.properties.type == LiteGraph.EVENT) 
+    if (this.properties.type == LiteGraph.EVENT)
         this.triggerSlot(0, param);
-    
+
 };
 
-HBTreeOutput.prototype.onExecute = function() 
+HBTreeOutput.prototype.onExecute = function()
 {
     //read from global input
     var name = this.properties.name;
     var data = this.graph.inputs[name];
-    if (!data) 
+    if (!data)
     {
         this.setOutputData(0, this.properties.value );
         return;
@@ -241,11 +241,11 @@ HBTreeOutput.prototype.onStart = HBTreeOutput.prototype.onDeselected = function(
             if(a.pos[0] < b.pos[0])
                 return -1;
         });
-    
+
         this.graph._subgraph_node.outputs[0].links = [];
         for(var i in children)
             this.graph._subgraph_node.outputs[0].links.push(children[i].inputs[0].link);
-    
+
         var parent = this.getInputNode(0);
         if(parent)
             parent.onDeselected();
@@ -282,7 +282,7 @@ LiteGraph.Subgraph.prototype.onSubgraphNewOutput = function(name, type) {
         /*---------------------------*/
         //add input to the node
         else
-            this.addOutput(name, type); 
+            this.addOutput(name, type);
     }
 };
 
@@ -1334,7 +1334,7 @@ function displayEntity(id, inspector, e, tags) {
 LiteGraph.registerNodeType("btree/Intent", Intent );
 
 /*------------------------------- Timeline node ------------------------------- */
-function TimelineNode()
+/*function TimelineNode()
 {
   this.timeline = new Timeline()
 }
@@ -1354,8 +1354,8 @@ TimelineNode.prototype.onInspect = function()
   //  this.timeline.drawTrackWithKeyframes(ctx, 6, 20, "Speech", "", keyframes, 0, null)
     dialog.add(canvas)
     dialog.show()
-}
-LiteGraph.registerNodeType("btree/Timeline", TimelineNode );
+}*/
+
 /* ------------------------------ GRAPH EDITOR ---------------------------------------- */
 function GraphEditor(data )
 {
