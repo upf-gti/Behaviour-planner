@@ -1846,19 +1846,37 @@ function CustomRequest(){
   var w = 210;
   var h = 55;
 
-  this.addInput("","path");
-
-  this.flags = {};
+  this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+  
+  //Properties
   this.properties = {type: "", parameters: {}};
-  this.data = {};
+
+  var that = this;
+  this._typeWidget = this.addWidget("text", "Type", this.properties.type, function(v){ that.properties.type = v; });
+  
 	this.size = [w, h];
-  this.horizontal = true;
 
   this._node = null;
 	this._component = null;
 	this.serialize_widgets = true;
 
   this.behaviour = new Behaviour();
+}
+
+//Update values from inputs, if any
+CustomRequest.prototype.onExecute = function(){
+  var parameters = this.properties.parameters;
+  for(var i in this.inputs){
+    var input = this.inputs[i];
+    if(input.type != "path"){
+      var value = this.getInputData(i);
+      if(value !== undefined){
+        if(value.constructor === Object) value = JSON.stringify(value);
+        else if(value.constructor !== String) value = value.toString();
+        parameters[input.name] = value;
+      }
+    }
+  }
 }
 
 CustomRequest.prototype.tick = function(agent, dt, info){
@@ -1869,12 +1887,79 @@ CustomRequest.prototype.tick = function(agent, dt, info){
   return this.behaviour;
 }
 
-
-CustomRequest.prototype.onExecute = function(){
-  //Executed always, usefull to update values
+CustomRequest.prototype.onGetInputs = function(){
+  var inputs = [];
+  var parameters = this.properties.parameters;
+  for(var p in parameters){
+    var added = false;
+    for(var i of this.inputs){
+      if(i.name == p.name) added = true;
+    }
+    if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
+  }
+  return inputs;
 }
 
-LiteGraph.registerNodeType("tmp/CustomRequest", CustomRequest);
+CustomRequest.prototype.addParameter = function(name, value){
+  var parameters = this.properties.parameters;
+  if(!name || name.constructor !== String) return false;
+  if(parameters[name]) return false; //Name already used
+
+  parameters[name] = value || "";
+  return true;
+}
+
+CustomRequest.prototype.onInspect = function(inspector){
+  var that = this;
+  
+  inspector.clear();
+
+  inspector.addTitle("CustomRequest");
+
+  inspector.widgets_per_row = 1;
+  inspector.addString("Type", this.properties.type, {width: "100%", content_width: "70%", callback: function(value){
+    that.properties.type = value;
+    that._typeWidget.value = value;
+  }})
+
+  inspector.widgets_per_row = 3;
+
+  inspector.addSection("CustomRequest Parameters");
+  var parameters = this.properties.parameters;
+
+  //Header
+  inspector.addInfo("Name", "", {width: "40%", disabled: true});
+  inspector.addInfo("Value (Optional)", "", {width: "40%", disabled: true});
+  inspector.addNull();
+
+  //Existing parameters
+  for(var p in parameters){
+    inspector.addString("", p, {width: "40%", content_width: "100%", disabled: true});
+    inspector.addString("", parameters[p], {width: "40%", content_width: "100%", callback: function(value){
+      parameters[p] = value;
+    }});
+    inspector.addButton(null, "Remove", {width: "20%", callback: function(){
+      delete parameters[p];
+      that.onInspect(inspector);
+    }});
+  }
+
+  //New one
+  var newName, newValue;
+  inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    newName = value;
+  }});
+  inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    newValue = value;
+  }});
+  inspector.addButton(null, "Add", {width: "20%", callback: function(){
+    if(that.addParameter(newName, newValue)){
+      that.onInspect(inspector);
+    }
+  }});
+}
+
+LiteGraph.registerNodeType("events/CustomRequest", CustomRequest);
 
 
 
