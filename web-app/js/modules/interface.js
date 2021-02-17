@@ -50,12 +50,13 @@ class Interface {
             // Clean first
             this.menu.clear();
 
-            this.menu.add("Project/New"); //clear all
+            this.menu.add("Project/New/Empty"); //clear all
+            this.menu.add("Project/New/Template", {callback: this.importFromURL.bind(this, example_url)});
             // Server options
+            this.menu.separator("Project");
             this.menu.add("Project/Save", { callback: this.showExportDialog.bind(this)});
-            this.menu.add("Project/Load/Example", {callback: this.importFromURL.bind(this, example_url)});
-            this.menu.add("Project/Load/From Server", { callback: this.showLoadFromServerDialog.bind(this)});
-            
+            this.menu.add("Project/Load", { callback: this.showLoadFromServerDialog.bind(this)});
+            this.menu.separator("Project");
             // Disc options
             this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
             this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
@@ -420,31 +421,32 @@ class Interface {
         LiteGUI.prompt("URL name", this.importFromURL.bind(this),{title: "Import from URL"});
     }
 
+    // session_type is for guest issues, to load a template on login
     importFromURL(url, session_type)
     {
         var that = this;
         if(!url)
          url = baseURL+"/users/evalls/behavior-planner/data/gestenv.json"
-        fetch(url)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                if(!data)
-                    return;
-                if(!data.behaviour)
-                {
-                    /*var graphData = {behaviour : data};
-                    data = graphData;*/
-                    console.log("Basic graph imported")
-                }
-                else if (data.type) {
-                  console.log(data.type + " imported")
-                }
-                else console.log("Behaviour graph imported")
-                that.openImportDialog(data, session_type);
-                //GraphManager.putGraphOnEditor( data )
-            });
+
+        if(UTILS.getFileExtension(url) !== "json")
+        throw("only JSON supported");
+
+        LiteGUI.requestJSON( url, function(data) {
+            
+            if(!data)
+            return;
+            if(!data.behaviour)
+            {
+                console.log("Basic graph imported")
+            }
+            else if (data.type) {
+                console.log(data.type + " imported")
+            }
+            else 
+                console.log("Behaviour graph imported")
+            
+            that.openImportDialog(data, session_type);
+        });
     }
 
     openImportFromFileDialog()
@@ -503,7 +505,6 @@ class Interface {
         var canvas = GraphManager.currentCanvas.canvas2D;
         var tbh_data, boo;
 	    var filename = "export", path = "/";
-        var width = 400;
 
         var inner = function(v) {
 
@@ -553,7 +554,8 @@ class Interface {
             tbh_data = v;
             var user_name = curr_session.user.username;
             var url =  URL.createObjectURL( tbh_data );
-            var choice = LiteGUI.choice("<img src='" + url + "' width='100%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
+            var width = 500;
+            var choice = LiteGUI.choice("<img src='" + url + "' style='margin-left: 115px;' width='50%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
     
             var widgets = new LiteGUI.Inspector();
             var r_widgets = new LiteGUI.Inspector();
@@ -593,6 +595,7 @@ class Interface {
                 }
 
                 __showFolders(data, user_name);
+                widgets.addInfo( null, "Path");
                 widgets.root.appendChild(litetree.root);
 
                 /*
@@ -718,7 +721,7 @@ class Interface {
         
             var id = "Load from Server";
             var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
-            var w = 500;
+            var w = 400;
             var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
             dialog.makeModal('fade');
             var widgets = new LiteGUI.Inspector();
@@ -732,7 +735,9 @@ class Interface {
                 widgets.clear();
         
                 widgets.widgets_per_row = 2;
+                widgets.addTitle( "Path");
                 widgets.root.appendChild(litetree.root);
+                widgets.addTitle( "Files");
                 widgets.addList( null, files, {height: "150px", callback: function(v) {
                     file_selected = v;
                     widgets.on_refresh();
@@ -740,8 +745,9 @@ class Interface {
         
                 var thb = widgets.addContainer("thb");
                 thb.style.width = "50%";
-                thb.style.height = "150px";
+                thb.style.height = "145px";
                 thb.style.display = "inline-block";
+                thb.style.marginTop = "5px";
                 if(file_selected) {
                     var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");    
                     thb.innerHTML = "<img height='100%' src='" + src + "'>";
@@ -750,12 +756,20 @@ class Interface {
             
                 widgets.widgets_per_row = 1;
                 widgets.addSeparator();
+                widgets.addString(null, file_selected ? folder_selected + "/" + file_selected.filename : "", {disabled: true});
                 widgets.addButton( null, "Load", {callback: function() {
         
-                    // if(!selected)
-                    //     return;
-                    
-                    // LiteGUI.requestJSON( CORE.FS.root + selected.fullpath, oncomplete );
+                    if(!file_selected)
+                        return;
+
+                    dialog.close();
+
+                    var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
+                    // LiteGUI.requestJSON( fullpath, function(data){
+                    //     console.log(data);
+                    // });
+
+                    CORE["Interface"].importFromURL( fullpath );
                     
                 } });
                 widgets.addSeparator();
@@ -766,8 +780,7 @@ class Interface {
 
             widgets.on_refresh();
             dialog.add(widgets);  
-            var w = 400;
-            dialog.setPosition( window.innerWidth/2 - w/1.5, window.innerHeight/2 - 150 );
+            dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 150 );
 
         }));
     }
