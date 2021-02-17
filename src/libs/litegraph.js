@@ -16386,7 +16386,7 @@ if (typeof exports != "undefined") {
         return String(a);
     }
 
-    LiteGraph.wrapFunctionAsNode("string/toString", compare, [""], "String");
+    LiteGraph.wrapFunctionAsNode("string/toString", toString, [""], "String");
 
     function compare(a, b) {
         return a == b;
