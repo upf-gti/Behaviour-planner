@@ -16,37 +16,29 @@ var nodePreviouslyEvaluated = HBTree.nodePreviouslyEvaluated;
 var highlightLink = HBTree.highlightLink;
 
 //Input for a subgraph
-function HBTreeInput() {
-
+function HBTreeInput() 
+{
     this.name_in_graph = "";
-    this.properties = {
+    this.properties    = {
         name: "root",
         type: "path",
         value: 0
-    };
-
-    var that = this;
-
-    this._node = null;
-
-    this.shape = 2;
-    this.color = "#1E1E1E"
+    }; 
+    var that      = this;
+    this._node    = null;
+    this.shape    = 2;
+    this.color    = "#1E1E1E"
     this.boxcolor = "#999";
     this.addOutput("","path");
-
     this.horizontal = true;
-    this.serialize_widgets = true;
     this.widgets_up = true;
-	this.behaviour = new Behaviour();
+	this.behaviour  = new Behaviour();
+    this.serialize_widgets = true;  
 }
 
 HBTreeInput.title = "HBTreeInput";
 HBTreeInput.desc = "Input of the graph";
 
-/*HBTreeInput.prototype.onConfigure = function()
-{
-    this.updateType();
-}*/
 HBTreeInput.prototype.onAdded = function()
 {
     if(this.graph)
@@ -55,6 +47,7 @@ HBTreeInput.prototype.onAdded = function()
         this.graph.description_stack = [];
     }
 }
+
 HBTreeInput.prototype.tick = function(agent, dt)
 {
 	var children = this.getOutputNodes(0);
@@ -65,47 +58,44 @@ HBTreeInput.prototype.tick = function(agent, dt)
 		if(value && value.STATUS == STATUS.success)
 		{
 			if(agent.is_selected)
-			{
 				highlightLink(this,child)
-			}
+			
 			return value;
 		}
 		else if(value && value.STATUS == STATUS.running)
 		{
 			this.running_node_in_banch = true;
 			if(agent.is_selected)
-			{
 				highlightLink(this,child)
-			}
+			
 			return value;
 		}
 	}
-
-	if(this.running_node_in_banch)
-		agent.bt_info.running_node_index = null;
-
 	this.behaviour.STATUS = STATUS.fail;
 	return this.behaviour;
 }
 
-HBTreeInput.prototype.getTitle = function() {
-    if (this.flags.collapsed) {
+HBTreeInput.prototype.getTitle = function() 
+{
+    if (this.flags.collapsed) 
         return this.properties.name;
-    }
+    
     return this.title;
 };
 
-HBTreeInput.prototype.onAction = function(action, param) {
-    if (this.properties.type == LiteGraph.EVENT) {
+HBTreeInput.prototype.onAction = function( action, param ) 
+{
+    if (this.properties.type == LiteGraph.EVENT) 
         this.triggerSlot(0, param);
-    }
+    
 };
 
 HBTreeInput.prototype.onExecute = function() {
-    var name = this.properties.name;
     //read from global input
+    var name = this.properties.name;
     var data = this.graph.inputs[name];
-    if (!data) {
+    if (!data) 
+    {
         this.setOutputData(0, this.properties.value );
         return;
     }
@@ -113,10 +103,11 @@ HBTreeInput.prototype.onExecute = function() {
     this.setOutputData(0, data.value !== undefined ? data.value : this.properties.value );
 };
 
-HBTreeInput.prototype.onRemoved = function() {
-    if (this.name_in_graph) {
+HBTreeInput.prototype.onRemoved = function() 
+{
+    if (this.name_in_graph) 
         this.graph.removeInput(this.name_in_graph);
-    }
+    
 };
 HBTreeInput.prototype.onStart = HBTreeInput.prototype.onDeselected = function()
 {
@@ -139,7 +130,144 @@ HBTreeInput.prototype.onStart = HBTreeInput.prototype.onDeselected = function()
 		parent.onDeselected();
 }
 LiteGraph.HBTreeInput = HBTreeInput;
-LiteGraph.registerNodeType("btree/HBTreeinput", HBTreeInput);
+LiteGraph.registerNodeType("graph/HBTreeinput", HBTreeInput);
+
+//Output for a subgraph
+function HBTreeOutput() 
+{
+    this.name_in_graph = "";
+    this.properties    = {
+        name: "root",
+        type: "path",
+        value: 0
+    }; 
+    var that      = this;
+    this._node    = null;
+    this.shape    = 2;
+    this.color    = "#1E1E1E"
+    this.boxcolor = "#999";
+    this.addInput("","path");
+    this.horizontal = true;
+    this.widgets_up = true;
+	this.behaviour  = new Behaviour();
+    this.serialize_widgets = true;  
+}
+
+HBTreeOutput.title = "HBTreeOutput";
+HBTreeOutput.desc  = "Output of the graph";
+
+HBTreeOutput.prototype.onAdded = function()
+{
+    if(this.graph)
+    {
+        if( this.graph._subgraph_node.outputs == undefined || this.graph._subgraph_node.outputs.length == 0 )
+        {
+            this.graph.addOutput( this.properties.name, this.properties.type );
+            this.graph.description_stack = [];
+        }   
+    }
+}
+
+HBTreeOutput.prototype.tick = function( agent, dt )
+{
+    if(this.graph && this.graph._subgraph_node)
+    {
+        var children = this.graph._subgraph_node.getOutputNodes(0)
+        // In case the subgraph is not connected in the output
+        if(!children || children.length == 0)
+        {
+            this.behaviour.STATUS = STATUS.fail;
+            return this.behaviour;
+        }
+
+        for(var n in children)
+        {
+            var child = children[n];
+            var value = child.tick(agent, dt);
+            if(value && value.STATUS == STATUS.success)
+            {
+                if(agent.is_selected)
+                    highlightLink(this,child)
+
+                return value;
+            }
+            else if(value && value.STATUS == STATUS.running)
+            {
+                this.running_node_in_banch = true;
+                if(agent.is_selected)
+                    highlightLink(this,child)
+                
+                return value;
+            }
+        }
+    }
+    else
+    {
+        this.behaviour.STATUS = STATUS.fail;
+        return this.behaviour;
+    }
+	this.behaviour.STATUS = STATUS.fail;
+	return this.behaviour;
+}
+
+HBTreeOutput.prototype.getTitle = function() {
+    if (this.flags.collapsed) 
+        return this.properties.name;
+    
+    return this.title;
+};
+
+HBTreeOutput.prototype.onAction = function( action, param ) 
+{
+    if (this.properties.type == LiteGraph.EVENT) 
+        this.triggerSlot(0, param);
+    
+};
+
+HBTreeOutput.prototype.onExecute = function() 
+{
+    //read from global input
+    var name = this.properties.name;
+    var data = this.graph.inputs[name];
+    if (!data) 
+    {
+        this.setOutputData(0, this.properties.value );
+        return;
+    }
+    this.setOutputData(0, data.value !== undefined ? data.value : this.properties.value );
+};
+
+HBTreeOutput.prototype.onRemoved = function() {
+    if (this.name_in_graph) {
+        this.graph.removeInput(this.name_in_graph);
+    }
+};
+HBTreeOutput.prototype.onStart = HBTreeOutput.prototype.onDeselected = function()
+{
+    if(this.graph && this.graph._subgraph_node)
+    {
+        var children = this.graph._subgraph_node.getOutputNodes(0)
+
+        if(!children) return;
+        children.sort(function(a,b)
+        {
+            if(a.pos[0] > b.pos[0])
+                return 1;
+            if(a.pos[0] < b.pos[0])
+                return -1;
+        });
+    
+        this.graph._subgraph_node.outputs[0].links = [];
+        for(var i in children)
+            this.graph._subgraph_node.outputs[0].links.push(children[i].inputs[0].link);
+    
+        var parent = this.getInputNode(0);
+        if(parent)
+            parent.onDeselected();
+    }
+}
+LiteGraph.HBTreeOutput = HBTreeOutput;
+LiteGraph.registerNodeType("graph/HBTreeOutput", HBTreeOutput);
 
 //-----------------------LITEGRAPH SUBGRAPH INPUT FOR HBT------------------------------------//
 LiteGraph.Subgraph.prototype.onSubgraphNewInput = function(name, type) {
@@ -154,9 +282,30 @@ LiteGraph.Subgraph.prototype.onSubgraphNewInput = function(name, type) {
         //add input to the node
         else
             this.addInput(name, type);
-
     }
 };
+
+LiteGraph.Subgraph.prototype.onSubgraphNewOutput = function(name, type) {
+    var slot = this.findOutputSlot(name);
+    if (slot == -1) {
+        /* ADDED FOR BEHAVIOUR TREES */
+        //add input to the node
+        var w = this.size[0];
+        var h = this.size[1];
+        if(type=="path")
+        	this.addOutput("","path", {pos:[w*0.5,h], dir:LiteGraph.DOWN});
+        /*---------------------------*/
+        //add input to the node
+        else
+            this.addOutput(name, type); 
+    }
+};
+
+LiteGraph.Subgraph.prototype.onDeselected = function()
+{
+    var output_node = this.subgraph.findNodeByTitle("HBTreeOutput");
+    output_node.onDeselected();
+}
 /*LGraphCanvas.prototype.onDropItem = function(data)
 {
 	var type = data.dataTransfer.getData("type");
@@ -316,6 +465,7 @@ var B_TYPE = HBTree.B_TYPE =
 	facialExpression:11,
   ParseCompare:15,
   intent: 16,
+  request: 17,
 }
 GestureNode.DURATION = ["Short-term", "Long-term"];
 GestureNode.PRIORITY = ["append","overwrite", "mix", "skip"];
@@ -1705,6 +1855,133 @@ Property.prototype.onSerialize = function(o)
 }
 /* ------------------------------------------ */
 LiteGraph.registerNodeType("basic/property", Property);
+
+//TODO add widget to change type string and add/create widget to allow the addition of name:string pairs on parameters
+//TODO dinamically create inputs to set a value for each parameter (if desired)
+function CustomRequest(){
+  this.shape = 2;
+  this.color = "#907300";
+  this.bgcolor = '#796B31';
+  this.boxcolor = "#999";
+  var w = 210;
+  var h = 55;
+
+  this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+  
+  //Properties
+  this.properties = {type: "", parameters: {}};
+
+  var that = this;
+  this._typeWidget = this.addWidget("text", "Type", this.properties.type, function(v){ that.properties.type = v; });
+  
+	this.size = [w, h];
+
+  this._node = null;
+	this._component = null;
+	this.serialize_widgets = true;
+
+  this.behaviour = new Behaviour();
+}
+
+//Update values from inputs, if any
+CustomRequest.prototype.onExecute = function(){
+  var parameters = this.properties.parameters;
+  for(var i in this.inputs){
+    var input = this.inputs[i];
+    if(input.type != "path"){
+      var value = this.getInputData(i);
+      if(value !== undefined){
+        if(value.constructor === Object) value = JSON.stringify(value);
+        else if(value.constructor !== String) value = value.toString();
+        parameters[input.name] = value;
+      }
+    }
+  }
+}
+
+CustomRequest.prototype.tick = function(agent, dt, info){
+  this.behaviour.type = B_TYPE.request;
+  this.behaviour.setData({type: this.properties.type, parameters: this.properties.parameters});
+  this.behaviour.STATUS = STATUS.success;
+  this.graph.evaluation_behaviours.push(this.behaviour);
+  return this.behaviour;
+}
+
+CustomRequest.prototype.onGetInputs = function(){
+  var inputs = [];
+  var parameters = this.properties.parameters;
+  for(var p in parameters){
+    var added = false;
+    for(var i of this.inputs){
+      if(i.name == p.name) added = true;
+    }
+    if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
+  }
+  return inputs;
+}
+
+CustomRequest.prototype.addParameter = function(name, value){
+  var parameters = this.properties.parameters;
+  if(!name || name.constructor !== String) return false;
+  if(parameters[name]) return false; //Name already used
+
+  parameters[name] = value || "";
+  return true;
+}
+
+CustomRequest.prototype.onInspect = function(inspector){
+  var that = this;
+  
+  inspector.clear();
+
+  inspector.addTitle("CustomRequest");
+
+  inspector.widgets_per_row = 1;
+  inspector.addString("Type", this.properties.type, {width: "100%", content_width: "70%", callback: function(value){
+    that.properties.type = value;
+    that._typeWidget.value = value;
+  }})
+
+  inspector.widgets_per_row = 3;
+
+  inspector.addSection("CustomRequest Parameters");
+  var parameters = this.properties.parameters;
+
+  //Header
+  inspector.addInfo("Name", "", {width: "40%", disabled: true});
+  inspector.addInfo("Value (Optional)", "", {width: "40%", disabled: true});
+  inspector.addNull();
+
+  //Existing parameters
+  for(var p in parameters){
+    inspector.addString("", p, {width: "40%", content_width: "100%", disabled: true});
+    inspector.addString("", parameters[p], {width: "40%", content_width: "100%", callback: function(value){
+      parameters[p] = value;
+    }});
+    inspector.addButton(null, "Remove", {width: "20%", callback: function(){
+      delete parameters[p];
+      that.onInspect(inspector);
+    }});
+  }
+
+  //New one
+  var newName, newValue;
+  inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    newName = value;
+  }});
+  inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    newValue = value;
+  }});
+  inspector.addButton(null, "Add", {width: "20%", callback: function(){
+    if(that.addParameter(newName, newValue)){
+      that.onInspect(inspector);
+    }
+  }});
+}
+
+LiteGraph.registerNodeType("events/CustomRequest", CustomRequest);
+
+
 
 /*HBTree library changed*/
 LiteGraph.Nodes.Selector.prototype.tick = function(agent, dt, info)

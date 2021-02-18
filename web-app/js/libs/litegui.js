@@ -6372,8 +6372,11 @@ LiteGUI.Console = Console;
 	* add widget or html to the content of the dialog
 	* @method add
 	*/
-	Dialog.prototype.add = function( litegui_item )
+	Dialog.prototype.add = function( litegui_item, in_front )
 	{
+		if(in_front)
+		this.content.prepend( litegui_item.root || litegui_item );
+		else
 		this.content.appendChild( litegui_item.root || litegui_item );
 	}
 
