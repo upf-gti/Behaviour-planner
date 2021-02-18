@@ -64,7 +64,7 @@ class App{
     init(){
 
 
-       /* var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH);
+        var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH);
         currentContext = this.currentContext = hbt_graph.graph.context;
 
         currentHBTGraph = this.graphManager.currentHBTGraph = hbt_graph;
@@ -90,9 +90,9 @@ class App{
         if(user!=null){
             this.currentContext.user = user;
         }
-        */
+        
 
-       // this.interface.createNodeInspector("agent");
+        // this.interface.createNodeInspector("agent");
 
         var last = now = performance.now();
         
@@ -111,7 +111,6 @@ class App{
     postInit() {
         
         // this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
-        
         CORE["Interface"].showLoginDialog();
     }
     

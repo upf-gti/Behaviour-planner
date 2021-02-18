@@ -456,7 +456,7 @@ class Interface {
 		var inspector = new LiteGUI.Inspector();
 		var file = null;
 		inspector.addFile("Select File","",{ read_file: true, callback: function(v){
-			console.log(v);
+			// console.log(v);
 			file = v;
 		}});
 		inspector.addButton(null,"Load File", function(){
@@ -725,7 +725,7 @@ class Interface {
 
                 // fetch files in folder
                 folder_selected = user_name + (path ? "/" + path : "");
-                console.log(folder_selected);
+                // console.log(folder_selected);
                 __getFolderFiles(user_name, path);
             });    
     
