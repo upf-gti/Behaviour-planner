@@ -456,27 +456,6 @@ class Interface {
 
             that.openImportDialog(data, session_type);
         });
-
-        /*fetch(url)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                if(!data)
-                    return;
-                if(!data.behaviour)
-                {
-                    //var graphData = {behaviour : data};
-                    //data = graphData;
-                    console.log("Basic graph imported")
-                }
-                else if (data.type) {
-                  console.log(data.type + " imported")
-                }
-                else console.log("Behaviour graph imported")
-                that.openImportDialog(data, session_type);
-                //GraphManager.putGraphOnEditor( data )
-            });*/
     }
 
     openImportFromFileDialog()
@@ -791,6 +770,8 @@ class Interface {
 
                     if(!file_selected)
                         return;
+
+                    dialog.close();
 
                     var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
                     // LiteGUI.requestJSON( fullpath, function(data){

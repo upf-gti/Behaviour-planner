@@ -286,8 +286,9 @@ class App{
                                     break;
 
                                 case B_TYPE.request:
-                                    console.log(behaviour.data);
-                                    messages_to_stream.push({type: "custom_action", data: behaviour.data});
+                                    if(behaviour.data.type.length != 0){
+                                        messages_to_stream.push({type: "custom_action", data: behaviour.data});
+                                    }
                                     break;
                             }
 
