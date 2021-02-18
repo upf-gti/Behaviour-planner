@@ -1,7 +1,9 @@
 /*Interface- Timeline, Tracs and Clips editors*/
 function onResize( element, callback ){
-  element.width = element.parentElement.clientWidth;
-  element.height = element.parentElement.clientHeight;
+  element.width = element.clientWidth = element.parentElement.clientWidth;
+  element.height = element.clientHeight = element.parentElement.clientHeight;
+  if(callback)
+    callback(element.width,element.height)
 }
 
 var MIN_DISTANCE = 6;
@@ -64,7 +66,7 @@ init: function()
 
   var timeline_final_height = timeline.extended ? canvas.height : 100;
 //  draw(gl, current_animation, final_anim_time, [x,y width, height])
-  this.timeline.draw(ctx, this.project, this.timeline.current_time,  [0, 0, canvas.width, timeline_final_height] );
+  this.timeline.draw(ctx, this.project, this.timeline.current_time,  [0, 0, canvas.width, canvas.height] );
   area.add(canvas)
   canvas.width = canvas.parentElement.clientWidth;
   canvas.height = canvas.parentElement.clientHeight;
@@ -90,11 +92,22 @@ showTimeline: function(show)
 {
   if(show)
   {
-    CORE.Interface.timeline_dialog.show();
+  //  CORE.Interface.timeline_dialog.show();
+  //CORE.Interface.graphTabs.root.style.height = "calc(100% - 250px)";
+  CORE.Interface.graph_area.showSection(1);
+
+  CORE.Interface.graph_area.onResize()
+
+  //CORE.Interface.timeline_dialog.show();
+//  document.getElementsByClassName("graph-content")[0].appendChild(CORE.Interface.timeline_dialog.root)
+  GraphManager.resize();
+    //CORE.Interface.graph_area.add(CORE.Interface.timeline_dialog)
     requestAnimationFrame( this.loop.bind(this) );
     onResize(document.getElementById("timeline-canvas"))
   }else{
+    CORE.Interface.graphTabs.root.style.height = "100%"
     CORE.Interface.timeline_dialog.close();
+    GraphManager.resize();
   }
 
 
@@ -133,7 +146,7 @@ loop: function()
 
 		//timeline
 		timeline.scroll_height = 200;
-		var timeline_final_height = timeline.extended ? 300 : 100;
+		var timeline_final_height = timeline.height;
 		timeline.draw( ctx, project, current_time, [0, 0, canvas.width, timeline_final_height] );
 //		this.drawIcon( timeline.extended ? 30 : 29, canvas.width * 0.5 - 16, canvas.height - timeline.height - 20, 32, "extend_timeline" );
     ctx.restore()
@@ -157,9 +170,10 @@ setTime: function(t)
 },
 showRightPanel: function(v)
 {
-  this.sidepanel.visible = v;
+  /*this.sidepanel.visible = v;
   var w = this.sidepanel.root.getBoundingClientRect().width;
-  this._margin_right = v ? w : 0;
+  this._margin_right = v ? w : 0;*/
+  this.sidepanel = CORE.Interface.graphinspector;
 },
 undo: [],
 clearUndo: function()
@@ -255,14 +269,6 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 	var scroll_y = 0;
 	var canvas = ctx.canvas;
 	var vertical_offset = 20; //20?
-
-	if( this.loading_project )
-	{
-		ctx.font = ((timeline.height * 0.5)|0) + "px Arial";
-		ctx.fillStyle = "#333";
-		ctx.fillText("LOADING...", ctx.canvas.width * 0.5 + 50, timeline.height * 0.7 );
-		return;
-	}
 
 	ctx.save();
 
@@ -410,7 +416,7 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
       ctx.lineWidth = 0.5;
 		}
 	} //end tracks mode
-	else if( this.timeline_mode == "clip" && this.selected_clip ) //clips mode
+	/*else if( this.timeline_mode == "clip" && this.selected_clip ) //clips mode
 	{
 		var clip = this.selected_clip;
 		var selected_property = "opacity";
@@ -422,12 +428,12 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 		var x2 = Math.floor( timeline.timeToX( frame_num / framerate) ) + 0.5;
 		var w = x2-x;
 
-		if( x2 >= 0 && x <= canvas.width )
+	/*	if( x2 >= 0 && x <= canvas.width )
 		{
 			var area_height = timeline_height - 40;
 			this.drawControlChannels( ctx, clip, x, 20, w, area_height );
-		}
-  }
+		}*/
+/*  }*/
   //SIDEBAR
   		//track names and icons
   		var w = 120;
@@ -628,7 +634,11 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 		else if(e.type == "mousemove")
 		{
 			if( this.current_mode != 0 && clip_editor && clip_editor.onMouseMove && !e.ctrlKey && !this.widget_clicked )
-				clip_editor.onMouseMove( e, this.selected_clip, project );
+      {
+        clip_editor.onMouseMove( e, this.selected_clip, project,this.timeline );
+
+      }
+
 
 			if(this.dragging)
 			{
@@ -643,6 +653,10 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 					//project.anim_track.addPoint( panned_pos[0], panned_pos[1] );
 					last_pos[0] = panned_pos[0];
 					last_pos[1] = panned_pos[1];
+          if(this.clip_in_panel == this.selected_clip)
+          {
+            this.showClipInfo(this.selected_clip)
+          }
 				}
 			}
 		}
@@ -738,23 +752,18 @@ onTimelineMouse: function( e, time, timeline )
         if(!track)
         {
 
-          var ctxmenu = new LiteGUI.ContextMenu(ANIM.track_types, {callback: function(v)
+          var ctxmenu = new LiteGUI.ContextMenu(ANIM.track_types, {title: "Track actions", event:e, callback: function(v)
           {
             var that = this;
             var track = new ANIM.Track(v);
             that.project.tracks.push(track);
 
           }.bind(this)});
+
         }
-        else
+        else if(track.pos[0]<this.timeline.sidebar_width)
         {
-          for(var i in ANIM.clip_types[track.name])
-          {
-            var clip = ANIM.clip_types[track.name][i];
-            clips_names.push(clip.name);
-          }
-          clips_names.push("Delete track");
-          var ctxmenu = new LiteGUI.ContextMenu(clips_names, {callback: function(v)
+          var ctxmenu = new LiteGUI.ContextMenu(["Delete track"], {title: "Track actions", event:e, callback: function(v)
           {
             var that = this;
             if(v=="Delete track")
@@ -762,16 +771,46 @@ onTimelineMouse: function( e, time, timeline )
               that.project.tracks.splice(track._index,1);
               return;
             }
-            var idx = clips_names.indexOf(v);
-
-            var clip = new ANIM.clip_types[track.name][idx];
-
-            that.project.tracks[track._index].add( clip, clicked_time);
-
           }.bind(this)});
-
         }
+        else
+        {
+          var clicked_clip = this.getClipAtTimelinePosition( e, true, 10 );
+          if(clicked_clip &&clicked_clip == this.selected_clip)
+          {
+            var ctxmenu = new LiteGUI.ContextMenu(["Delete clip"], {title: "Clip actions", event:e, callback: function(v)
+            {
+              var that = this;
+              if(v=="Delete clip")
+              {
+                var trackId = that.selected_clip._track._index;
+                var idx = that.project.tracks[trackId].clips.indexOf(this.selected_clip);
+                that.project.tracks[trackId].clips.splice(idx,1);
+                return;
+              }
+            }.bind(this)});
+          }
+          else
+          {
+            for(var i in ANIM.clip_types[track.name])
+            {
+              var clip = ANIM.clip_types[track.name][i];
+              clips_names.push(clip.name);
+            }
 
+            var ctxmenu = new LiteGUI.ContextMenu(clips_names, {title: "Clip actions",event: e, callback: function(v)
+            {
+              var that = this;
+
+              var idx = clips_names.indexOf(v);
+
+              var clip = new ANIM.clip_types[track.name][idx];
+
+              that.project.tracks[track._index].add( clip, clicked_time);
+
+            }.bind(this)});
+          }
+        }
       }
       else
       {
@@ -950,49 +989,85 @@ getClipAtTimelinePosition: function( e, reverse, margin )
   	{
   		this.clip_in_panel = clip;
   		var panel = this.sidepanel;
+
   		panel.clear();
+      panel.widgets_per_row = 1;
   		panel.addTitle( clip.constructor.name );
-  		panel.addProperty("Hide", clip, "hidden" );
+    	panel.addString("Id", clip.id, {callback: function(v)
+      {
+        this.clip_in_panel.id = v;
+      }.bind(this)})
   		panel.addSection("Time");
-  		panel.addProperty("Start", clip, "start" );
-  		panel.addProperty("Duration", clip, "duration" );
+  		panel.addNumber("Start", clip.start, {min:0, callback: function(v)
+      {
+        this.clip_in_panel.start = v;
+      }.bind(this)})
+  		panel.addNumber("Duration", clip.duration, {min:0, callback: function(v)
+      {
+        this.clip_in_panel.duration = v;
+      }.bind(this)})
   		panel.addSection("Content");
 
+      for(var i in clip.properties)
+      {
+        var property = clip.properties[i];
+        switch(property.constructor)
+        {
+          case String:
+            panel.addString(i, property, {callback: function(v)
+            {
+              this.clip_in_panel.properties[i] = v;
+            }.bind(this)});
+            break;
+            case Number:
+              panel.addNumber(i, property, {callback: function(v)
+              {
+                this.clip_in_panel.properties[i] = v;
+              }.bind(this)});
+            break;
+            case Boolean:
+              panel.addCheckbox(i, property, {callback: function(v)
+              {
+                this.clip_in_panel.properties[i] = v;
+              }.bind(this)});
+              break;
+        }
+      }
   		var editor = clip.constructor.editor;
-  		if(editor && editor.onPanel)
+  		/*if(editor && editor.onPanel)
   			editor.onPanel( panel, clip );
-
+*/
   		/*
   		panel.addSection("FX");
   		panel.addProperty( "type",clip, "fx_type", String );
   		panel.addProperty( "param",clip, "fx_param", Number );
   		*/
 
-  		panel.addSection("Control Channels");
+  		/*panel.addSection("Control Channels");
   		if( clip.control_channels )
   		for(var i = 0; i < clip.control_channels.length; ++i)
   		{
   			var cc = clip.control_channels[i];
-  			panel.addProperty( cc.name, cc, "name", String );
+  			panel.addString( cc.name, cc, "name");
   		}
-  		panel.addButton("Add new control channel",function(){
+  		panel.addButton("Add new control channel",{callback:function(){
   			ANIMED.addControlChannel( clip );
   			ANIMED.showClipInfo(clip);
-  		});
+  		}});
   		if( ANIMED.timeline_mode != "clip" )
   		{
-  			panel.addButton("Open Editor",function(){
+  			panel.addButton("Open Editor", {callback:function(){
   				ANIMED.timeline_mode = "clip";
   				ANIMED.showClipInfo(clip);
-  			});
+  			}});
   		}
   		else
   		{
-  			panel.addButton("Exit Editor",function(){
+  			panel.addButton("Exit Editor", {callback:function(){
   				ANIMED.timeline_mode = "tracks";
   				ANIMED.showClipInfo(clip);
-  			});
-  		}
+  			}});
+  		}*/
   	},
 }
 
@@ -1007,12 +1082,20 @@ var SpeechClipEditor = {
 	{
 	},
 
-	onMouseMove: function( e, clip, project )
+	onMouseMove: function( e, clip, project, timeline )
 	{
+
 		if( e.dragging )
 		{
-			clip.position[0] = Math.round( e.canvasX - clip._width * 0.5 );
-			clip.position[1] = Math.round( e.canvasY );
+			/*clip.position[0] = Math.round( e.canvasX - clip._width * 0.5 );
+			clip.position[1] = Math.round( e.canvasY );*/
+      if(!clip._width)
+        clip._width = clip.duration;
+      var x = Math.round( e.canvasX - clip._width * 0.5 );
+      var y = Math.round( e.canvasY );
+      clip.start = timeline.xToTime(x)
+      if(project.clip_in_panel == clip)
+        project.showClipInfo(clip)
 		}
 	},
 
@@ -1030,14 +1113,7 @@ var SpeechClipEditor = {
 	}
 };
 
-ANIM.SpeechClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
-{
-	var text_info = ctx.measureText( this.text );
 
-		ctx.fillText( this.text, 24,h * 0.7 );
-}
-
-ANIMED.registerClipEditor( ANIM.SpeechClip, SpeechClipEditor );
 //helpers *********************************************************
 
 function isInsideRect( x,y, rect )

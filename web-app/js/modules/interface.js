@@ -6,6 +6,8 @@ class Interface {
         this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
         this.tree = null;
         this.timeline_dialog = null;
+        this.timeline_section = null;
+        this.graph_area = null;
         this.icons= {
             clear: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M112.1225,13.8675c-2.70094,0 -5.34812,0.91375 -7.31,2.9025l-91.4825,92.45c-4.03125,4.07156 -4.03125,10.75 0,14.835l32.895,33.2175c0.65844,0.65844 1.54531,0.9675 2.4725,0.9675h92.3425c1.34375,0.20156 2.6875,-0.41656 3.42656,-1.55875c0.73906,-1.14219 0.73906,-2.62031 0,-3.7625c-0.73906,-1.14219 -2.08281,-1.76031 -3.42656,-1.55875h-54.9325l76.0025,-76.755c4.03125,-4.07156 4.03125,-10.76344 0,-14.835l-42.57,-43c-1.96187,-1.98875 -4.71656,-2.9025 -7.4175,-2.9025zM61.92,70.09l49.235,46.1175l-34.7225,35.1525h-26.3375l-31.82,-32.25c-1.35719,-1.38406 -1.35719,-3.57437 0,-4.945z"></path></svg>', //last slash removed to avoid problems comparing in addButtons
             play: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M34.4,18.06v135.86656l115.48188,-67.92656z"></path></svg>',
@@ -156,7 +158,8 @@ class Interface {
         right_area.split("horizontal",[null,"30%"], true);
         right_area.id = "right-area"
         /* Graph area */
-        var graph_area = right_area.getSection(0);
+        var graph_area = this.graph_area = right_area.getSection(0);
+        graph_area.split("vertical", [null,"250px"], true);
         //graph_area.split("vertical", [25,null], false);
         //LiteGUI.bind(graph_area, "resized", function(){GraphManager.resize()})
 
@@ -193,8 +196,8 @@ class Interface {
         var graph = graph_area.getSection(1);*/
         /*graph.content.className+= " graph-content";
         graph.onresize = GraphManager.resize.bind(this);*/
-        graph_area.content.className+= " graph-content";
-        graph_area.onResize = GraphManager.resize.bind(this);
+        graph_area.getSection(0).content.className+= " graph-content";
+        graph_area.getSection(0).onResize = GraphManager.resize.bind(this);
         /* Content area */
       /*  var iframe_tab = this.contentTabs.addTab("iframe", {title: this.icons.visibility, width:"100%", height:"calc(100% - 27px)"});
         iframe_tab.tab.title = "Show scene";
@@ -234,11 +237,32 @@ class Interface {
 
         }));
         /*Timeline*/
-        this.timeline_dialog = new LiteGUI.Dialog('Intent', { title:'Intent', close: true, minimize: false, width: 900, height: 300, scroll: false, resizable: false, draggable: true });
+        this.timeline_section = graph_area.getSection(1);
+
+        var title = "Timeline Intent "+"<div class='buttons'><button class='litebutton mini-button close-btn'>"+ LiteGUI.special_codes.close +"</button></div>";
+        this.timeline_dialog = new LiteGUI.Dialog('Intent', { title:title,className:"timeline-dialog", autoresize:true, parent: graph_area.getSection(1).root, close: false, minimize: false, width: graph_area.content.clientWidth, height: 250, scroll: false, resizable: false, draggable: false });
+        this.timeline_dialog.close = function(){
+          GraphManager.resize();
+          graph_area.hideSection(1);
+        }
+        document.querySelector(".close-btn").addEventListener("click",this.timeline_dialog.close);
+        //this.timeline_dialog.addButton(LiteGUI.special_codes.close, {callback: this.timeline_dialog.close, className:"close-btn"})
         var timeline = ANIMED.init();
+        this.timeline_dialog.add(timeline);
 
-        this.timeline_dialog.add(timeline)
 
+        this.timeline_dialog.resize = function()
+        {
+          var that = this;
+          var height = "250px";
+          if(that.timeline_dialog.root.parentElement)
+            height = that.timeline_dialog.root.parentElement.offsetHeight;
+          that.timeline_dialog.setSize(that.timeline_dialog.root.parentElement.offsetWidth,height)
+          onResize(that.timeline_dialog.content)
+          onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
+        }
+        graph_area.hideSection(1);
+        this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
     }
 
     onExpandInspector(area,e) {
@@ -257,6 +281,8 @@ class Interface {
             e.currentTarget.classList.add("invert");
         }
         GraphManager.resize();
+        that.timeline_dialog.resize()
+        onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
     }
     timeline()
     {

@@ -76,25 +76,27 @@ function TimelineIntent()
 {
   var w = 150;
   var h =45;
-  this.size = [w,h];
-  this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
-  this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
-  this.properties = { precision: 1 };
 
+  this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+
+  this.properties = { precision: 1 };
+	this.size = [w,h];
   this.shape = 2;
   this.horizontal = true;
   this.serialize_widgets = true;
   this.widgets_up = true;
+
+	this.color="#97A003";
+	this.background = "#85d603";
 
   this.name = "Intent timeline";
 
 	this.behaviour = new Behaviour();
 	//timing
 	this.mode = ANIM.PAUSED;
-	this.current_time = 4;
+	this.current_time = 0;
 	this.duration = 60;
 	this.framerate = 30;
-	this.volume = 1;
 	this.type = ANIM.CANVAS2D;
 	this.allow_seeking = true;
 
@@ -104,6 +106,12 @@ function TimelineIntent()
 	//tracks: similar to layers
 	this.tracks = []; //all tracks
 	this.markers = []; //time markers
+	this.add( new ANIM.Track("Speech") );
+	this.add( new ANIM.Track("Face") );
+	this.add( new ANIM.Track("Gaze") );
+	this.add( new ANIM.Track("Head") );
+	this.add( new ANIM.Track("Gesture") );
+	this.add( new ANIM.Track("Posture") );
 
 	//scripts
 	this.includes = []; //urls to js files that must be imported
@@ -122,7 +130,7 @@ function TimelineIntent()
 }
 
 //name to show
-TimelineIntent.title = "Intent";
+TimelineIntent.title = "Timeline Intent";
 
 //function to call when the node is executed
 TimelineIntent.prototype.tick = function(agent, dt, info)
@@ -138,7 +146,7 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
       var behaviour = new Behaviour();
       behaviour.type = B_TYPE.intent_timeline || 17;
 	    behaviour.STATUS = STATUS.success;
-      behaviour.setData(track.clips[j].clipToJSON());
+      behaviour.setData(track.clips[j].toJSON());
       behaviours.push(behaviour);
       this.graph.evaluation_behaviours.push(behaviour);
     }
@@ -708,13 +716,19 @@ ControlChannel.prototype.getSample = function( time )
 function FaceLexemeClip()
 {
 	this.id= "faceLexeme-"+Math.ceil(getTime());;
-	this.amount = 0.5;
+
 	this.start = 0
-	this.attackPeak = 0.25;
-	this.relax = 0.75;
 	this.duration = 1;
-	this.lexeme = "";
-	this.permanent = false;
+
+	this._width = 0;
+
+	this.properties = {
+		amount : 0.5,
+		attackPeak : 0.25,
+		relax : 0.75,
+		lexeme : "",
+		permanent : false,
+	}
 
 	this.color = "black";
 	this.font = "40px Arial";
@@ -731,28 +745,27 @@ FaceLexemeClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		amount: this.amount,
 		start: this.start,
-		attackPeak: this.attackPeak,
-		relax: this.relax,
 		duration: this.duration,
-		lexeme: this.lexeme,
-		permanent: this.permanent,
 	}
-
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
 	return json;
 }
 
 FaceLexemeClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.amount = json.amount;
+	this.properties.amount = json.amount;
 	this.start = json.start;
-	this.attackPeak = json.attackPeak;
-	this.relax = json.relax;
+	this.properties.attackPeak = json.attackPeak;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.lexeme = json.lexeme;
-	this.permanent = json.permanent;
+	this.properties.lexeme = json.lexeme;
+	this.properties.permanent = json.permanent;
+
 }
 
 FaceLexemeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -768,15 +781,18 @@ FaceLexemeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function FaceFACSClip()
 {
 	this.id= "faceFACS-"+Math.ceil(getTime());;
-	this.amount = 0.5;
 	this.start = 0
-	this.attackPeak = 0.25;
-	this.relax = 0.75;
 	this.duration = 1;
-	this.au = "";
-	this.side ="BOTH"; //[LEFT, RIGHT, BOTH](optional)
-	this.permanent = false;
+	this._width = 0;
 
+	this.properties = {
+		amount : 0.5,
+		attackPeak : 0.25,
+		relax : 0.75,
+		au : "",
+		side : "BOTH", //[LEFT, RIGHT, BOTH](optional)
+		permanent : false
+	}
 	this.color = "black";
 	this.font = "40px Arial";
 
@@ -790,31 +806,28 @@ FaceFACSClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		amount: this.amount,
 		start: this.start,
-		attackPeak: this.attackPeak,
-		relax: this.relax,
 		duration: this.duration,
-		au: this.au,
-		side: this.side,
-		permanent: this.permanent,
 
 	}
-
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
 	return json;
 }
 
 FaceFACSClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.amount = json.amount;
+	this.properties.amount = json.amount;
 	this.start = json.start;
-	this.attackPeak = json.attackPeak;
-	this.relax = json.relax;
+	this.properties.attackPeak = json.attackPeak;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.au = json.au;
-	this.permanent = json.permanent;
-	this.side = json.side;
+	this.properties.au = json.au;
+	this.properties.permanent = json.permanent;
+	this.properties.side = json.side;
 }
 
 FaceFACSClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -830,16 +843,20 @@ FaceFACSClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function GazeClip()
 {
 	this.id= "gaze-"+Math.ceil(getTime());
-	this.target = null;
 	this.start = 0
-	this.ready = 0.25; //if it's not permanent
-	this.relax = 0.75; //if it's not permanent
 	this.duration = 1;
-	this.influence = ""; //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
-	this.offsetAngle = 0.0; //(optional)
-	this.offsetDirection = "RIGHT"; //[RIGHT, LEFT, UP, DOWN, UPRIGHT, UPLEFT, DOWNLEFT, DOWNRIGHT](optional)
-	this.permanent = false;
 
+	this._width = 0;
+
+	this.properties = {
+		target : null,
+		ready : 0.25, //if it's not permanent
+		relax : 0.75, //if it's not permanent
+		influence : "", //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
+		offsetAngle : 0.0, //(optional)
+		offsetDirection : "RIGHT", //[RIGHT, LEFT, UP, DOWN, UPRIGHT, UPLEFT, DOWNLEFT, DOWNRIGHT](optional)
+		permanent : false
+	}
 	this.color = "black";
 	this.font = "40px Arial";
 
@@ -853,32 +870,28 @@ GazeClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		target: this.target,
 		start: this.start,
-		ready: this.ready,
-		relax: this.relax,
-		duration: this.duration,
-		influence: this.influence,
-		offsetAngle: this.offsetAngle,
-		offsetDirection: this.offsetDirection,
-		permanent: this.permanent
+		duration: this.duration
 	}
-
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
 	return json;
 }
 
 GazeClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.target = json.target;
+	this.properties.target = json.target;
 	this.start = json.start;
-	this.ready = json.ready;
-	this.relax = json.relax;
+	this.properties.ready = json.ready;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.influence = json.influence;
-	this.offsetAngle = json.offsetAngle;
-	this.offsetDirection = json.offsetDirection;
-	this.permanent = json.permanent;
+	this.properties.influence = json.influence;
+	this.properties.offsetAngle = json.offsetAngle;
+	this.properties.offsetDirection = json.offsetDirection;
+	this.properties.permanent = json.permanent;
 }
 
 GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -894,17 +907,22 @@ GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function GestureClip()
 {
 	this.id= "gesture-"+Math.ceil(getTime());;
-	this.lexeme = "";
-	this.mode = "";
-	this.start = 0
-	this.ready = 0.25;
-	this.strokeStart = 0.75;
-	this.stroke = 1;
-	this.strokeEnd = 1.25;
-	this.relax = 1.5;
-	this.duration = 1.75;
-	this.target = null; //gesture is directed towards that target (optional) for pointing
 
+	this.start = 0
+	this.duration = 1.75;
+
+	this._width = 0;
+
+	this.properties = {
+		lexeme : "",
+		mode : "",
+		ready : 0.25,
+		strokeStart : 0.75,
+		stroke : 1,
+		strokeEnd : 1.25,
+		relax : 1.5,
+		target : null //gesture is directed towards that target (optional) for pointing
+	}
 	this.color = "black";
 	this.font = "40px Arial";
 
@@ -918,16 +936,12 @@ GestureClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		lexeme: this.lexeme,
-		mode: this.mode,
 		start: this.start,
-		ready: this.ready,
-		strokeStart: this.strokeStart,
-		stroke: this.stroke,
-		strokeEnd: this.strokeEnd,
-		relax: this.relax,
-		duration: this.duration,
-		target: this.target
+		duration: this.duration
+	}
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
 	}
 
 	return json;
@@ -936,15 +950,16 @@ GestureClip.prototype.toJSON = function()
 GestureClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.lexeme  = json.lexeme;
+	this.properties.lexeme  = json.lexeme;
 	this.start = json.start;
-	this.ready = json.ready;
-	this.strokeStart = json.strokeStart;
-	this.stroke = json.stroke;
-	this.strokeEnd = json.strokeEnd;
-	this.relax = json.relax;
+	this.properties.ready = json.ready;
+	this.properties.strokeStart = json.strokeStart;
+	this.properties.stroke = json.stroke;
+	this.properties.strokeEnd = json.strokeEnd;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.target = json.target;
+	this.properties.target = json.target;
+
 }
 
 GestureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -960,17 +975,22 @@ GestureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function HeadClip()
 {
 	this.id= "head-"+Math.ceil(getTime());;
-	this.lexeme = ""; //[NOD,SHAKE, TILD...]
-	this.repetition = 1; //[1,*] (optional)
-	this.amount = 1; //[0,1]
+
 	this.start = 0;
-	this.ready = 0.15;
-	this.strokeStart = 0.5;
-	this.stroke = 0.75;
-	this.strokeEnd = 1;
-	this.relax = 1.15;
 	this.duration = 1.5;
 
+	this._width = 0;
+
+	this.properties = {
+		lexeme : "", //[NOD,SHAKE, TILD...]
+		repetition : 1, //[1,*] (optional)
+		amount : 1, //[0,1]
+		ready : 0.15,
+		strokeStart : 0.5,
+		stroke : 0.75,
+		strokeEnd : 1,
+		relax : 1.15
+	}
 
 	this.color = "black";
 	this.font = "40px Arial";
@@ -985,33 +1005,28 @@ HeadClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		lexeme: this.lexeme,
-		repetition: this.repetition,
-		amount: this.amount,
 		start: this.start,
-		ready: this.ready,
-		strokeStart: this.strokeStart,
-		stroke: this.stroke,
-		strokeEnd: this.strokeEnd,
-		relax: this.relax,
 		duration: this.duration,
 	}
-
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
 	return json;
 }
 
 HeadClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.lexeme = json.lexeme;
-	this.repetition = json.repetition;
-	this.amount = json.amount;
+	this.properties.lexeme = json.lexeme;
+	this.properties.repetition = json.repetition;
+	this.properties.amount = json.amount;
 	this.start = json.start;
-	this.ready = json.ready;
-	this.strokeStart = json.strokeStart;
-	this.stroke = json.stroke;
-	this.strokeEnd = json.strokeEnd;
-	this.relax = json.relax;
+	this.properties.ready = json.ready;
+	this.properties.strokeStart = json.strokeStart;
+	this.properties.stroke = json.stroke;
+	this.properties.strokeEnd = json.strokeEnd;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
 }
 
@@ -1027,9 +1042,11 @@ HeadClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function HeadDirectionShiftClip()
 {
 	this.id= "headDir-"+Math.ceil(getTime());
-	this.target = "";
+	this.properties = {target : ""}
 	this.start = 0;
 	this.duration = 0.5;
+
+	this._width = 0;
 
 	this.color = "black";
 	this.font = "40px Arial";
@@ -1044,7 +1061,7 @@ HeadDirectionShiftClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		target: this.target,
+		target: this.properties.target,
 		start: this.start,
 		duration: this.duration,
 	}
@@ -1055,7 +1072,7 @@ HeadDirectionShiftClip.prototype.toJSON = function()
 HeadDirectionShiftClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.target = json.target;
+	this.properties.target = json.target;
 	this.start = json.start;
 	this.duration = json.duration;
 }
@@ -1069,19 +1086,24 @@ HeadDirectionShiftClip.prototype.drawTimeline = function( ctx, project, w,h, sel
 		ctx.fillText( this.id, 24,h * 0.7 );
 }
 /*----------------------------------Posture Behaviour-----------------------------------*/
-//pOSTUREClip
+//PostureClip
 function PostureClip()
 {
 	this.id= "posture-"+Math.ceil(getTime());
-	this.lexeme = ""; //[ARMS_CROSSED,...]
-	this.part = ""; //[ARMS, LEFT_ARM, RIGHT_ARM, LEGS...]
-	this.stance = ""; //[SITTING, CROUNCHING, STANDING, LYING]
-	this.start = 0;
-	this.ready = 0.25; //if it's not permanent
-	this.relax = 0,75; //if it's not permanent
-	this.duration = 1;
-	this.permanent = false;
 
+	this.start = 0;
+	this.duration = 1;
+
+	this._width = 0;
+
+	this.properties = {
+		lexeme : "", //[ARMS_CROSSED,...]
+		part : "", //[ARMS, LEFT_ARM, RIGHT_ARM, LEGS...]
+		stance : "", //[SITTING, CROUNCHING, STANDING, LYING]
+		ready : 0.25, //if it's not permanent
+		relax : 0.75, //if it's not permanent
+		permanent : false,
+	}
 	this.color = "black";
 	this.font = "40px Arial";
 
@@ -1095,30 +1117,27 @@ PostureClip.prototype.toJSON = function()
 {
 	var json = {
 		id: this.id,
-		lexeme: this.lexeme,
-		part: this.part,
-		stance: this.stance,
 		start: this.start,
-		ready: this.ready,
-		relax: this.relax,
 		duration: this.duration,
-		permanent: this.permanent
 	}
-
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
 	return json;
 }
 
 PostureClip.prototype.fromJSON = function( json )
 {
 	this.id = json.id;
-	this.lexeme = json.lexeme;
-	this.part = json.part;
-	this.stance = json.stance;
+	this.properties.lexeme = json.lexeme;
+	this.properties.part = json.part;
+	this.properties.stance = json.stance;
 	this.start = json.start;
-	this.ready = json.ready;
-	this.relax = json.relax;
+	this.properties.ready = json.ready;
+	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.permanent = json.permanent;
+	this.properties.permanent = json.permanent;
 }
 
 PostureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -1134,14 +1153,15 @@ PostureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 //Speech to show captions
 function SpeechClip()
 {
-	this.id= "speech-"+Math.ceil(getTime());
+	this.id = "speech-"+ Math.ceil(getTime());
 	this.start = 0
 	this.duration = 1;
-	this.text = "";
+
+	this._width = 0;
+
+	this.properties = {text : ""}
 	this.aduioId = null;
 	this.color = "black";
-	this.blend_mode = ANIM.NORMAL;
-	this._width = 0;
 
   this.clip_color = "#94e9d9";
   //this.icon_id = 37;
@@ -1158,7 +1178,10 @@ SpeechClip.prototype.toJSON = function()
 		id: this.id,
 		start: this.start,
 		duration: this.duration,
-		text: this.text,
+	}
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
 	}
 	return json;
 }
@@ -1168,7 +1191,7 @@ SpeechClip.prototype.fromJSON = function( json )
 	this.id = json.id;
 	this.start = json.start;
 	this.duration = json.duration;
-	this.text = json.text;
+	this.properties.text = json.text;
 	if(json.audioId)
 		this.audioId = json.audioId;
 }

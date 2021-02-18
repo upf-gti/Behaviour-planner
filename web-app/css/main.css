@@ -458,3 +458,14 @@ mark {
   overflow:auto;
   max-height: 60vh;
 }
+
+/*Timeline*/
+.timeline-dialog{
+  top: auto!important;
+  bottom: 0px;
+}
+.close-btn{
+  bottom: auto!important;
+  top: 0px;
+  background-size: 100% auto;
+}
