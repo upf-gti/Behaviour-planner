@@ -363,13 +363,13 @@ class App{
         for(var i in env.graphs){
             var graph = env.graphs[i];
             if(graph.behaviour){
-                var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH, i);
+                var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph.name);
                 hbt_graph.graph.configure(graph.behaviour);
                 that.currentContext = hbt_graph.graph.context;
                 currentHBTGraph = that.graphManager.currentHBTGraph = hbt_graph;
                 //GraphManager.putGraphOnEditor( hbt_graph, i );
             }else{
-                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, i);
+                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
                 graph.name =i;
                 g.graph.configure(graph);
 
@@ -384,8 +384,6 @@ class App{
                         this.streamer.ws = node._server;
                         node._server.onReady = this.streamer.onReady;
                         this.streamer.is_connected = node._server.is_connected;
-                        var btn = document.getElementById("stream-btn");
-                        btn.style.display="block";
                     }
                 }
 
@@ -502,11 +500,10 @@ class App{
                 {
                     var graph = GraphManager.graphs[i];
 
-                    if(graph.type == GraphManager.HBTGRAPH)
-                        data = GraphManager.exportBehaviour(graph.graph);
-                    else if(graph.type == GraphManager.BASICGRAPH)
-                        data = GraphManager.exportBasicGraph(graph.graph);
-                    obj.env.graphs[i] = data;
+                    if(graph.type == GraphManager.HBTGRAPH) data = GraphManager.exportBehaviour(graph.graph);
+                    else if(graph.type == GraphManager.BASICGRAPH) data = GraphManager.exportBasicGraph(graph.graph);
+                    
+                    obj.env.graphs.push(data);
                 }
                 data = obj;
                 break;
