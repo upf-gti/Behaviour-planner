@@ -491,7 +491,7 @@ class Interface {
 		var inspector = new LiteGUI.Inspector();
 		var file = null;
 		inspector.addFile("Select File","",{ read_file: true, callback: function(v){
-			console.log(v);
+			// console.log(v);
 			file = v;
 		}});
 		inspector.addButton(null,"Load File", function(){
@@ -686,15 +686,26 @@ class Interface {
         var user_name = curr_session.user.username;
         var files = {};
         var file_selected = "";
-        var folder_selected = "";
+        var folder_selected = user_name;
         var path = "";
 
         curr_session.getFolders(user_name, (function(data) {
 
             function __getFolderFiles(unit, folder, callback) {
 
-                CORE["FileSystem"].getFiles(unit, folder).then(function(data) {
-                    data.forEach(e => files[e.filename] = e);
+                var _folder = folder;
+
+                if(!_folder)
+                _folder = "";
+
+                CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
+
+                    data.forEach(function(e){
+                        
+                        if(e.unit !== unit)
+                            return;
+                        files[e.filename] = e;
+                    });
                     widgets.refresh();
                 });
             }
@@ -748,7 +759,8 @@ class Interface {
                     path = null;
 
                 // fetch files in folder
-                folder_selected = user_name + "/" + path;
+                folder_selected = user_name + (path ? "/" + path : "");
+                // console.log(folder_selected);
                 __getFolderFiles(user_name, path);
             });
 
@@ -791,6 +803,7 @@ class Interface {
 
                 widgets.widgets_per_row = 1;
                 widgets.addSeparator();
+<<<<<<< HEAD
                 widgets.addString(null, file_selected ? folder_selected + "/" + file_selected.filename : "", {disabled: true});
                 widgets.addButton( null, "Load", {callback: function() {
 
@@ -798,17 +811,40 @@ class Interface {
                         return;
 
                     dialog.close();
+=======
+                widgets.addString(null, 
+                    file_selected ? folder_selected + "/" + file_selected.filename : folder_selected + "/", 
+                    {disabled: true});
+>>>>>>> dev
 
-                    var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
-                    // LiteGUI.requestJSON( fullpath, function(data){
-                    //     console.log(data);
-                    // });
+                if(file_selected)
+                {
+                    widgets.addButton( null, "Load", {callback: function() {
+            
+                        if(!file_selected)
+                            return;
+    
+                        dialog.close();
+    
+                        var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
+                        // LiteGUI.requestJSON( fullpath, function(data){
+                        //     console.log(data);
+                        // });
+    
+                        CORE["Interface"].importFromURL( fullpath );
+                        
+                    } });
+                }
 
+<<<<<<< HEAD
                     CORE["Interface"].importFromURL( fullpath );
 
                 } });
                 widgets.addSeparator();
 
+=======
+                widgets.addSeparator();
+>>>>>>> dev
             }
 
             __getFolderFiles(user_name, null);
