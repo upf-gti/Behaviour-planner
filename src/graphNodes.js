@@ -2229,3 +2229,385 @@ HBTGraph.prototype.processEvent = function(e)
   }
   return false;
 }
+
+
+// ******************* COLLAPSE EVENT AND PARSE COMPARE *******************
+function ParseEvent()
+{
+  this.shape = 2
+  this.color = "#1E1E1E"
+  this.boxcolor = "#999";  // this.boxcolor = "#999";
+  this.addOutput("","path");
+  this.properties = {};
+  this.horizontal = true;
+  this.widgets_up = true;
+  this.addProperty("type", EventNode.TYPES[0]);
+
+  this.event_type = EVENTS.textRecieved;
+  var that = this;
+  this.widgetType = this.addWidget("combo","type", that.properties.type, function(v){that.properties.type = v},  {values: EventNode.TYPES});
+  
+  this.input_contexts = [];
+  this.output_contexts = [];
+  this.visible_phrases = [];
+  this.phrases =  [];
+  
+  this.addInput("", "path");
+  this.behaviour = new Behaviour();
+
+}
+
+ParseEvent.prototype.onConfigure = function(o)
+{
+  if(o.phrases)
+    this.phrases = o.phrases;
+  if(o.visible_phrases)
+    this.visible_phrases = o.visible_phrases;
+  if(o.input_contexts)
+    this.input_contexts = o.input_contexts;
+  if(o.output_contexts)
+    this.output_contexts = o.output_contexts;
+}
+
+ParseEvent.prototype.onSerialize = function(o)
+{
+  if(this.phrases)
+    o.phrases = this.phrases;
+  if(this.visible_phrases)
+    o.visible_phrases = this.visible_phrases;
+  if(this.input_contexts)
+    o.input_contexts = this.input_contexts;
+  if(this.output_contexts)
+    o.output_contexts = this.output_contexts;
+}
+
+ParseEvent.prototype.onAdded = function()
+{
+  this.title = "ParseEvent "+this.id;
+  //this.widgetId = this.addWidget("info","id", this.properties.id, null, {editable:false});
+
+}
+
+ParseEvent.prototype.onPropertyChanged = function(name, value)
+{
+    if(name == "type")
+    {
+      this.event_type = EventNode.TYPES.indexOf(value);
+    }
+}
+
+ParseEvent.prototype.onStart = EventNode.prototype.onDeselected = function()
+{
+	var children = this.getOutputNodes(0);
+	if(!children) return;
+	children.sort(function(a,b)
+	{
+		if(a.pos[0] > b.pos[0])
+		  return 1;
+
+		if(a.pos[0] < b.pos[0])
+		  return -1;
+
+	});
+
+	this.outputs[0].links = [];
+	for(var i in children)
+		this.outputs[0].links.push(children[i].inputs[0].link);
+}
+
+ParseEvent.prototype.tick = function(agent, dt)
+{
+  if(this.graph.context.last_event_node!=this.id)
+  {
+    this.graph.context.last_event_node = this.id;
+    return {STATUS : STATUS.success};
+  }
+  var text = "";
+  for(var i in this.inputs)
+  {
+    if(this.inputs[i].name == "text")
+      text = this.getInputData(i);
+  }
+
+  if((!text || text == "") && this.data && this.data.text)
+    text = this.data.text;
+	var training_phrases = this.phrases;
+
+  var found = this.compare(text, training_phrases);
+
+  if(!found)
+	{
+		//some of its children of the branch is still on execution, we break that execution (se weh we enter again, it starts form the beginning)
+    if(this.running_node_in_banch)
+      agent.bt_info.running_node_index = null;
+
+    this.behaviour.STATUS = STATUS.fail;
+    return this.behaviour;
+	}
+  else
+	{
+    var values = this.extractEntities(text, found.tags);
+    if(values)
+    {
+      var info = {tags: values}
+
+  		//this.description = this.properties.property_to_compare + ' property passes the threshold';
+  		var children = this.getOutputNodes(0);
+  		//Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+  		if(children.length == 0)
+      {
+  			this.behaviour.type = B_TYPE.parseCompare;
+  			this.behaviour.STATUS = STATUS.success;
+  			return this.behaviour;
+  		}
+
+  		for(let n in children)
+  		{
+  			var child = children[n];
+  			var value = child.tick(agent, dt, info);
+  			if(value && value.STATUS == STATUS.success)
+  			{
+  				agent.evaluation_trace.push(this.id);
+  				/* MEDUSA Editor stuff, not part of the core */
+  				if(agent.is_selected)
+  					highlightLink(this, child);
+
+  				return value;
+  			}
+  			else if(value && value.STATUS == STATUS.running)
+  			{
+  				agent.evaluation_trace.push(this.id);
+  				/* MEDUSA Editor stuff, not part of the core */
+  				if(agent.is_selected)
+  					highlightLink(this, child)
+
+  				return value;
+  			}
+  		}
+    }
+
+    if(this.running_node_in_banch)
+      agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+}
+
+ParseEvent.prototype.compare = function (inputString, vocabulary) 
+{
+  var found = false;
+  for (var i in vocabulary) 
+  {
+    var currentVocab = vocabulary[i]
+    var currentText = currentVocab.text;
+    found = new RegExp(currentVocab.toCompare.toLowerCase()).test(inputString.toLowerCase());
+    
+    if (found)
+      return currentVocab;
+  }
+  return found;
+}
+
+ParseEvent.prototype.extractEntities = function(string, tags)
+{
+    var info = {};
+    for(var j = 0; j<tags.length; j++)
+    {
+        var tag = tags[j];
+        var value = EntitiesManager.getEntity(string, tag);
+        if(!value)
+          return false;
+        info[tag] = value;
+    }
+    return info;
+}
+
+ParseEvent.prototype.onGetInputs = function()
+{
+  return [["text", "string", { pos: [0,this.size[1]*0.5], dir:LiteGraph.LEFT}]];
+}
+
+ParseEvent.prototype.onInspect = function(  inspector )
+{
+    component = this;
+    inspector.clear();
+    inspector.widgets_per_row = 1;
+    var contexts = inspector.addSection("Contexts");
+    //inspector.addTitle("Contexts");
+    var inputContext = CORE.Interface.addInputTags("Input contexts", this.input_contexts, {placeholder: "Add input context...", callback: function(v){
+      if(component.input_contexts.indexOf(v)>-1)
+        return;
+      component.input_contexts.push(v);
+      if(corpus && corpus.data[v])
+      {
+        var utterances = corpus.data[v].utterances;
+
+        for(var i in utterances)
+        {
+          var aux=utterances[i];
+          var tags = [];
+          var idx = aux.indexOf("#");
+          while(idx>=0)
+          {
+            var count = 0;
+            for(var j=idx; j<aux.length; j++)
+            {
+              count++;
+              if(aux[j]==" " || aux[j]=="." || aux[j]==",")
+              {
+                count--;
+                break;
+              }
+            }
+            var tag = aux.slice(idx,idx+count);
+            tags.push(tag);
+            aux = aux.replace(tag," ")
+            idx = aux.indexOf("#");
+          }
+
+          component.processPhrase(utterances[i], tags, inspector)
+        //  component.onInspect(inspector)
+          //component.phrases.push(utterances[i])
+        }
+        component.onInspect(inspector)
+      }
+    }, callback_delete: function(v){
+        var i = component.input_contexts.indexOf(v);
+        component.input_contexts = component.input_contexts.splice(i);
+    }});
+    if(corpus)
+    {
+      inputContext.addEventListener("keypress", autocomplete(inputContext.lastElementChild.lastElementChild,corpus.array, null, {callback: function(){
+        var e = new Event("keydown");
+        e.keyCode=13;
+        var input = document.getElementById("input-tag")
+        input.dispatchEvent(e)
+      }}))
+
+    }
+
+    inspector.append(inputContext)
+/*  var outputContext = CORE.Interface.addInputTags("Output contexts", this.output_contexts, {placeholder: "Add output context...", callback: function(v){
+        component.output_contexts.push(v);
+    }, callback_delete: function(v){
+        var i = component.output_contexts.indexOf(v);
+        component.output_contexts = component.output_contexts.splice(i);
+    }});
+    inspector.append(outputContext*/
+    var phrases_insp = inspector.addSection("Training phrases");
+    //inspector.addTitle("Training phrases");
+    inspector.widgets_per_row = 2;
+    var training_phrases = component.phrases;
+    var container = document.createElement("DIV");
+    container.setAttribute("class", "responsive-content")
+
+
+    for(var i in training_phrases)
+    {
+      /*HIGHLIGHT TAGS*/
+      var div = document.createElement("DIV");
+      div.className ="backdrop";
+      div.style.width = "calc(100% - 48px)";
+      var div_highlight = document.createElement("DIV");
+      div_highlight.className ="highlights";
+      div_highlight.innerHTML = component.visible_phrases[i];
+
+      var input = document.createElement("TEXTAREA");//document.createElement("INPUT");
+      input.setAttribute("class","inputfield textarea")
+      input.style.width = "100%";
+      input.value = training_phrases[i].text;
+      input.setAttribute("readonly", true)
+      new ResizeObserver(function(v){
+        var that = this;
+        that.style.width = input.clientWidth;
+        that.style.height = input.innterHeight;
+      }.bind(div_highlight)).observe(input)
+
+
+      input.addEventListener("change", function(v){
+          var id = this.toString();
+          component.phrases[id].text = v;
+      }.bind(i))
+      div.appendChild(div_highlight);
+      div.appendChild(input);
+      container.appendChild(div)
+     
+      var btn = new LiteGUI.Button('<img src="https://webglstudio.org/latest/imgs/mini-icon-trash.png">' ,{width:40,  callback: function(v){
+            var id = this.toString();
+            if(id > -1) {
+              component.phrases.splice(id, 1);
+            }
+            component.onInspect(inspector)
+        }.bind(i)})
+      btn.root.className+= " btn-custom";
+      container.appendChild(btn.root)
+    }
+    inspector.append(container);
+    inspector.widgets_per_row = 1;
+    inspector.addSeparator();
+    inspector.addTitle("New phrase");
+
+    inspector.widgets_per_row = 2;
+    var newPhrase = "";
+    var tags = [];
+
+    var phrase = document.createElement("TEXTAREA");//document.createElement("INPUT");
+    phrase.setAttribute("className","inputfield textarea")
+    phrase.setAttribute("placeholder", "New training phrase...")
+    phrase.style.width = "calc(100% - 40px)";
+    newPhrase = phrase.value
+      //input.id ="input"
+
+    //(phrase, EntitiesManager.getEntities())
+    //phrase.addEventListener("keypress", autocomplete.bind(phrase, EntitiesManager.getEntities(), null))
+    phrase.addEventListener("keypress", function(e){
+        var that = this;
+        /*if(e.key=="Alt"||e.key=="AltGraph" || e.key=="Control"|| e.key=="CapsLock" || e.key=="Backspace")
+          return;*/
+        newPhrase =   phrase.value;
+        if(e.key == "#")
+        {
+          autocomplete(phrase, EntitiesManager.getEntities(), tags, {})
+            //displayEntity(i, phrase, e, tags)
+          newPhrase = e.target.value;
+
+        }
+    }.bind(this))
+    inspector.append(phrase)
+
+    inspector.addButton(null,"+", {width:40,callback: component.processPhrase.bind(this, phrase,tags, inspector)});
+
+}
+
+ParseEvent.prototype.processPhrase = function(phraseElement, tags, inspector)
+{
+    newPhrase = (phraseElement.value!=undefined)? phraseElement.value:phraseElement  // phraseElement.value!=undefined? phraseElement.value : phraseElement.getValue();
+    var currentPhrase = newPhrase;
+    var toCompare = newPhrase;
+    //component.phrases.push(newPhrase);
+
+    for(var i=0; i<tags.length; i++)
+    {
+        var start = currentPhrase.indexOf(tags[i]);
+        var end = tags[i].length;
+        //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
+        currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
+        toCompare = toCompare.replace(tags[i], "(\\w+)");
+
+    }
+    component.visible_phrases.push(currentPhrase);
+    component.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
+    component.onInspect(inspector)
+}
+ParseEvent.prototype.onDeselected = function ()
+{
+	var parent = this.getInputNode(0);
+	if(parent)
+		parent.onDeselected();
+}
+ParseEvent.prototype.onShowNodePanel = function( event, pos, graphcanvas )
+{
+    return true; //return true is the event was used by your node, to block other behaviours
+}
+LiteGraph.registerNodeType("btree/ParseEvent", ParseEvent );
