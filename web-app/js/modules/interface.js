@@ -640,6 +640,7 @@ class Interface {
                             files[e.filename] = e;
                         });
                         widgets.refresh();
+                        widget_fullpath.on_refresh();
                     });
                 }
     
