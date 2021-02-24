@@ -8,6 +8,7 @@ class Interface {
         this.timeline_dialog = null;
         this.timeline_section = null;
         this.graph_area = null;
+        this.lastLoadedFile = null;
         this.icons= {
             clear: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M112.1225,13.8675c-2.70094,0 -5.34812,0.91375 -7.31,2.9025l-91.4825,92.45c-4.03125,4.07156 -4.03125,10.75 0,14.835l32.895,33.2175c0.65844,0.65844 1.54531,0.9675 2.4725,0.9675h92.3425c1.34375,0.20156 2.6875,-0.41656 3.42656,-1.55875c0.73906,-1.14219 0.73906,-2.62031 0,-3.7625c-0.73906,-1.14219 -2.08281,-1.76031 -3.42656,-1.55875h-54.9325l76.0025,-76.755c4.03125,-4.07156 4.03125,-10.76344 0,-14.835l-42.57,-43c-1.96187,-1.98875 -4.71656,-2.9025 -7.4175,-2.9025zM61.92,70.09l49.235,46.1175l-34.7225,35.1525h-26.3375l-31.82,-32.25c-1.35719,-1.38406 -1.35719,-3.57437 0,-4.945z"></path></svg>', //last slash removed to avoid problems comparing in addButtons
             play: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M34.4,18.06v135.86656l115.48188,-67.92656z"></path></svg>',
@@ -60,8 +61,7 @@ class Interface {
             this.menu.add("Project/Load", { callback: this.showLoadFromServerDialog.bind(this)});
             this.menu.separator("Project");
             // Disc options
-            this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
-            this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
+            this.menu.add("Project/Import From Disc", { callback: this.openImportFromFileDialog.bind(this)});
             this.menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
             this.menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
             // Other
@@ -233,6 +233,7 @@ class Interface {
         var canvas = document.getElementsByClassName("graph-content");
         LiteGUI.createDropArea( canvas[0], FS.onDrop.bind(FS, function(file){
 
+            that.lastLoadedFile = null;
             that.openImportDialog(file);
 
         }));
@@ -514,6 +515,9 @@ class Interface {
                       console.log(data.type + " imported")
                     }
                     else console.log("Behaviour graph imported")
+
+                    that.lastLoadedFile = null;
+
                     that.openImportDialog(data);
 
                 };
@@ -524,158 +528,281 @@ class Interface {
 		dialog.makeModal();
 	}
 
-    showExportDialog() {
+  showExportDialog() {
 
-        var curr_session = CORE["FileSystem"].getSession();
-        if(!curr_session)
-        return;
+     var curr_session = CORE["FileSystem"].getSession();
+     if(!curr_session)
+     return;
 
-        if(curr_session.user.username === "guest"
-            && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
-        ) {
-            LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
-            return;
-        }
+     if(curr_session.user.username === "guest"
+         && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
+     ) {
+         LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
+         return;
+     }
 
-        var canvas = GraphManager.currentCanvas.canvas2D;
-        var tbh_data, boo;
-	    var filename = "export", path = "/";
+     var canvas = GraphManager.currentCanvas.canvas2D;
+     var tbh_data, boo;
+     var user_name = curr_session.user.username;
+     var files = {};
+     var file_selected = "";
+     var folder_selected = user_name;
+     var path = "", filename = this.lastLoadedFile ? this.lastLoadedFile.filename : "export";
 
-        var inner = function(v) {
+     if(!canvas) {
+         console.warn("nothing to export");
+         return;
+     }
 
-            if(!filename.length) {
-                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
-                return;
-            }
+     var uploadFile = function(v)
+     {
+         try
+         {
+             boo = CORE.App.toJSON(
+                 v === "Graph" ? "download-graph" : "download-env",
+                 filename
+             );
+             boo = JSON.stringify(boo);
+         }
+         catch (e)
+         {
+             console.error("Error creating json", e);
+             LiteGUI.alert("Something went wrong");
+             return;
+         }
 
-            try
-            {
-                boo = CORE.App.toJSON(
-                    v === "Graph" ? "download-graph" : "download-env",
-                    filename
-                );
-                boo = JSON.stringify(boo);
-            }
-            catch (e)
-            {
-                console.error("Error creating json", e);
-                LiteGUI.alert("Something went wrong");
-                return;
-            }
+         var FS = CORE["FileSystem"];
 
-            var FS = CORE["FileSystem"];
+         var path = folder_selected + "/" + filename + ".json";
 
-            // upload file
-            FS.uploadFile(path, new File([boo], filename + ".json"), []);
+         console.warn("Uploading file: " + path);
 
-            // upload thb
-            if(tbh_data){
-                // change file extension and folder for thb
-                var tkn = path.split("/");
-                var _name = tkn.pop().replace("json", "png"); // name.png
-                path = tkn.join("/") + "/thb/" + _name;
-                FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
-            }
+         // upload file
+         FS.uploadFile(path, new File([boo], filename + ".json"), []);
 
-        };
+         // upload thb
+         if(tbh_data){
+             // change file extension and folder for thb
+             var tkn = path.split("/");
+             var _name = tkn.pop().replace("json", "png"); // name.png
+             path = tkn.join("/") + "/thb/" + _name;
+             FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
+         }
+     }
 
-        if(!canvas) {
-            console.warn("nothing to export");
-            return;
-        }
+     var inner = function(v) {
 
-        canvas.toBlob(function(v){
+         if(!filename.length) {
+             LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+             return;
+         }
 
-            tbh_data = v;
-            var user_name = curr_session.user.username;
-            var url =  URL.createObjectURL( tbh_data );
-            var width = 500;
-            var choice = LiteGUI.choice("<img src='" + url + "' style='margin-left: 115px;' width='50%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
+         // CHECK IF FILE EXISTS
+         var _folder = folder_selected.replace(user_name, "");
+         CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
 
-            var widgets = new LiteGUI.Inspector();
-            var r_widgets = new LiteGUI.Inspector();
-            widgets.addInfo( null, "Filename");
-            window.filename_w = widgets.addString( null, filename );
 
-            filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
-                filename = filename_w.getValue();
-                r_widgets.refresh();
-            });
+             var jName = filename + ".json";
+             data = data.filter(e => e.unit === user_name && e.filename === jName);
 
-            widgets.addSeparator();
+             if(data.length)
+             {
+                 LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
+                     if(choice_resp == "Yes")
+                         uploadFile(v);
+                 }, {title:"File already exists"} )
+             }else
+             {
+                 uploadFile(v);
+             }
 
-            curr_session.getFolders(user_name, (function(data) {
+         });
+     };
 
-                var selected = null;
-                var litetree = new LiteGUI.Tree({id: user_name});
-                LiteGUI.bind( litetree.root, "item_selected", function(item) {
-                    selected = item.detail.data.id;
-                    r_widgets.refresh();
-                });
+     canvas.toBlob(function(v){
 
-                /*
-                    recursive function to get all folders in unit
-                    as a data tree
-                */
-                function __showFolders(object, parent)
-                {
-                    for(var f in object)
-                    {
-                        if(f === "thb") // discard thumb previews for folders
-                        continue;
-                        litetree.insertItem({id: f}, parent);
-                        if(object[f])
-                            __showFolders(object[f], f);
-                    }
-                }
+         tbh_data = v;
+         var url =  URL.createObjectURL( tbh_data );
 
-                __showFolders(data, user_name);
-                widgets.addInfo( null, "Path");
-                widgets.root.appendChild(litetree.root);
+         curr_session.getFolders(user_name, (function(data) {
 
-                /*
-                    recursive function to get each item parent
-                */
-                function __getParent(id)
-                {
-                    var parent = litetree.getParent(id);
-                    if(parent)
-                    {
-                        var parent_id = parent.data.id;
-                        path = parent_id + "/" + path;
-                        __getParent(parent_id);
-                    }
-                }
+             function __getFolderFiles(unit, folder, callback) {
 
-                r_widgets.refresh = function() {
+                 var _folder = folder;
 
-                    r_widgets.clear();
-                    let curr = selected;
+                 if(!_folder)
+                 _folder = "";
 
-                    if(curr) {
-                        path = curr;
-                        __getParent(selected);
-                    }
-                    else {
-                        path = user_name;
-                    }
+                 CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
 
-                    path += "/" + filename + ".json";
+                     data.forEach(function(e){
 
-                    r_widgets.addString( null, path, {disabled: true} );
-                    r_widgets.addSeparator();
-                }
+                         if(e.unit !== unit)
+                             return;
+                         files[e.filename] = e;
+                     });
+                     widgets.refresh();
+                     widget_fullpath.on_refresh();
+                 });
+             }
 
-                r_widgets.refresh();
+             /*
+                 recursive function to get each item parent
+             */
+             function __getParent(id)
+             {
+                 var parent = litetree.getParent(id);
+                 if(parent)
+                 {
+                     var parent_id = parent.data.id;
+                     path = parent_id + "/" + path;
+                     __getParent(parent_id);
+                 }
+             }
 
-                choice.add( r_widgets.root, true );
-                choice.add( widgets.root, true );
-                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 );
+             /*
+                 recursive function to get all folders in unit
+                 as a data tree
+             */
+             function __showFolders(object, parent)
+             {
+                 for(var f in object)
+                 {
+                     if(f === "thb") // discard thumb previews for folders
+                     continue;
+                     litetree.insertItem({id: f}, parent);
+                     if(object[f])
+                         __showFolders(object[f], f);
+                 }
+             }
 
-            }).bind(this));
+             var selected = null;
+             var litetree = new LiteGUI.Tree({id: user_name});
+             LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                 selected = item.detail.data.id;
 
-        });
-    }
+                 path = "";
+                 files = {};
+                 file_selected = null;
+
+                 // get full path
+                 __getParent(selected);
+                 path += selected;
+                 var tk = path.split("/");
+                 tk.shift();
+                 path = tk.join("/");
+                 if(!path.length)
+                     path = null;
+
+                 // fetch files in folder
+                 folder_selected = user_name + (path ? "/" + path : "");
+                 // console.log(folder_selected);
+                 __getFolderFiles(user_name, path);
+             });
+
+             __showFolders(data, user_name);
+
+             var id = "Save to Server";
+             var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
+             var w = 400;
+             var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
+             dialog.makeModal('fade');
+
+             var fixed_widgets = new LiteGUI.Inspector();
+
+             fixed_widgets.on_refresh = function()
+             {
+                 fixed_widgets.clear();
+                 fixed_widgets.addTitle( "Filename");
+                 window.filename_w = fixed_widgets.addString( null, filename );
+
+                 filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                     filename = filename_w.getValue();
+                     widget_fullpath.on_refresh();
+                 });
+             }
+
+             fixed_widgets.on_refresh();
+
+             var widgets = new LiteGUI.Inspector();
+             var widget_fullpath = new LiteGUI.Inspector();
+
+             widget_fullpath.on_refresh = function(){
+
+                 widget_fullpath.clear();
+                 widget_fullpath.addTitle("Fullpath");
+                 widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
+             }
+
+             widgets.on_refresh = function(){
+
+                 widgets.clear();
+
+                 widgets.addTitle("Folders");
+                 widgets.root.appendChild(litetree.root);
+                 widgets.addTitle( "Files");
+                 widgets.widgets_per_row = 2;
+                 widgets.addList( null, files, {height: "150px", callback: function(file){
+
+                     filename = file.filename.split(".").shift();
+                     fixed_widgets.on_refresh();
+                     widget_fullpath.on_refresh();
+                 }});
+
+                 var thb = widgets.addContainer("thb");
+                 thb.style.width = "50%";
+                 thb.style.height = "145px";
+                 thb.style.display = "inline-block";
+                 thb.style.marginTop = "5px";
+                 thb.innerHTML = "<img height='100%' src='" + url + "'>";
+
+                 widgets.addSeparator();
+                 widgets.widgets_per_row = 2;
+                 widgets.addButton( null, "Save graph", {callback: function() {
+
+                    inner("Graph");
+                    dialog.close();
+
+                 } });
+
+                 widgets.addButton( null, "Save Environment", {callback: function() {
+
+                     inner("Environment");
+                     dialog.close();
+
+                 } });
+                 widgets.widgets_per_row = 1;
+                 widgets.addSeparator();
+             }
+
+             var f_folder = null;
+
+             if(CORE["Interface"].lastLoadedFile)
+             {
+                 // get path and remove unit
+                 f_folder = CORE["Interface"].lastLoadedFile.path.replace(user_name + "/", "");
+                 if(!f_folder.length)
+                     f_folder = null;
+                 else
+                 {
+                     // remove last "/"
+                     folder_selected = f_folder.substr(0, f_folder.length - 1);
+                 }
+             }
+
+             __getFolderFiles(user_name, f_folder);
+
+             widgets.on_refresh();
+             widget_fullpath.on_refresh();
+             dialog.add(fixed_widgets);
+             dialog.add(widget_fullpath);
+             dialog.add(widgets);
+             dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
+
+         }));
+     });
+
+ }
 
     showLoadFromServerDialog() {
 
@@ -798,7 +925,6 @@ class Interface {
                 if(file_selected) {
                     var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");
                     thb.innerHTML = "<img height='100%' src='" + src + "'>";
-
                 }
 
                 widgets.widgets_per_row = 1;
@@ -823,7 +949,10 @@ class Interface {
                         // });
 
                         CORE["Interface"].importFromURL( fullpath );
-
+                        CORE["Interface"].lastLoadedFile = {
+                            filename: file_selected.filename.split(".").shift(),
+                            path: folder_selected + "/"
+                        };
                     } });
                 }
                 widgets.addSeparator();

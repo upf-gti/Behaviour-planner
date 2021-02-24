@@ -289,7 +289,7 @@ LiteGraph.Subgraph.prototype.onSubgraphNewOutput = function(name, type) {
 LiteGraph.Subgraph.prototype.onDeselected = function()
 {
     var output_node = this.subgraph.findNodeByTitle("HBTreeOutput");
-    output_node.onDeselected();
+    if(output_node) output_node.onDeselected();
 }
 /*LGraphCanvas.prototype.onDropItem = function(data)
 {
@@ -656,6 +656,7 @@ function ParseCompare()
     this.widgets_up = true;
     this.size = [w,h];
     this.behaviour = new Behaviour();
+
     this.tags_outputs = {};
 }
 //mapping must has the form [vocabulary array, mapped word]
@@ -712,6 +713,15 @@ ParseCompare.prototype.tick = function(agent, dt, info)
     var values = this.extractEntities(text, found.tags);
     if(values)
     {
+      //Set tag outputs if any
+      for(var o in this.outputs){
+        var output = this.outputs[o];
+        if(output.type == "string" && values[output.name]){
+          this.setOutputData(o, values[output.name]);
+        }
+      }
+
+
       var info = {tags: values}
 
   		//this.description = this.properties.property_to_compare + ' property passes the threshold';
@@ -992,16 +1002,17 @@ ParseCompare.prototype.processPhrase = function(phraseElement, tags, inspector)
 
     for(var i=0; i<tags.length; i++)
     {
+      var tag = tags[i];
 
-      if(this.tags_outputs[tags[i]] == undefined)
-      {
-        this.tags_outputs[tags[i]] = "string";
-      }
-      var start = currentPhrase.indexOf(tags[i]);
-      var end = tags[i].length;
-      //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
-      currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
-      toCompare = toCompare.replace(tags[i], "(\\w+)");
+        if(!this.tags_outputs[tag]){
+          this.tags_outputs[tag] = "string";
+        }
+
+        var start = currentPhrase.indexOf(tag);
+        var end = tag.length;
+        //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
+        currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
+        toCompare = toCompare.replace(tag, "(\\w+)");
 
     }
     component.visible_phrases.push(currentPhrase);
@@ -2197,7 +2208,7 @@ Parallel.prototype.tick = function(agent, dt, info)
 HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 {
 	this.graph.character_evaluated = character;
-	this.graph.evaluation_behaviours = [];
+	this.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
 	this.graph.context = ctx;
 	ctx.agent_evaluated = character;
 	//to know the previous execution trace of the character
@@ -2216,7 +2227,7 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 	{
 		this.graph.runStep(1, false);
 		this.current_behaviour = starting_node.tick(this.graph.character_evaluated, dt);
-		return this.graph.evaluation_behaviours;
+		return this.getEvaluationBehaviours();
 	}
 	/* Execute the tree from the root node */
 	else if(this.root_node)
@@ -2225,7 +2236,7 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 		// console.log(character.evaluation_trace);
 		// console.log(character.last_evaluation_trace);
 		this.current_behaviour = this.root_node.tick(this.graph.character_evaluated, dt);
-		return this.graph.evaluation_behaviours;
+		return this.getEvaluationBehaviours();
 	}
 }
 
@@ -2624,3 +2635,47 @@ ParseEvent.prototype.onShowNodePanel = function( event, pos, graphcanvas )
     return true; //return true is the event was used by your node, to block other behaviours
 }
 LiteGraph.registerNodeType("btree/ParseEvent", ParseEvent );
+
+LiteGraph.LGraph.prototype.getNodeById = function(id){
+  if(id == null){
+    return null;
+  }
+
+  var node = this._nodes_by_id[id];
+  if(node) return node;
+
+  //Check subgraphs
+  //TODO store somewhere a list of subgraphs to avoid iterating over all nodes
+  for(var n of this._nodes){
+    if(n.constructor === LiteGraph.Subgraph){
+      node = n.subgraph.getNodeById(id);
+      if(node) return node;
+    }
+  }
+
+  return null;
+}
+
+//Subgraphs are LGraph, so this has to be in LGraph
+LiteGraph.LGraph.prototype.getEvaluationBehaviours = function(){
+  var behaviours = this.evaluation_behaviours || [];
+
+  //Check subgraphs
+  //TODO store somewhere a list of subgraphs to avoid iterating over all nodes
+  for(var n of this._nodes){
+    if(n.constructor === LiteGraph.Subgraph){
+      var subgraph_behaviours = n.subgraph.getEvaluationBehaviours();
+      if(subgraph_behaviours){
+        for(var b of subgraph_behaviours){
+          behaviours.push(b);
+        }
+      }
+    }
+  }
+
+  return behaviours;
+}
+
+HBTGraph.prototype.getEvaluationBehaviours = function(){
+  return this.graph.getEvaluationBehaviours();
+}
