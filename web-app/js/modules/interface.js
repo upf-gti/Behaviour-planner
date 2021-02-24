@@ -8,6 +8,7 @@ class Interface {
         this.timeline_dialog = null;
         this.timeline_section = null;
         this.graph_area = null;
+        this.lastLoadedFile = null;
         this.icons= {
             clear: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M112.1225,13.8675c-2.70094,0 -5.34812,0.91375 -7.31,2.9025l-91.4825,92.45c-4.03125,4.07156 -4.03125,10.75 0,14.835l32.895,33.2175c0.65844,0.65844 1.54531,0.9675 2.4725,0.9675h92.3425c1.34375,0.20156 2.6875,-0.41656 3.42656,-1.55875c0.73906,-1.14219 0.73906,-2.62031 0,-3.7625c-0.73906,-1.14219 -2.08281,-1.76031 -3.42656,-1.55875h-54.9325l76.0025,-76.755c4.03125,-4.07156 4.03125,-10.76344 0,-14.835l-42.57,-43c-1.96187,-1.98875 -4.71656,-2.9025 -7.4175,-2.9025zM61.92,70.09l49.235,46.1175l-34.7225,35.1525h-26.3375l-31.82,-32.25c-1.35719,-1.38406 -1.35719,-3.57437 0,-4.945z"></path></svg>', //last slash removed to avoid problems comparing in addButtons
             play: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M34.4,18.06v135.86656l115.48188,-67.92656z"></path></svg>',
@@ -60,8 +61,7 @@ class Interface {
             this.menu.add("Project/Load", { callback: this.showLoadFromServerDialog.bind(this)});
             this.menu.separator("Project");
             // Disc options
-            this.menu.add("Project/Import/From Disc", { callback: this.openImportFromFileDialog.bind(this)});
-            this.menu.add("Project/Import/From URL", { callback:  this.openImportURLDialog.bind(this)});
+            this.menu.add("Project/Import From Disc", { callback: this.openImportFromFileDialog.bind(this)});
             this.menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
             this.menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
             // Other
@@ -233,6 +233,7 @@ class Interface {
         var canvas = document.getElementsByClassName("graph-content");
         LiteGUI.createDropArea( canvas[0], FS.onDrop.bind(FS, function(file){
 
+            that.lastLoadedFile = null;
             that.openImportDialog(file);
 
         }));
@@ -522,6 +523,9 @@ class Interface {
                       console.log(data.type + " imported")
                     }
                     else console.log("Behaviour graph imported")
+
+                    that.lastLoadedFile = null;
+
                     that.openImportDialog(data);
 
                 };
@@ -551,7 +555,7 @@ class Interface {
         var files = {};
         var file_selected = "";
         var folder_selected = user_name;
-        var path = "", filename = "export";
+        var path = "", filename = this.lastLoadedFile ? this.lastLoadedFile.filename : "export";
 
         if(!canvas) {
             console.warn("nothing to export");
@@ -609,8 +613,6 @@ class Interface {
                 var jName = filename + ".json";
                 data = data.filter(e => e.unit === user_name && e.filename === jName);
                 
-                console.log(user_name, _folder, data);
-
                 if(data.length)
                 {
                     LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
@@ -707,7 +709,7 @@ class Interface {
                 });
     
                 __showFolders(data, user_name);
-    
+
                 var id = "Save to Server";
                 var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
                 var w = 400;
@@ -781,7 +783,22 @@ class Interface {
                     widgets.addSeparator();
                 }
     
-                __getFolderFiles(user_name, null);
+                var f_folder = null;
+
+                if(CORE["Interface"].lastLoadedFile)
+                {
+                    // get path and remove unit
+                    f_folder = CORE["Interface"].lastLoadedFile.path.replace(user_name + "/", "");
+                    if(!f_folder.length)
+                        f_folder = null;
+                    else
+                    {
+                        // remove last "/"
+                        folder_selected = f_folder.substr(0, f_folder.length - 1);
+                    }
+                }
+                
+                __getFolderFiles(user_name, f_folder);
     
                 widgets.on_refresh();
                 widget_fullpath.on_refresh();
@@ -916,7 +933,6 @@ class Interface {
                 if(file_selected) {
                     var src = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + file_selected.filename.replace("json", "png");
                     thb.innerHTML = "<img height='100%' src='" + src + "'>";
-
                 }
 
                 widgets.widgets_per_row = 1;
@@ -937,7 +953,10 @@ class Interface {
 
                         var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
                         CORE["Interface"].importFromURL( fullpath );
-
+                        CORE["Interface"].lastLoadedFile = {
+                            filename: file_selected.filename.split(".").shift(),
+                            path: folder_selected + "/"
+                        };
                     } });
                 }
                 widgets.addSeparator();
