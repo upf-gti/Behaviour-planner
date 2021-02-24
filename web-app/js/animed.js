@@ -728,73 +728,82 @@ onTimelineMouse: function( e, time, timeline )
       {
         //getTack()
         //open new clip contextmenu
-        console.log("right click")
-        var clips_names = [];
-        var track = this.getTrackAtTimelinePosition( e, true );
-        //Add track
-        if(!track)
+        if (this.timeline_mode == "tracks")
         {
-          var tracks = [];
-          for(var i in ANIM.track_types)
-            tracks.push(i);
-          var ctxmenu = new LiteGUI.ContextMenu(tracks, {title: "Track actions", event:e, callback: function(v)
+          console.log("right click")
+          var clips_names = [];
+          var track = this.getTrackAtTimelinePosition( e, true );
+          //Add track
+          if(!track)
           {
-            var that = this;
-            var track = new ANIM.Track(v);
-            that.project.tracks.push(track);
-
-          }.bind(this)});
-
-        }
-        else if(track.pos[0]<this.timeline.sidebar_width)
-        {
-          var ctxmenu = new LiteGUI.ContextMenu(["Delete track"], {title: "Track actions", event:e, callback: function(v)
-          {
-            var that = this;
-            if(v=="Delete track")
-            {
-              that.project.tracks.splice(track._index,1);
-              return;
-            }
-          }.bind(this)});
-        }
-        else
-        {
-          var clicked_clip = this.getClipAtTimelinePosition( e, true, 10 );
-          if(clicked_clip &&clicked_clip == this.selected_clip)
-          {
-            var ctxmenu = new LiteGUI.ContextMenu(["Delete clip"], {title: "Clip actions", event:e, callback: function(v)
+            var tracks = [];
+            for(var i in ANIM.track_types)
+              tracks.push(i);
+            var ctxmenu = new LiteGUI.ContextMenu(tracks, {title: "Track actions", event:e, callback: function(v)
             {
               var that = this;
-              if(v=="Delete clip")
+              var track = new ANIM.Track(v);
+              that.project.tracks.push(track);
+
+            }.bind(this)});
+
+          }
+          else if(track.pos[0]<this.timeline.sidebar_width)
+          {
+            var ctxmenu = new LiteGUI.ContextMenu(["Delete track"], {title: "Track actions", event:e, callback: function(v)
+            {
+              var that = this;
+              if(v=="Delete track")
               {
-                var trackId = that.selected_clip._track._index;
-                var idx = that.project.tracks[trackId].clips.indexOf(this.selected_clip);
-                that.project.tracks[trackId].clips.splice(idx,1);
+                that.project.tracks.splice(track._index,1);
                 return;
               }
             }.bind(this)});
           }
           else
           {
-            for(var i in ANIM.track_types[track.name])
+            var clicked_clip = this.getClipAtTimelinePosition( e, true, 10 );
+            if(clicked_clip &&clicked_clip == this.selected_clip)
             {
-              var clip = ANIM.track_types[track.name][i];
-              clips_names.push(clip.name);
+              var ctxmenu = new LiteGUI.ContextMenu(["Delete clip"], {title: "Clip actions", event:e, callback: function(v)
+              {
+                var that = this;
+                if(v=="Delete clip")
+                {
+                  var trackId = that.selected_clip._track._index;
+                  var idx = that.project.tracks[trackId].clips.indexOf(this.selected_clip);
+                  that.project.tracks[trackId].clips.splice(idx,1);
+                  return;
+                }
+              }.bind(this)});
             }
-
-            var ctxmenu = new LiteGUI.ContextMenu(clips_names, {title: "Clip actions",event: e, callback: function(v)
+            else
             {
-              var that = this;
+              for(var i in ANIM.track_types[track.name])
+              {
+                var clip = ANIM.track_types[track.name][i];
+                clips_names.push(clip.name);
+              }
 
-              var idx = clips_names.indexOf(v);
+              var ctxmenu = new LiteGUI.ContextMenu(clips_names, {title: "Clip actions",event: e, callback: function(v)
+              {
+                var that = this;
 
-              var clip = new ANIM.track_types[track.name][idx];
+                var idx = clips_names.indexOf(v);
 
-              that.project.tracks[track._index].add( clip, clicked_time);
+                var clip = new ANIM.track_types[track.name][idx];
 
-            }.bind(this)});
+                that.project.tracks[track._index].add( clip, clicked_time);
+
+              }.bind(this)});
+            }
           }
+        }
+        else{
+          var ctxmenu = new LiteGUI.ContextMenu(["Close clip editor"], {title: "Clip actions",event: e, callback: function(v)
+          {
+            this.timeline_mode = "tracks"
+          }.bind(this)})
         }
       }
       else
