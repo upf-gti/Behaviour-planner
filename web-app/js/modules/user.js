@@ -80,7 +80,8 @@ class User{
         this.position = this.properties.position;
         this._inspector = null;
         UserManager.users[this.uid] = this;
-		UserManager.addPropertiesToLog(this.properties);
+		    UserManager.addPropertiesToLog(this.properties);
+        this.createUserInspector();
     }
 
     configure( o, USER )

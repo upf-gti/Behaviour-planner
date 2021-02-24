@@ -55,10 +55,10 @@ class App{
 
         this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
         this.streamer.onDataReceived = this.onDataReceived;
-		this.streamer.onConnect = this.onWSconnected.bind(this);
+				this.streamer.onConnect = this.onWSconnected.bind(this);
 
         this.chat = new Chat();
-		this.iframe = null;
+				this.iframe = null;
     }
 
     init(){
@@ -90,15 +90,15 @@ class App{
         if(user!=null){
             this.currentContext.user = user;
         }
-        
+
 
         // this.interface.createNodeInspector("agent");
 
         var last = now = performance.now();
-        
+
         //this.agent_selected = agent;
         AgentManager.agent_selected = this.agent_selected;
-		
+
         if(iframeWindow){
 			var iframe = iframeWindow.document.querySelector("#iframe-character");
 			this.iframe = iframe;
@@ -109,11 +109,11 @@ class App{
     }
 
     postInit() {
-        
+
         // this.interface.importFromURL(baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json");
         CORE["Interface"].showLoginDialog();
     }
-    
+
 	onWSconnected(){
 		this.streamer.createRoom(this.env_tree.token);
 	}
@@ -199,7 +199,7 @@ class App{
                     if(!agent_graph){
                         agent_graph = currentHBTGraph = this.graphManager.graphs[0];
                     }
-					
+
                     /*
                     if(userText){
                     	var node = null;
@@ -212,7 +212,7 @@ class App{
                     if(this.currentContext.last_event_node==null ||this.currentContext.last_event_node==undefined){
                   		tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
                     }
-                    
+
                     /*
                     userText = false;
 					triggerEvent = true;
@@ -234,21 +234,24 @@ class App{
                                     break;
 
                                 case B_TYPE.intent:
-                                    this.chat.showMessage(behaviour.data.text, "me");
-                                    if(LS){
-                                        //state = LS.Globals.SPEAKING;
-                                        var obj = { speech: { text: behaviour.data.text }, control: LS.Globals.SPEAKING }; //speaking
-                                        LS.Globals.processMsg(JSON.stringify(obj), true);
-                                    }
-                                    
+
+																var obj = {};
                                     //TODO properly process intents and timetables to generate behaviours in protocol format
-                                    var data = behaviour.data.data;
+                                    var data = behaviour.data;
                                     if(data.text){
                                         data.type = "speech";
-                                        
+																				this.chat.showMessage(data.text, "me");
+		                                   	var obj = { "speech": { text: data.text } }; //speaking
+
                                     }else{
-                                        data.type = "anAnimation";
+                                        var type = data.type = "anAnimation";
+																				var obj = { type: data };
                                     }
+																		if(LS){
+																				//state = LS.Globals.SPEAKING;
+																				obj.control = LS.Globals.SPEAKING;
+																				LS.Globals.processMsg(JSON.stringify(obj), true);
+																		}
                                     behaviours_message.data.push(data);
 
                                     break;
@@ -276,7 +279,7 @@ class App{
                                     if(LS){
                                         LS.Globals.processMsg(JSON.stringify(obj), true);
                                     }
-                                    
+
                                     //TODO properly process intents and timetables to generate behaviours in protocol format
                                     var data = behaviour.data;
                                     data.type = "facialLexeme";
@@ -403,7 +406,7 @@ class App{
             that.env_tree.children.push({id:user.uid, type: "user"});
             that.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
         }
-        
+
         if(env.gestures){
             that.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
             for(var i in env.gestures){
@@ -502,7 +505,7 @@ class App{
 
                     if(graph.type == GraphManager.HBTGRAPH) data = GraphManager.exportBehaviour(graph.graph);
                     else if(graph.type == GraphManager.BASICGRAPH) data = GraphManager.exportBasicGraph(graph.graph);
-                    
+
                     obj.env.graphs.push(data);
                 }
                 data = obj;

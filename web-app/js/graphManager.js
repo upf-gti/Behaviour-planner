@@ -16,32 +16,32 @@ var GraphManager = {
                 var graph = new HBTGraph(name);
                 graph.type = GraphManager.HBTGRAPH;
                 var hbt_context = new HBTContext();
-                
+
                 graph.graph.context = hbt_context;
                 //graph.name = "graph-canvas-"+Object.entries(GraphManager.graphs).length;
                 graph.id = "graph-canvas-"+graph.name;
                 this.graphs[graph.name] = graph;
-                CORE.Interface.tabsRefresh() 
-                
+                CORE.Interface.tabsRefresh()
+
                 var hbt_canvas = new HBTEditor(graph.id);
                 hbt_canvas.init(graph);
                 GraphManager.graph_canvas[graph.id] = hbt_canvas;
                 this.currentCanvas = hbt_canvas;
                 LGraphCanvas.active_canvas = this.currentCanvas;
-              
+
                 break;
             case this.BASICGRAPH:
                 var graph = {}
                 graph.graph = new LGraph(name);
                 graph.type = GraphManager.BASICGRAPH;
-                
+
                /* var canvasDOM = document.createElement("CANVAS");
                 canvasDOM.id = "new-canvas-"+GraphManager.graphs.length;*/
-                
+
                 graph.id = "graph-canvas-"+graph.name;
                 this.graphs[graph.id] = graph
-                CORE.Interface.newTab(graph) 
-                
+                CORE.Interface.newTab(graph)
+
                // var tab = CORE.Interface.tabs.addTab(canvasDOM.id, {id: canvasDOM.id,size:"full", title: "Basic Graph", width:"100%", height:"100%" });
                 var canvas =  new GraphEditor(graph.id);//new LGraphCanvas("#g"+graph.id, graph);
                 GraphManager.graph_canvas[graph.id] = canvas;
@@ -50,7 +50,7 @@ var GraphManager = {
                 LGraphCanvas.active_canvas = this.currentCanvas;
                 break;
         }
-       /* if(callback)          
+       /* if(callback)
             callback(GraphManager.graphs[GraphManager.graphs.length-1])*/
         return graph;
     },
@@ -68,8 +68,8 @@ var GraphManager = {
             }
             GraphManager.graphSelected = GraphManager.graphs[name];
         }
-        
-        
+
+
         LGraphCanvas.active_canvas = GraphManager.currentCanvas;
         console.log(data)
     },
@@ -80,7 +80,7 @@ var GraphManager = {
     ,
     putGraphOnEditor( data, name )
 	{
-        var that = this;   
+        var that = this;
         if(that.constructor.name != "Object")
             that = GraphManager;
         if(!data)
@@ -94,22 +94,30 @@ var GraphManager = {
             new_graph.graph.configure(data.behaviour);
             new_graph.graph.context = this.hbt_context;
             that.graphs[new_graph.name] = new_graph;
-            
+
         }
         else if(data.constructor.name == "HBTGraph")
         {
             new_graph = data;
         }
-        else 
+        else
         {
             new_graph.graph = new LGraph();
             new_graph.type = this.BASICGRAPH;
             new_graph.graph.configure(data)
             that.graphs[new_graph.graph.name] = new_graph;
+
         }
-    
+
+        if(!that.currentCanvas)
+        {
+          CORE.Interface.newTab(new_graph.grap);
+          that.newGraph(new_graph.type)
+        }
         that.currentCanvas.graph_canvas.setGraph(new_graph.graph);
+        that.graphSelected = new_graph;
         
+
     },
     init(){
         window.addEventListener("resize", this.resize.bind(this));
@@ -118,7 +126,7 @@ var GraphManager = {
         var that = this;
         if(GraphManager.currentCanvas.graph_canvas)
             GraphManager.currentCanvas.graph_canvas.resize();
-        
+
     },
     exportBehaviour(graph_)
     {
@@ -126,7 +134,7 @@ var GraphManager = {
         var graph = graph_.serialize();
         var nodes = graph.nodes;
         for(var i in nodes)
-        {   
+        {
             if(nodes[i].data)
                 delete nodes[i].data["g_node"];
         }
@@ -136,11 +144,11 @@ var GraphManager = {
     },
     exportBasicGraph(graph_)
     {
-        
+
         var graph = graph_.serialize();
         var nodes = graph.nodes;
         for(var i in nodes)
-        {   
+        {
             if(nodes[i].data)
                 delete nodes[i].data["g_node"];
         }
@@ -161,9 +169,9 @@ var GraphManager = {
         else
         {
             if(this.graphs[name])
-                delete this.graphs[name];          
+                delete this.graphs[name];
         }
-        
+
     },
     removeAllGraphs()
     {

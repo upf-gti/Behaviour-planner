@@ -124,33 +124,33 @@ loop: function()
 		this.draw();
 		//this.update(dt);
 	},
-  draw: function()
-	{
-		var that = this;
-		var canvas = this.canvas;
-		var ctx = this.ctx;
-		var timeline = this.timeline;
-		var project = this.project;
-		var settings = this.settings;
-		var current_time = this.timeline.current_time;
+draw: function()
+{
+	var that = this;
+	var canvas = this.canvas;
+	var ctx = this.ctx;
+	var timeline = this.timeline;
+	var project = this.project;
+	var settings = this.settings;
+	var current_time = this.timeline.current_time;
 
-    ctx.restore()
-		//editor stuff
+  ctx.restore()
+	//editor stuff
 /*		var selected_clip = this.selected_clip;
-		if( selected_clip && (selected_clip.start > current_time || (selected_clip.start + selected_clip.duration) < current_time))
-			selected_clip = null;//avoid editing something that is not visible
+	if( selected_clip && (selected_clip.start > current_time || (selected_clip.start + selected_clip.duration) < current_time))
+		selected_clip = null;//avoid editing something that is not visible
 
-		if( selected_clip && selected_clip.constructor.editor && selected_clip.constructor.editor.draw )
-			selected_clip.constructor.editor.draw( ctx, selected_clip, current_time );
+	if( selected_clip && selected_clip.constructor.editor && selected_clip.constructor.editor.draw )
+		selected_clip.constructor.editor.draw( ctx, selected_clip, current_time );
 */
 
-		//timeline
-		timeline.scroll_height = 200;
-		var timeline_final_height = timeline.height;
-		timeline.draw( ctx, project, current_time, [0, 0, canvas.width, timeline_final_height] );
+	//timeline
+	timeline.scroll_height =(project.tracks.length+1)*this.track_height+20;
+	var timeline_final_height = timeline.height;
+	timeline.draw( ctx, project, current_time, [0, 0, canvas.width, timeline_final_height] );
 //		this.drawIcon( timeline.extended ? 30 : 29, canvas.width * 0.5 - 16, canvas.height - timeline.height - 20, 32, "extend_timeline" );
-    ctx.restore()
-	},
+  ctx.restore()
+},
 dragging: false,
 pos: [0,0],
 panned_pos: [0,0],
@@ -298,19 +298,19 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 	var selected_clip_area = null;
 
   //compute visible tracks
-  		var y = scroll_y + 0.5;
-  		this._visible_tracks.length = 0;
-  		for(var i = 0; i < project.tracks.length; ++i)
-  		{
-  			var track = project.tracks[i];
-  			track._index = i;
-  			if(y > timeline.height)
-  				break;
-  			if( !track.editable && !this.timeline.extended)
-  				continue;
-  			this._visible_tracks.push( track );
-  			track._visible_index = i;
-  		}
+	var y = scroll_y + 0.5;
+	this._visible_tracks.length = 0;
+	for(var i = 0; i < project.tracks.length; ++i)
+	{
+		var track = project.tracks[i];
+		track._index = i;
+		if(y > timeline.height)
+			break;
+		if( !track.editable && !this.timeline.extended)
+			continue;
+		this._visible_tracks.push( track );
+		track._visible_index = i;
+	}
 
 	if( this.timeline_mode == "tracks" )
 	{
@@ -334,50 +334,43 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 		var y = scroll_y + 0.5 + vertical_offset;
 		for(var i = 0; i < this._visible_tracks.length; ++i)
 		{
-
 			var track = this._visible_tracks[i];
-				var track_alpha = track.hidden ? 0.5 : 1;
+			var track_alpha = track.hidden ? 0.5 : 1;
 
-				ctx.textAlign = "left";
-				var clips = track.getClipsInRange( start_time, end_time );
-				if(clips && clips.length)
-				for(var j = 0, l = clips.length; j < l; ++j)
-				{
-					var clip = clips[j];
-					visible_clips.push( clip );
+      //background tracks
+      var color = "#111111";
+      if(i%2==0)
+          color = "#232323";
+      if(track==this.selected_track)
+        color = "gray"
+      ctx.save()
+      ctx.fillStyle = color;
+      ctx.fillRect(0,y,ctx.canvas.width,y+ANIMED.track_height)
+      ctx.fillStyle = "black";
+      ctx.restore();
 
-					var frame_num = Math.floor( clip.start * framerate );
-					var x = Math.floor( timeline.timeToX( frame_num / framerate) ) + 0.5;
-					frame_num = Math.floor( (clip.start + clip.duration) * framerate );
-					var x2 = Math.floor( timeline.timeToX( frame_num / framerate) ) + 0.5;
-					var w = x2-x;
+      //draw clips
+			ctx.textAlign = "left";
+			var clips = track.getClipsInRange( start_time, end_time );
+			if(clips && clips.length)
+			for(var j = 0, l = clips.length; j < l; ++j)
+			{
+				var clip = clips[j];
+				visible_clips.push( clip );
 
-					if( x2 < 0 || x > canvas.width )
-						continue;
+				var frame_num = Math.floor( clip.start * framerate );
+				var x = Math.floor( timeline.timeToX( frame_num / framerate) ) + 0.5;
+				frame_num = Math.floor( (clip.start + clip.duration) * framerate );
+				var x2 = Math.floor( timeline.timeToX( frame_num / framerate) ) + 0.5;
+				var w = x2-x;
 
-					//background rect
-					ctx.globalAlpha = track_alpha;
-					ctx.fillStyle = clip.constructor.clip_color || "#333";
-					ctx.fillRect(x,y,w,track_height);
+				if( x2 < 0 || x > canvas.width )
+					continue;
 
-
-				//draw icon
-				if((x > -32 && x < x2 - 32)&&this.widgets)
-					ctx.drawImage( this.widgets.icons, (clip.constructor.id) * 32, 32, 32, 32, x - 6.5, y - 7.5, 32, 32 );
-        if(track == this.selected_track)
-        {
-          ctx.globalCompositeOperation = "lighter";
-          ctx.fillStyle = "gray";
-          ctx.beginPath();
-  				ctx.moveTo(timeline.sidebar_width+x,y);
-  				ctx.lineTo(x+Math.max(timeline.size[0], timeline.timeToX( timeline.duration) ) ,y);
-  				ctx.lineTo(x+Math.max(timeline.size[0], timeline.timeToX( timeline.duration) ) ,y + track_height);
-  				ctx.lineTo(0,y+ track_height);
-  				ctx.lineTo(0,y );
-  				ctx.closePath();
-  				ctx.fill();
-          ctx.globalCompositeOperation = "source-over";
-        }
+				//background rect
+				ctx.globalAlpha = track_alpha;
+				ctx.fillStyle = clip.constructor.clip_color || "#333";
+				ctx.fillRect(x,y,w,track_height);
 
 				//draw clip content
 				if( clip.drawTimeline )
@@ -390,8 +383,7 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 					ctx.restore();
 
 				}
-
-				//draw outline
+				//draw clip outline
 				if(clip.hidden)
 					ctx.globalAlpha = track_alpha * 0.5;
 				var safex = Math.max(-2, x );
@@ -406,7 +398,7 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 			y += track_height;
 		}
 
-		//render selection area
+		//render clip selection area
 		if(selected_clip_area)
 		{
 			ctx.strokeStyle = "white";
@@ -435,104 +427,95 @@ onDrawTimelineContent: function(ctx, start_time, end_time, timeline )
 		}*/
 /*  }*/
   //SIDEBAR
-  		//track names and icons
-  		var w = 120;
+	//track names
+	var w = 120;
 
-  		if( startx < w )
+	if( startx < w )
+	{
+		ctx.fillStyle = "black";
+		ctx.globalAlpha = 0.75;
+		ctx.fillRect(0,0,w,this.timeline.size[1]);
+		ctx.globalAlpha = 1;
+	}
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,timeline.sidebar_width,timeline.size[1] );
+
+	ctx.textAlign = "right";
+	var x = startx > w ? startx : w;
+	this._timeline_left_panel_x = x;
+	var y = scroll_y + 0.5 + vertical_offset;
+
+	var container = null;
+	if( this.timeline_mode == "tracks" )
+		container = this._visible_tracks;
+	else if( this.timeline_mode == "clip" && this.selected_clip )
+		container = this.selected_clip.control_channels;
+
+	if( container )
+  	for(var i = 0; i < container.length; ++i)
+  	{
+  		var item = container[i];
+  		var icon_num = -1;
+  		var name = "";
+  		var active = true;
+  		var is_selected = false;
+  		var color = "#AAA";
+  		var selection_color = "white";
+
+  		if( this.timeline_mode == "tracks" )
   		{
-  			ctx.fillStyle = "black";
-  			ctx.globalAlpha = 0.75;
-  			ctx.fillRect(0,0,w,this.timeline.size[1]);
+  			var track = item;
+  			if( !track.editable && !this.timeline.extended)
+  				continue;
+  			active = this.timeline.extended ? track.editable : !track.hidden; //the same icon changes depending on timeline extended
+  			icon_num = this.timeline.extended ? 6 : 7;
+  			name = track.name;
+  			is_selected = track == this.selected_track;
+  		}
+  		else if( this.timeline_mode == "clip" )
+  		{
+  			var cc = item;
+  			icon_num = 6;
+  			name = cc.name;
+  			active = !cc.disabled;
+  			is_selected = i == this.selected_cc_index;
+  			//color = selection_color = ANIMED.CC_COLORS[ i % ANIMED.CC_COLORS.length];
+  		}
+  		if( name )
+  		{
+  			ctx.fillStyle = color;
+  			ctx.fillText( name, x - 20, y + track_height * 0.7);
+  			ctx.fillStyle = "#123";
   			ctx.globalAlpha = 1;
   		}
-      ctx.fillStyle = "black";
-      ctx.fillRect(0,0,timeline.sidebar_width,timeline.size[1] );
 
-  		ctx.textAlign = "right";
-  		var x = startx > w ? startx : w;
-  		this._timeline_left_panel_x = x;
-  		var y = scroll_y + 0.5 + vertical_offset;
-
-  		var container = null;
-  		if( this.timeline_mode == "tracks" )
-  			container = this._visible_tracks;
-  		else if( this.timeline_mode == "clip" && this.selected_clip )
-  			container = this.selected_clip.control_channels;
-
-  		if( container )
-  		for(var i = 0; i < container.length; ++i)
+  		if( is_selected )
   		{
-  			var item = container[i];
-  			var icon_num = -1;
-  			var name = "";
-  			var active = true;
-  			var is_selected = false;
-  			var color = "#AAA";
-  			var selection_color = "white";
-
-  			if( this.timeline_mode == "tracks" )
-  			{
-  				var track = item;
-  				if( !track.editable && !this.timeline.extended)
-  					continue;
-  				active = this.timeline.extended ? track.editable : !track.hidden; //the same icon changes depending on timeline extended
-  				icon_num = this.timeline.extended ? 6 : 7;
-  				name = track.name;
-  				is_selected = track == this.selected_track;
-  			}
-  			else if( this.timeline_mode == "clip" )
-  			{
-  				var cc = item;
-  				icon_num = 6;
-  				name = cc.name;
-  				active = !cc.disabled;
-  				is_selected = i == this.selected_cc_index;
-  				//color = selection_color = ANIMED.CC_COLORS[ i % ANIMED.CC_COLORS.length];
-  			}
-
-
-
-
-			if( name )
-			{
-				ctx.fillStyle = color;
-				ctx.fillText( name, x - 20, y + track_height * 0.7);
-				ctx.fillStyle = "#123";
-				ctx.globalAlpha = 1;
-			}
-
-			if( is_selected )
-			{
-				ctx.fillStyle = selection_color;
-				ctx.globalCompositeOperation = "difference";
-				ctx.beginPath();
-				ctx.moveTo(0,y);
-				ctx.lineTo(timeline.sidebar_width-7,y);
-				ctx.lineTo(timeline.sidebar_width-2,y + track_height*0.5);
-				ctx.lineTo(timeline.sidebar_width-7,y + track_height);
-				ctx.lineTo(0,y + track_height);
-				ctx.closePath();
-				ctx.fill();
-				ctx.globalCompositeOperation = "source-over";
-
-			}
-
-  			if( this.timeline_mode == "clip" )
-  			{
-  				var cc = item;
-  				ctx.fillStyle = "black";
-  				ctx.fillRect( x + 4 - 16, y + 4, track_height - 8, track_height - 8 );
-  				ctx.fillStyle = ANIMED.CC_COLORS[ i % ANIMED.CC_COLORS.length ];
-  				ctx.fillRect( x + 6 - 16, y + 6, track_height - 12, track_height - 12 );
-  			}
-
-  			y += track_height;
+  			ctx.fillStyle = selection_color;
+  			ctx.globalCompositeOperation = "difference";
+  			ctx.beginPath();
+  			ctx.moveTo(0,y);
+  			ctx.lineTo(timeline.sidebar_width-7,y);
+  			ctx.lineTo(timeline.sidebar_width-2,y + track_height*0.5);
+  			ctx.lineTo(timeline.sidebar_width-7,y + track_height);
+  			ctx.lineTo(0,y + track_height);
+  			ctx.closePath();
+  			ctx.fill();
+  			ctx.globalCompositeOperation = "source-over";
   		}
 
-  		ctx.restore();
+  		if( this.timeline_mode == "clip" )
+  		{
+  			var cc = item;
+  			ctx.fillStyle = "black";
+  			ctx.fillRect( x + 4 - 16, y + 4, track_height - 8, track_height - 8 );
+  			ctx.fillStyle = ANIMED.CC_COLORS[ i % ANIMED.CC_COLORS.length ];
+  			ctx.fillRect( x + 6 - 16, y + 6, track_height - 12, track_height - 12 );
+  		}
 
-
-
+  		y += track_height;
+  	}
+	ctx.restore();
 },
   //mouse event
 	onMouse: function(e)
@@ -751,8 +734,10 @@ onTimelineMouse: function( e, time, timeline )
         //Add track
         if(!track)
         {
-
-          var ctxmenu = new LiteGUI.ContextMenu(ANIM.track_types, {title: "Track actions", event:e, callback: function(v)
+          var tracks = [];
+          for(var i in ANIM.track_types)
+            tracks.push(i);
+          var ctxmenu = new LiteGUI.ContextMenu(tracks, {title: "Track actions", event:e, callback: function(v)
           {
             var that = this;
             var track = new ANIM.Track(v);
@@ -792,9 +777,9 @@ onTimelineMouse: function( e, time, timeline )
           }
           else
           {
-            for(var i in ANIM.clip_types[track.name])
+            for(var i in ANIM.track_types[track.name])
             {
-              var clip = ANIM.clip_types[track.name][i];
+              var clip = ANIM.track_types[track.name][i];
               clips_names.push(clip.name);
             }
 
@@ -804,7 +789,7 @@ onTimelineMouse: function( e, time, timeline )
 
               var idx = clips_names.indexOf(v);
 
-              var clip = new ANIM.clip_types[track.name][idx];
+              var clip = new ANIM.track_types[track.name][idx];
 
               that.project.tracks[track._index].add( clip, clicked_time);
 
@@ -1013,23 +998,30 @@ getClipAtTimelinePosition: function( e, reverse, margin )
         var property = clip.properties[i];
         switch(property.constructor)
         {
+
           case String:
-            panel.addString(i, property, {callback: function(v)
+            panel.addString(i, property, {callback: function(i,v)
             {
               this.clip_in_panel.properties[i] = v;
-            }.bind(this)});
+            }.bind(this, i)});
             break;
-            case Number:
-              panel.addNumber(i, property, {callback: function(v)
-              {
-                this.clip_in_panel.properties[i] = v;
-              }.bind(this)});
+          case Number:
+            panel.addNumber(i, property, {callback: function(i,v)
+            {
+              this.clip_in_panel.properties[i] = v;
+            }.bind(this,i)});
             break;
-            case Boolean:
-              panel.addCheckbox(i, property, {callback: function(v)
-              {
-                this.clip_in_panel.properties[i] = v;
-              }.bind(this)});
+          case Boolean:
+            panel.addCheckbox(i, property, {callback: function(i,v)
+            {
+              this.clip_in_panel.properties[i] = v;
+            }.bind(this,i)});
+              break;
+          case Array:
+            panel.addArray(i, property, {callback: function(i,v)
+            {
+              this.clip_in_panel.properties[i] = v;
+            }.bind(this,i)});
               break;
         }
       }

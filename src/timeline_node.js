@@ -12,17 +12,7 @@ var ANIM = global.ANIM = {};
 var DEG2RAD = 0.0174532925;
 var RAD2DEG = 57.295779578552306;
 
-//clip types
-ANIM.MISSING_CLIP = -1; //used when after loading a clip the type is not found in the system
-ANIM.NULL_CLIP = 0;
-ANIM.SPEECH = 1;
-ANIM.FACE = 2;
-ANIM.GAZE = 3;
-ANIM.GESTURE = 4;
-ANIM.HEAD = 5;
-ANIM.LOCOMOTION = 6;
-ANIM.POSTURE = 7;
-ANIM.CUSTOM = 8;
+
 
 ANIM.REF_CLIP = 100;
 
@@ -60,8 +50,23 @@ ANIM.blend_to_operation = {
 	6: "soft-light"
 };
 
+//clip types
+ANIM.MISSING_CLIP = -1; //used when after loading a clip the type is not found in the system
+ANIM.SPEECH = 0;
+ANIM.AUDIO = 1;
+ANIM.FACELEXEME = 2;
+ANIM.FACEFACS = 3;
+ANIM.GAZE = 4;
+ANIM.GESTURE = 5;
+ANIM.HEAD = 6;
+ANIM.HEADDIRECTION = 7;
+ANIM.POSTURE = 8;
+ANIM.LOCOMOTION = 9;
 
-ANIM.clip_types = {};
+ANIM.CUSTOM = 10;
+
+ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
+ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
 ANIM.registerClipType = function(ctor)
 {
 	var name = ctor.name;
@@ -72,7 +77,7 @@ ANIM.registerClipType = function(ctor)
 }
 
 //Intent node with timeline
-function TimelineIntent()
+function TimelineIntent(o)
 {
   var w = 150;
   var h =45;
@@ -95,7 +100,7 @@ function TimelineIntent()
 	//timing
 	this.mode = ANIM.PAUSED;
 	this.current_time = 0;
-	this.duration = 60;
+	this.duration = 160;
 	this.framerate = 30;
 	this.type = ANIM.CANVAS2D;
 	this.allow_seeking = true;
@@ -106,32 +111,53 @@ function TimelineIntent()
 	//tracks: similar to layers
 	this.tracks = []; //all tracks
 	this.markers = []; //time markers
-	this.add( new ANIM.Track("Speech") );
-	this.add( new ANIM.Track("Face") );
-	this.add( new ANIM.Track("Gaze") );
-	this.add( new ANIM.Track("Head") );
-	this.add( new ANIM.Track("Gesture") );
-	this.add( new ANIM.Track("Posture") );
 
-	//scripts
-	this.includes = []; //urls to js files that must be imported
-	this.scripts = {}; //scripts that could be used in this project
-	this.globals = {}; //container to store global vars between clips
-	this.texts = {}; //generic container for text data
+	if(!this.tracks.length)
+	{
+		for(var i in ANIM.track_types)
+		{
+				this.add( new ANIM.Track(i) );
+		}
+		/*this.add( new ANIM.Track("Speech") );
+		this.add( new ANIM.Track("Face") );
+		this.add( new ANIM.Track("Gaze") );
+		this.add( new ANIM.Track("Head") );
+		this.add( new ANIM.Track("Gesture") );
+		this.add( new ANIM.Track("Posture") );*/
+	}
 
-	//external
-	this.fonts = []; //fonts that must be loaded from Google Fonts
-
-	this.clip_types = []; //list of all available clip types
-
-	this.duration = 120;
-
-  TimelineIntent.instance = this;
+	TimelineIntent.instance = this;
 }
 
 //name to show
 TimelineIntent.title = "Timeline Intent";
+TimelineIntent.prototype.onConfigure = function(o){
+	if(o.tracks)
+	{
+		this.tracks = [];
+		for(var i in o.tracks)
+		{
+			var trackData = o.tracks[i];
+			var track = new ANIM.Track(trackData.name);
+			track.fromJSON(trackData);
+			this.add(track);
+		}
+	}
 
+	if(o.markers)
+		this.markers = o.markers;
+	this.duration = o.duration;
+	this.current_time = o.current_time;
+}
+TimelineIntent.prototype.onSerialize = function(o){
+
+	o.tracks = [];
+	for(var i = 0; i < this.tracks.length; ++i)
+		o.tracks.push( this.tracks[i].toJSON() );
+	o.markers = this.markers;
+	o.duration = this.duration;
+	o.current_time = this.current_time;
+}
 //function to call when the node is executed
 TimelineIntent.prototype.tick = function(agent, dt, info)
 {
@@ -144,7 +170,7 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
     for(var j in track.clips)
     {
       var behaviour = new Behaviour();
-      behaviour.type = B_TYPE.intent_timeline || 17;
+      behaviour.type = B_TYPE.intent_timeline || 16;
 	    behaviour.STATUS = STATUS.success;
       behaviour.setData(track.clips[j].toJSON());
       behaviours.push(behaviour);
@@ -154,6 +180,7 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
   agent.evaluation_trace.push(this.id);
 
   return behaviours;
+
 }
 TimelineIntent.prototype.onDblClick = function()
 {
@@ -791,7 +818,7 @@ function FaceFACSClip()
 		relax : 0.75,
 		au : "",
 		side : "BOTH", //[LEFT, RIGHT, BOTH](optional)
-		permanent : false
+		base : false
 	}
 	this.color = "black";
 	this.font = "40px Arial";
@@ -812,6 +839,12 @@ FaceFACSClip.prototype.toJSON = function()
 	}
 	for(var i in this.properties)
 	{
+		if(i == "base")
+		{
+			if(this.properties[i])
+				json.type = "faceShift";
+			continue;
+		}
 		json[i] = this.properties[i];
 	}
 	return json;
@@ -849,13 +882,13 @@ function GazeClip()
 	this._width = 0;
 
 	this.properties = {
-		target : null,
+		target : [0,0,0],
 		ready : 0.25, //if it's not permanent
 		relax : 0.75, //if it's not permanent
 		influence : "", //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
 		offsetAngle : 0.0, //(optional)
 		offsetDirection : "RIGHT", //[RIGHT, LEFT, UP, DOWN, UPRIGHT, UPLEFT, DOWNLEFT, DOWNRIGHT](optional)
-		permanent : false
+		base : false
 	}
 	this.color = "black";
 	this.font = "40px Arial";
@@ -871,10 +904,18 @@ GazeClip.prototype.toJSON = function()
 	var json = {
 		id: this.id,
 		start: this.start,
-		duration: this.duration
+		duration: this.duration,
+		type: "gaze"
 	}
 	for(var i in this.properties)
 	{
+		if(i == "base")
+		{
+			if(this.properties[i])
+				json.type = "gazeShift";
+			continue;
+		}
+
 		json[i] = this.properties[i];
 	}
 	return json;
@@ -907,7 +948,7 @@ GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 function GestureClip()
 {
 	this.id= "gesture-"+Math.ceil(getTime());;
-
+	this.type = "gesture";
 	this.start = 0
 	this.duration = 1.75;
 
@@ -921,7 +962,7 @@ function GestureClip()
 		stroke : 1,
 		strokeEnd : 1.25,
 		relax : 1.5,
-		target : null //gesture is directed towards that target (optional) for pointing
+		target : [0,0,0] //gesture is directed towards that target (optional) for pointing
 	}
 	this.color = "black";
 	this.font = "40px Arial";
@@ -1362,8 +1403,7 @@ AudioClip.prototype.fromJSON = function(json)
 }
 
 
-ANIM.clip_types = {"Speech": [ SpeechClip, AudioClip], "Face": [FaceLexemeClip, FaceFACSClip], "Gaze": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip, HeadDirectionShiftClip], "Posture": [PostureClip] };
-ANIM.track_types = ["Speech","Face","Gaze","Gesture", "Head", "Posture"];
+
 
 //helpers **************************
 

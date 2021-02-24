@@ -1847,13 +1847,13 @@ function CustomRequest(){
   var h = 55;
 
   this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
-  
+
   //Properties
   this.properties = {type: "", parameters: {}};
 
   var that = this;
   this._typeWidget = this.addWidget("text", "Type", this.properties.type, function(v){ that.properties.type = v; });
-  
+
 	this.size = [w, h];
 
   this._node = null;
@@ -1911,7 +1911,7 @@ CustomRequest.prototype.addParameter = function(name, value){
 
 CustomRequest.prototype.onInspect = function(inspector){
   var that = this;
-  
+
   inspector.clear();
 
   inspector.addTitle("CustomRequest");

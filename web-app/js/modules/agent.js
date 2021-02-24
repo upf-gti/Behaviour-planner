@@ -96,14 +96,14 @@ class Agent{
         }
 
         this.uid =  "Agent-" + Date.now();
-		this.num_id = Object.keys(AgentManager.agents).length;
+	      this.num_id = Object.keys(AgentManager.agents).length;
 
         this.btree = null;
 
-		this.hbtgraph = "default";
+	      this.hbtgraph = "default";
 
         this.path = null;
-		this.r_path = null;
+	      this.r_path = null;
 
         this.skeletal_animations = {};
 
@@ -131,6 +131,7 @@ class Agent{
         AgentManager.agents[this.uid] = this;
         AgentManager.addPropertiesToLog(this.properties);
         AgentManager.agent_selected = this;
+        this.createAgentInspector();
     }
 
     configure( o, agent )
@@ -140,7 +141,7 @@ class Agent{
         this.num_id = o.num_id;
         this.btree = null;
 
-		this.hbtgraph = o.graph || "default";
+	      this.hbtgraph = o.graph || "default";
 
         this.path = null;//[{id:1,pos:[2800,0,-2500],visited:false},{id:2,pos: [1900,0,1000],visited:false} ,{id:3,pos: [1300,0,1800],visited:false}, {id:4,pos: [-1500,0,1800],visited:false}, {id:5,pos: [-1300,0,0],visited:false}, {id:6,pos: [0,0,-750],visited:false}, {id:7,pos: [1500,0,-1050],visited:false}, {id:8,pos: [2500,0,-2500],visited:false}];
 //        this.current_waypoint = this.path[0];

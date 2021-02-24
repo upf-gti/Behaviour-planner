@@ -18,7 +18,7 @@ function Timeline()
 
 	this.current_scroll = 0; //in percentage
 	this.current_scroll_in_pixels = 0; //in pixels
-	this.scrollable_height = 0; //true height of the timeline content
+	this.scrollable_height = 600; //true height of the timeline content
 
 	this._seconds_to_pixels = 100;
 	this._pixels_to_seconds = 1/this._seconds_to_pixels;
@@ -49,6 +49,7 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	this.position[1] = rect[1];
 	var w = this.size[0] = rect[2];
 	var h = this.size[1] = rect[3];
+	var timeline_height= h;
 	var P2S = this._pixels_to_seconds;
 	var S2P = this._seconds_to_pixels;
 
@@ -66,23 +67,7 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	ctx.globalAlpha = this.opacity;
 	ctx.fillRect(0,0,w,h);
 	ctx.globalAlpha = 1;
-	//tracks background
-	var j=0;
-	if(ANIMED.track_height)
-	{
-		for(var i = 0; i<h- ANIMED.track_height; i+=ANIMED.track_height)
-		{
-			var color = "#111111";
-			if(j%2==0)
-					color = "#232323";
-			ctx.save()
-			ctx.fillStyle = color;
-			ctx.fillRect(0,i,w,i+ANIMED.track_height)
-			ctx.fillStyle = "black";
-			ctx.restore();
-			j++;
-		}
-	}
+
 	//seconds markers
 	var seconds_full_window = (w * P2S); //how many seconds fit in the current window
 	var seconds_half_window = seconds_full_window * 0.5;

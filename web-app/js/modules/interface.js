@@ -701,7 +701,7 @@ class Interface {
                 CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
 
                     data.forEach(function(e){
-                        
+
                         if(e.unit !== unit)
                             return;
                         files[e.filename] = e;
@@ -803,48 +803,30 @@ class Interface {
 
                 widgets.widgets_per_row = 1;
                 widgets.addSeparator();
-<<<<<<< HEAD
-                widgets.addString(null, file_selected ? folder_selected + "/" + file_selected.filename : "", {disabled: true});
-                widgets.addButton( null, "Load", {callback: function() {
 
-                    if(!file_selected)
-                        return;
-
-                    dialog.close();
-=======
-                widgets.addString(null, 
-                    file_selected ? folder_selected + "/" + file_selected.filename : folder_selected + "/", 
+                widgets.addString(null,
+                    file_selected ? folder_selected + "/" + file_selected.filename : folder_selected + "/",
                     {disabled: true});
->>>>>>> dev
 
                 if(file_selected)
                 {
                     widgets.addButton( null, "Load", {callback: function() {
-            
+
                         if(!file_selected)
                             return;
-    
+
                         dialog.close();
-    
+
                         var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
                         // LiteGUI.requestJSON( fullpath, function(data){
                         //     console.log(data);
                         // });
-    
+
                         CORE["Interface"].importFromURL( fullpath );
-                        
+
                     } });
                 }
-
-<<<<<<< HEAD
-                    CORE["Interface"].importFromURL( fullpath );
-
-                } });
                 widgets.addSeparator();
-
-=======
-                widgets.addSeparator();
->>>>>>> dev
             }
 
             __getFolderFiles(user_name, null);
