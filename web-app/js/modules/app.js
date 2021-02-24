@@ -441,19 +441,19 @@ class App{
 		}
 	}
 
-    onDataReceived(data)
-    {
-        var type = data.type;
+    onDataReceived(msg){
+        var type = msg.type;
+        var data = msg.data;
         switch(type)
         {
             case "info":
                 //Server messages
-                console.log(data.data);
+                console.log(data);
                 break;
 
-            case "user-data":
-                this.currentContext.user.update(data.data);
-                var text = data.data.text;
+            case "user-data":   //Old, to remove
+                this.currentContext.user.update(data);
+                var text = data.text;
                 if(text)
                 {
                     var event = {
@@ -464,6 +464,30 @@ class App{
                     if(this.chat)
                         this.chat.showMessage(text);
                 }
+                break;
+
+            case "data":
+                //Context data
+
+                if(data.user){
+                    this.currentContext.user.update(data.user);
+                    var text = data.user.text;
+                    if(text){
+                        var event = {
+                            type: EVENTS.textRecieved,
+                            dara: {
+                                text: text
+                            }
+                        };
+                        this.onEvent(event); //TODO allow to set events on other data properties
+                        if(this.chat){
+                            this.chat.showMessage(text);
+                        }
+                    }
+                }
+
+                //TODO blackboard
+
                 break;
         }
     }
