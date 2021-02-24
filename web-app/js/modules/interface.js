@@ -550,13 +550,8 @@ class Interface {
             return;
         }
 
-        var inner = function(v) {
-
-            if(!filename.length) {
-                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
-                return;
-            }
-
+        var uploadFile = function(v)
+        {
             try
             {
                 boo = CORE.App.toJSON(
@@ -576,6 +571,8 @@ class Interface {
 
             var path = folder_selected + "/" + filename + ".json";
 
+            console.warn("Uploading file: " + path);
+
             // upload file
             FS.uploadFile(path, new File([boo], filename + ".json"), []);
 
@@ -587,7 +584,37 @@ class Interface {
                 path = tkn.join("/") + "/thb/" + _name;
                 FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
             }
+        }
 
+        var inner = function(v) {
+
+            if(!filename.length) {
+                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+                return;
+            }
+            
+            // CHECK IF FILE EXISTS
+            var _folder = folder_selected.replace(user_name, "");
+            CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
+    
+                
+                var jName = filename + ".json";
+                data = data.filter(e => e.unit === user_name && e.filename === jName);
+                
+                console.log(user_name, _folder, data);
+
+                if(data.length)
+                {
+                    LiteGUI.choice("Overwrite file?", ["No", "Yes"], function(choice_resp){
+                        if(choice_resp == "Yes")
+                            uploadFile(v);
+                    }, {title:"File already exists"} )
+                }else
+                {
+                    uploadFile(v);
+                }
+                
+            });
         };
 
         canvas.toBlob(function(v){
