@@ -605,7 +605,7 @@ class Interface {
 
                 if(data.length)
                 {
-                    LiteGUI.choice("Overwrite file?", ["No", "Yes"], function(choice_resp){
+                    LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
                         if(choice_resp == "Yes")
                             uploadFile(v);
                     }, {title:"File already exists"} )
@@ -707,13 +707,20 @@ class Interface {
                 dialog.makeModal('fade');
 
                 var fixed_widgets = new LiteGUI.Inspector();
-                fixed_widgets.addTitle( "Filename");
-                window.filename_w = fixed_widgets.addString( null, filename );
 
-                filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
-                    filename = filename_w.getValue();
-                    widget_fullpath.on_refresh();
-                });
+                fixed_widgets.on_refresh = function()
+                {
+                    fixed_widgets.clear();
+                    fixed_widgets.addTitle( "Filename");
+                    window.filename_w = fixed_widgets.addString( null, filename );
+
+                    filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                        filename = filename_w.getValue();
+                        widget_fullpath.on_refresh();
+                    });
+                }
+
+                fixed_widgets.on_refresh();
 
                 var widgets = new LiteGUI.Inspector();
                 var widget_fullpath = new LiteGUI.Inspector();
@@ -721,7 +728,6 @@ class Interface {
                 widget_fullpath.on_refresh = function(){
     
                     widget_fullpath.clear();
-    
                     widget_fullpath.addTitle("Fullpath");
                     widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
                 }
@@ -734,7 +740,12 @@ class Interface {
                     widgets.root.appendChild(litetree.root);
                     widgets.addTitle( "Files");
                     widgets.widgets_per_row = 2;
-                    widgets.addList( null, files, {height: "150px"});
+                    widgets.addList( null, files, {height: "150px", callback: function(file){
+
+                        filename = file.filename.split(".").shift();
+                        fixed_widgets.on_refresh();
+                        widget_fullpath.on_refresh();
+                    }});
     
                     var thb = widgets.addContainer("thb");
                     thb.style.width = "50%";
