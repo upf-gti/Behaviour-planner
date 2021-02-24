@@ -1001,7 +1001,11 @@ getClipAtTimelinePosition: function( e, reverse, margin )
         this.clip_in_panel.duration = v;
       }.bind(this)})
   		panel.addSection("Content");
-
+      if(clip.showInfo)
+      {
+        clip.showInfo(panel);
+        return;
+      }
       for(var i in clip.properties)
       {
         var property = clip.properties[i];

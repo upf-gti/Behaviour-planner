@@ -263,14 +263,6 @@ class Interface {
         }
         graph_area.hideSection(1);
         this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
-
-        window.addEventListener('resize', function(e)
-        {
-            GraphManager.resize();
-
-            // Call here any other resize
-            // ...
-        });
     }
 
     onExpandInspector(area,e) {
@@ -547,19 +539,15 @@ class Interface {
 
         var canvas = GraphManager.currentCanvas.canvas2D;
         var tbh_data, boo;
-        var user_name = curr_session.user.username;
-        var files = {};
-        var file_selected = "";
-        var folder_selected = user_name;
-        var path = "", filename = "export";
+	    var filename = "export", path = "/";
 
-        if(!canvas) {
-            console.warn("nothing to export");
-            return;
-        }
+        var inner = function(v) {
 
-        var uploadFile = function(v)
-        {
+            if(!filename.length) {
+                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+                return;
+            }
+
             try
             {
                 boo = CORE.App.toJSON(
@@ -577,10 +565,6 @@ class Interface {
 
             var FS = CORE["FileSystem"];
 
-            var path = folder_selected + "/" + filename + ".json";
-
-            console.warn("Uploading file: " + path);
-
             // upload file
             FS.uploadFile(path, new File([boo], filename + ".json"), []);
 
@@ -592,80 +576,43 @@ class Interface {
                 path = tkn.join("/") + "/thb/" + _name;
                 FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
             }
-        }
 
-        var inner = function(v) {
-
-            if(!filename.length) {
-                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
-                return;
-            }
-            
-            // CHECK IF FILE EXISTS
-            var _folder = folder_selected.replace(user_name, "");
-            CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
-    
-                
-                var jName = filename + ".json";
-                data = data.filter(e => e.unit === user_name && e.filename === jName);
-                
-                console.log(user_name, _folder, data);
-
-                if(data.length)
-                {
-                    LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
-                        if(choice_resp == "Yes")
-                            uploadFile(v);
-                    }, {title:"File already exists"} )
-                }else
-                {
-                    uploadFile(v);
-                }
-                
-            });
         };
+
+        if(!canvas) {
+            console.warn("nothing to export");
+            return;
+        }
 
         canvas.toBlob(function(v){
 
             tbh_data = v;
+            var user_name = curr_session.user.username;
             var url =  URL.createObjectURL( tbh_data );
+            var width = 500;
+            var choice = LiteGUI.choice("<img src='" + url + "' style='margin-left: 115px;' width='50%'>", ["Graph","Environment"], inner, {title: "Save to server", width: width});
+
+            var widgets = new LiteGUI.Inspector();
+            var r_widgets = new LiteGUI.Inspector();
+            widgets.addInfo( null, "Filename");
+            window.filename_w = widgets.addString( null, filename );
+
+            filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                filename = filename_w.getValue();
+                r_widgets.refresh();
+            });
+
+            widgets.addSeparator();
 
             curr_session.getFolders(user_name, (function(data) {
-    
-                function __getFolderFiles(unit, folder, callback) {
-    
-                    var _folder = folder;
-    
-                    if(!_folder)
-                    _folder = "";
-    
-                    CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
-    
-                        data.forEach(function(e){
-    
-                            if(e.unit !== unit)
-                                return;
-                            files[e.filename] = e;
-                        });
-                        widgets.refresh();
-                        widget_fullpath.on_refresh();
-                    });
-                }
-    
-                /*
-                    recursive function to get each item parent
-                */
-                function __getParent(id)
-                {
-                    var parent = litetree.getParent(id);
-                    if(parent)
-                    {
-                        var parent_id = parent.data.id;
-                        path = parent_id + "/" + path;
-                        __getParent(parent_id);
-                    }
-                }
-    
+
+                var selected = null;
+                var litetree = new LiteGUI.Tree({id: user_name});
+                LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                    selected = item.detail.data.id;
+                    r_widgets.refresh();
+                });
+
                 /*
                     recursive function to get all folders in unit
                     as a data tree
@@ -681,118 +628,53 @@ class Interface {
                             __showFolders(object[f], f);
                     }
                 }
-    
-                var selected = null;
-                var litetree = new LiteGUI.Tree({id: user_name});
-                LiteGUI.bind( litetree.root, "item_selected", function(item) {
-                    selected = item.detail.data.id;
-    
-                    path = "";
-                    files = {};
-                    file_selected = null;
-    
-                    // get full path
-                    __getParent(selected);
-                    path += selected;
-                    var tk = path.split("/");
-                    tk.shift();
-                    path = tk.join("/");
-                    if(!path.length)
-                        path = null;
-    
-                    // fetch files in folder
-                    folder_selected = user_name + (path ? "/" + path : "");
-                    // console.log(folder_selected);
-                    __getFolderFiles(user_name, path);
-                });
-    
+
                 __showFolders(data, user_name);
-    
-                var id = "Save to Server";
-                var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
-                var w = 400;
-                var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
-                dialog.makeModal('fade');
+                widgets.addInfo( null, "Path");
+                widgets.root.appendChild(litetree.root);
 
-                var fixed_widgets = new LiteGUI.Inspector();
-
-                fixed_widgets.on_refresh = function()
+                /*
+                    recursive function to get each item parent
+                */
+                function __getParent(id)
                 {
-                    fixed_widgets.clear();
-                    fixed_widgets.addTitle( "Filename");
-                    window.filename_w = fixed_widgets.addString( null, filename );
-
-                    filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
-                        filename = filename_w.getValue();
-                        widget_fullpath.on_refresh();
-                    });
+                    var parent = litetree.getParent(id);
+                    if(parent)
+                    {
+                        var parent_id = parent.data.id;
+                        path = parent_id + "/" + path;
+                        __getParent(parent_id);
+                    }
                 }
 
-                fixed_widgets.on_refresh();
+                r_widgets.refresh = function() {
 
-                var widgets = new LiteGUI.Inspector();
-                var widget_fullpath = new LiteGUI.Inspector();
-    
-                widget_fullpath.on_refresh = function(){
-    
-                    widget_fullpath.clear();
-                    widget_fullpath.addTitle("Fullpath");
-                    widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
+                    r_widgets.clear();
+                    let curr = selected;
+
+                    if(curr) {
+                        path = curr;
+                        __getParent(selected);
+                    }
+                    else {
+                        path = user_name;
+                    }
+
+                    path += "/" + filename + ".json";
+
+                    r_widgets.addString( null, path, {disabled: true} );
+                    r_widgets.addSeparator();
                 }
 
-                widgets.on_refresh = function(){
-    
-                    widgets.clear();
-    
-                    widgets.addTitle("Folders");
-                    widgets.root.appendChild(litetree.root);
-                    widgets.addTitle( "Files");
-                    widgets.widgets_per_row = 2;
-                    widgets.addList( null, files, {height: "150px", callback: function(file){
+                r_widgets.refresh();
 
-                        filename = file.filename.split(".").shift();
-                        fixed_widgets.on_refresh();
-                        widget_fullpath.on_refresh();
-                    }});
-    
-                    var thb = widgets.addContainer("thb");
-                    thb.style.width = "50%";
-                    thb.style.height = "145px";
-                    thb.style.display = "inline-block";
-                    thb.style.marginTop = "5px";
-                    thb.innerHTML = "<img height='100%' src='" + url + "'>";
-    
-                    widgets.addSeparator();
-                    widgets.widgets_per_row = 2;
-                    widgets.addButton( null, "Save graph", {callback: function() {
-    
-                       inner("Graph");
-                       dialog.close();
+                choice.add( r_widgets.root, true );
+                choice.add( widgets.root, true );
+                choice.setPosition( window.innerWidth/2 - width/2, window.innerHeight/2 - 300 );
 
-                    } });
+            }).bind(this));
 
-                    widgets.addButton( null, "Save Environment", {callback: function() {
-    
-                        inner("Environment");
-                        dialog.close();
-
-                    } });
-                    widgets.widgets_per_row = 1;
-                    widgets.addSeparator();
-                }
-    
-                __getFolderFiles(user_name, null);
-    
-                widgets.on_refresh();
-                widget_fullpath.on_refresh();
-                dialog.add(fixed_widgets);
-                dialog.add(widget_fullpath);
-                dialog.add(widgets);
-                dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
-    
-            }));
         });
-
     }
 
     showLoadFromServerDialog() {
@@ -936,6 +818,10 @@ class Interface {
                         dialog.close();
 
                         var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
+                        // LiteGUI.requestJSON( fullpath, function(data){
+                        //     console.log(data);
+                        // });
+
                         CORE["Interface"].importFromURL( fullpath );
 
                     } });
@@ -947,7 +833,7 @@ class Interface {
 
             widgets.on_refresh();
             dialog.add(widgets);
-            dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
+            dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 150 );
 
         }));
     }

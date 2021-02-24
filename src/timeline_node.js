@@ -804,7 +804,45 @@ FaceLexemeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 	if( text_info.width < (w - 24) )
 		ctx.fillText( this.id, 24,h * 0.7 );
 }
+FaceLexemeClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		switch(property.constructor)
+		{
 
+			case String:
+				if(i == "lexeme")
+				{
+					panel.addCombo(i, FaceLexemeClip.lexemes)
+				}
+				panel.addString(i, property, {callback: function(i,v)
+				{
+					this.clip_in_panel.properties[i] = v;
+				}.bind(this, i)});
+				break;
+			case Number:
+				panel.addNumber(i, property, {callback: function(i,v)
+				{
+					this.clip_in_panel.properties[i] = v;
+				}.bind(this,i)});
+				break;
+			case Boolean:
+				panel.addCheckbox(i, property, {callback: function(i,v)
+				{
+					this.clip_in_panel.properties[i] = v;
+				}.bind(this,i)});
+					break;
+			case Array:
+				panel.addArray(i, property, {callback: function(i,v)
+				{
+					this.clip_in_panel.properties[i] = v;
+				}.bind(this,i)});
+					break;
+		}
+	}
+}
 //FaceFACSClip
 FaceFACSClip.sides = ["LEFT", "RIGHT", "BOTH"];
 function FaceFACSClip()

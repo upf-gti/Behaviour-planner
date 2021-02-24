@@ -656,6 +656,7 @@ function ParseCompare()
     this.widgets_up = true;
     this.size = [w,h];
     this.behaviour = new Behaviour();
+    this.tags_outputs = {};
 }
 //mapping must has the form [vocabulary array, mapped word]
 ParseCompare.prototype.onConfigure = function(o)
@@ -791,6 +792,13 @@ function wordInString(s, word){
 ParseCompare.prototype.onGetInputs = function()
 {
   return [["text", "string", { pos: [0,this.size[1]*0.5], dir:LiteGraph.LEFT}]];
+}
+ParseCompare.prototype.onGetOutputs = function()
+{
+  var outputs = [];
+  for(var i in this.tags_outputs)
+    outputs.push([i, this.tags_outputs[i]]);
+  return outputs;
 }
 ParseCompare.prototype.onInspect = function(  inspector )
 {
@@ -964,7 +972,7 @@ ParseCompare.prototype.onInspect = function(  inspector )
         if(e.key == "#")
         {
           autocomplete(phrase, EntitiesManager.getEntities(), tags, {})
-            //displayEntity(i, phrase, e, tags)
+
           newPhrase = e.target.value;
 
         }
@@ -984,11 +992,16 @@ ParseCompare.prototype.processPhrase = function(phraseElement, tags, inspector)
 
     for(var i=0; i<tags.length; i++)
     {
-        var start = currentPhrase.indexOf(tags[i]);
-        var end = tags[i].length;
-        //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
-        currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
-        toCompare = toCompare.replace(tags[i], "(\\w+)");
+
+      if(this.tags_outputs[tags[i]] == undefined)
+      {
+        this.tags_outputs[tags[i]] = "string";
+      }
+      var start = currentPhrase.indexOf(tags[i]);
+      var end = tags[i].length;
+      //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
+      currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
+      toCompare = toCompare.replace(tags[i], "(\\w+)");
 
     }
     component.visible_phrases.push(currentPhrase);
@@ -2246,12 +2259,12 @@ function ParseEvent()
   this.event_type = EVENTS.textRecieved;
   var that = this;
   this.widgetType = this.addWidget("combo","type", that.properties.type, function(v){that.properties.type = v},  {values: EventNode.TYPES});
-  
+
   this.input_contexts = [];
   this.output_contexts = [];
   this.visible_phrases = [];
   this.phrases =  [];
-  
+
   this.addInput("", "path");
   this.behaviour = new Behaviour();
 
@@ -2394,15 +2407,15 @@ ParseEvent.prototype.tick = function(agent, dt)
 	}
 }
 
-ParseEvent.prototype.compare = function (inputString, vocabulary) 
+ParseEvent.prototype.compare = function (inputString, vocabulary)
 {
   var found = false;
-  for (var i in vocabulary) 
+  for (var i in vocabulary)
   {
     var currentVocab = vocabulary[i]
     var currentText = currentVocab.text;
     found = new RegExp(currentVocab.toCompare.toLowerCase()).test(inputString.toLowerCase());
-    
+
     if (found)
       return currentVocab;
   }
@@ -2532,7 +2545,7 @@ ParseEvent.prototype.onInspect = function(  inspector )
       div.appendChild(div_highlight);
       div.appendChild(input);
       container.appendChild(div)
-     
+
       var btn = new LiteGUI.Button('<img src="https://webglstudio.org/latest/imgs/mini-icon-trash.png">' ,{width:40,  callback: function(v){
             var id = this.toString();
             if(id > -1) {
