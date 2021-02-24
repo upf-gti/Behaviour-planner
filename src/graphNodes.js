@@ -656,6 +656,8 @@ function ParseCompare()
     this.widgets_up = true;
     this.size = [w,h];
     this.behaviour = new Behaviour();
+
+    this.tags_outputs = {};
 }
 //mapping must has the form [vocabulary array, mapped word]
 ParseCompare.prototype.onConfigure = function(o)
@@ -711,6 +713,15 @@ ParseCompare.prototype.tick = function(agent, dt, info)
     var values = this.extractEntities(text, found.tags);
     if(values)
     {
+      //Set tag outputs if any
+      for(var o in this.outputs){
+        var output = this.outputs[o];
+        if(output.type == "string" && values[output.name]){
+          this.setOutputData(o, values[output.name]);
+        }
+      }
+
+
       var info = {tags: values}
 
   		//this.description = this.properties.property_to_compare + ' property passes the threshold';
@@ -791,6 +802,13 @@ function wordInString(s, word){
 ParseCompare.prototype.onGetInputs = function()
 {
   return [["text", "string", { pos: [0,this.size[1]*0.5], dir:LiteGraph.LEFT}]];
+}
+ParseCompare.prototype.onGetOutputs = function()
+{
+  var outputs = [];
+  for(var i in this.tags_outputs)
+    outputs.push([i, this.tags_outputs[i]]);
+  return outputs;
 }
 ParseCompare.prototype.onInspect = function(  inspector )
 {
@@ -984,11 +1002,17 @@ ParseCompare.prototype.processPhrase = function(phraseElement, tags, inspector)
 
     for(var i=0; i<tags.length; i++)
     {
-        var start = currentPhrase.indexOf(tags[i]);
-        var end = tags[i].length;
+      var tag = tags[i];
+
+        if(!this.tags_outputs[tag]){
+          this.tags_outputs[tag] = "string";
+        }
+
+        var start = currentPhrase.indexOf(tag);
+        var end = tag.length;
         //currentPhrase = currentPhrase.slice(0,start)+'<span>'+currentPhrase.slice(start,start+end)+'</span> '+currentPhrase.slice(start+end);
         currentPhrase = currentPhrase.slice(0,start)+'<mark>'+currentPhrase.slice(start,start+end)+'</mark>'+currentPhrase.slice(start+end);
-        toCompare = toCompare.replace(tags[i], "(\\w+)");
+        toCompare = toCompare.replace(tag, "(\\w+)");
 
     }
     component.visible_phrases.push(currentPhrase);
