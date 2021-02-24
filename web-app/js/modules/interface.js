@@ -263,6 +263,14 @@ class Interface {
         }
         graph_area.hideSection(1);
         this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
+
+        window.addEventListener('resize', function(e)
+        {
+            GraphManager.resize();
+
+            // Call here any other resize
+            // ...
+        });
     }
 
     onExpandInspector(area,e) {
