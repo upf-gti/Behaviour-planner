@@ -740,6 +740,7 @@ ControlChannel.prototype.getSample = function( time )
 // CLIPS *******************************************************
 //-----------------------------Face Behaviour-----------------------------//
 //FaceLexemeClip to show captions
+FaceLexemeClip.lexemes = ["OBLIQUE_BROWS", "RAISE_BROWS", "RAISE_LEFT_BROW", "RAISE_RIGHT_BROW", "LOWER_BROWS", "LOWER_LEFT_BROW", "LOWER_RIGHT_BROW", "LOWER_MOUTH_CORNERS", "LOWER_LEFT_MOUTH_CORNER", "LOWER_RIGHT_MOUTH_CORNER", "RAISE_MOUTH_CORNERS", "RAISE_RIGHT_MOUTH_CORNER", "RAISE_LEFT_MOUTH_CORNER", "OPEN_MOUTH", "OPEN_LIPS", "WIDEN_EYES", "CLOSE_EYES"];
 function FaceLexemeClip()
 {
 	this.id= "faceLexeme-"+Math.ceil(getTime());;
@@ -805,6 +806,7 @@ FaceLexemeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 }
 
 //FaceFACSClip
+FaceFACSClip.sides = ["LEFT", "RIGHT", "BOTH"];
 function FaceFACSClip()
 {
 	this.id= "faceFACS-"+Math.ceil(getTime());;
@@ -816,7 +818,7 @@ function FaceFACSClip()
 		amount : 0.5,
 		attackPeak : 0.25,
 		relax : 0.75,
-		au : "",
+		au : 0,
 		side : "BOTH", //[LEFT, RIGHT, BOTH](optional)
 		base : false
 	}
@@ -873,6 +875,8 @@ FaceFACSClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 }
 /*----------------------------------Gaze Behaviour-----------------------------------*/
 //GazeClip
+ GazeClip.influences = ["EYES", "HEAD", "SHOULDER", "WAIST", "WHOLE"];
+ GazeClip.directions = ["","RIGHT", "LEFT", "UP", "DOWN", "UPRIGHT", "UPLEFT", "DOWNLEFT", "DOWNRIGHT"];
 function GazeClip()
 {
 	this.id= "gaze-"+Math.ceil(getTime());
@@ -882,7 +886,7 @@ function GazeClip()
 	this._width = 0;
 
 	this.properties = {
-		target : [0,0,0],
+		target : "",
 		ready : 0.25, //if it's not permanent
 		relax : 0.75, //if it's not permanent
 		influence : "", //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
@@ -945,6 +949,7 @@ GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 }
 /*----------------------------------Gesture Behaviour-----------------------------------*/
 //GestureClip
+GestureClip.modes = ["","LEFT_HAND", "RIGHT_HAND", "BOTH_HANDS"];
 function GestureClip()
 {
 	this.id= "gesture-"+Math.ceil(getTime());;
@@ -1013,6 +1018,7 @@ GestureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 }
 /*----------------------------------Head Behaviour-----------------------------------*/
 //HeadClip
+HeadClip.lexemes = ["NOD", "SHAKE", "TILD"];
 function HeadClip()
 {
 	this.id= "head-"+Math.ceil(getTime());;
