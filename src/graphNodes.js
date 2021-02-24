@@ -289,7 +289,7 @@ LiteGraph.Subgraph.prototype.onSubgraphNewOutput = function(name, type) {
 LiteGraph.Subgraph.prototype.onDeselected = function()
 {
     var output_node = this.subgraph.findNodeByTitle("HBTreeOutput");
-    output_node.onDeselected();
+    if(output_node) output_node.onDeselected();
 }
 /*LGraphCanvas.prototype.onDropItem = function(data)
 {
