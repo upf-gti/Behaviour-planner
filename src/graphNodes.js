@@ -2208,7 +2208,7 @@ Parallel.prototype.tick = function(agent, dt, info)
 HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 {
 	this.graph.character_evaluated = character;
-	this.graph.evaluation_behaviours = [];
+	this.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
 	this.graph.context = ctx;
 	ctx.agent_evaluated = character;
 	//to know the previous execution trace of the character
@@ -2227,7 +2227,7 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 	{
 		this.graph.runStep(1, false);
 		this.current_behaviour = starting_node.tick(this.graph.character_evaluated, dt);
-		return this.graph.evaluation_behaviours;
+		return this.getEvaluationBehaviours();
 	}
 	/* Execute the tree from the root node */
 	else if(this.root_node)
@@ -2236,7 +2236,7 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 		// console.log(character.evaluation_trace);
 		// console.log(character.last_evaluation_trace);
 		this.current_behaviour = this.root_node.tick(this.graph.character_evaluated, dt);
-		return this.graph.evaluation_behaviours;
+		return this.getEvaluationBehaviours();
 	}
 }
 
@@ -2635,3 +2635,47 @@ ParseEvent.prototype.onShowNodePanel = function( event, pos, graphcanvas )
     return true; //return true is the event was used by your node, to block other behaviours
 }
 LiteGraph.registerNodeType("btree/ParseEvent", ParseEvent );
+
+LiteGraph.LGraph.prototype.getNodeById = function(id){
+  if(id == null){
+    return null;
+  }
+
+  var node = this._nodes_by_id[id];
+  if(node) return node;
+
+  //Check subgraphs
+  //TODO store somewhere a list of subgraphs to avoid iterating over all nodes
+  for(var n of this._nodes){
+    if(n.constructor === LiteGraph.Subgraph){
+      node = n.subgraph.getNodeById(id);
+      if(node) return node;
+    }
+  }
+
+  return null;
+}
+
+//Subgraphs are LGraph, so this has to be in LGraph
+LiteGraph.LGraph.prototype.getEvaluationBehaviours = function(){
+  var behaviours = this.evaluation_behaviours || [];
+
+  //Check subgraphs
+  //TODO store somewhere a list of subgraphs to avoid iterating over all nodes
+  for(var n of this._nodes){
+    if(n.constructor === LiteGraph.Subgraph){
+      var subgraph_behaviours = n.subgraph.getEvaluationBehaviours();
+      if(subgraph_behaviours){
+        for(var b of subgraph_behaviours){
+          behaviours.push(b);
+        }
+      }
+    }
+  }
+  
+  return behaviours;
+}
+
+HBTGraph.prototype.getEvaluationBehaviours = function(){
+  return this.graph.getEvaluationBehaviours();
+}
