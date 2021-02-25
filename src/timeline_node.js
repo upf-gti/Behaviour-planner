@@ -831,13 +831,13 @@ FaceLexemeClip.prototype.showInfo = function(panel)
 					{
 						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					break;
@@ -952,13 +952,13 @@ FaceFACSClip.prototype.showInfo = function(panel)
 					{
 						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 				break;
@@ -1085,13 +1085,13 @@ GazeClip.prototype.showInfo = function(panel)
 					{
 						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					break;
@@ -1207,13 +1207,13 @@ GestureClip.prototype.showInfo = function(panel)
 					{
 						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					break;
@@ -1329,13 +1329,13 @@ HeadClip.prototype.showInfo = function(panel)
 					{
 						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
-							this.clip_in_panel.properties[i] = v;
+							this.properties[i] = v;
 						}.bind(this,i)});
 					}
 					break;
