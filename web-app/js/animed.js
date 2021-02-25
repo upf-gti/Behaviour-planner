@@ -1004,6 +1004,12 @@ getClipAtTimelinePosition: function( e, reverse, margin )
 
       for(var i in clip.properties)
       {
+        if(clip.showInfo)
+        {
+          clip.showInfo(panel);
+          return;
+        }
+
         var property = clip.properties[i];
         switch(property.constructor)
         {
@@ -1015,10 +1021,19 @@ getClipAtTimelinePosition: function( e, reverse, margin )
             }.bind(this, i)});
             break;
           case Number:
-            panel.addNumber(i, property, {callback: function(i,v)
+            if(i=="amount")
             {
-              this.clip_in_panel.properties[i] = v;
-            }.bind(this,i)});
+              panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+              {
+                this.clip_in_panel.properties[i] = v;
+              }.bind(this,i)});
+            }
+            else{
+              panel.addNumber(i, property, {callback: function(i,v)
+              {
+                this.clip_in_panel.properties[i] = v;
+              }.bind(this,i)});
+            }
             break;
           case Boolean:
             panel.addCheckbox(i, property, {callback: function(i,v)
