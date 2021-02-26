@@ -755,7 +755,7 @@ function FaceLexemeClip()
 		attackPeak : 0.25,
 		relax : 0.75,
 		lexeme : "",
-		permanent : false,
+		/*permanent : false,*/
 	}
 
 	this.color = "black";
@@ -792,7 +792,7 @@ FaceLexemeClip.prototype.fromJSON = function( json )
 	this.properties.relax = json.relax;
 	this.duration = json.duration;
 	this.properties.lexeme = json.lexeme;
-	this.properties.permanent = json.permanent;
+	/*this.properties.permanent = json.permanent;*/
 
 }
 
@@ -809,37 +809,51 @@ FaceLexemeClip.prototype.showInfo = function(panel)
 	for(var i in this.properties)
 	{
 		var property = this.properties[i];
-		switch(property.constructor)
+		if(i=="lexeme"){
+			panel.addCombo(i, property,{values: FaceLexemeClip.lexemes, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
 		{
+			switch(property.constructor)
+			{
 
-			case String:
-				if(i == "lexeme")
-				{
-					panel.addCombo(i, FaceLexemeClip.lexemes)
-				}
-				panel.addString(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this, i)});
-				break;
-			case Number:
-				panel.addNumber(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this,i)});
-				break;
-			case Boolean:
-				panel.addCheckbox(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this,i)});
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
 					break;
-			case Array:
-				panel.addArray(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this,i)});
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
 					break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
 		}
 	}
 }
@@ -899,7 +913,7 @@ FaceFACSClip.prototype.fromJSON = function( json )
 	this.properties.relax = json.relax;
 	this.duration = json.duration;
 	this.properties.au = json.au;
-	this.properties.permanent = json.permanent;
+	/*this.properties.permanent = json.permanent;*/
 	this.properties.side = json.side;
 }
 
@@ -910,6 +924,59 @@ FaceFACSClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 	ctx.fillStyle = this.color;
 	if( text_info.width < (w - 24) )
 		ctx.fillText( this.id, 24,h * 0.7 );
+}
+FaceFACSClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="side"){
+			panel.addCombo(i, property,{values: FaceFACSClip.sides, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+				break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
 }
 /*----------------------------------Gaze Behaviour-----------------------------------*/
 //GazeClip
@@ -974,7 +1041,7 @@ GazeClip.prototype.fromJSON = function( json )
 	this.properties.influence = json.influence;
 	this.properties.offsetAngle = json.offsetAngle;
 	this.properties.offsetDirection = json.offsetDirection;
-	this.properties.permanent = json.permanent;
+	/*this.properties.permanent = json.permanent;*/
 }
 
 GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -984,6 +1051,65 @@ GazeClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 	ctx.fillStyle = this.color;
 	if( text_info.width < (w - 24) )
 		ctx.fillText( this.id, 24,h * 0.7 );
+}
+GazeClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="influence"){
+			panel.addCombo(i, property,{values: GazeClip.influences, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else if(i=="offsetDirection"){
+			panel.addCombo(i, property,{values: GazeClip.directions, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
 }
 /*----------------------------------Gesture Behaviour-----------------------------------*/
 //GestureClip
@@ -1054,6 +1180,59 @@ GestureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 	if( text_info.width < (w - 24) )
 		ctx.fillText( this.id, 24,h * 0.7 );
 }
+GestureClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="mode"){
+			panel.addCombo(i, property,{values: GestureClip.modes, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
+}
 /*----------------------------------Head Behaviour-----------------------------------*/
 //HeadClip
 HeadClip.lexemes = ["NOD", "SHAKE", "TILD"];
@@ -1123,6 +1302,60 @@ HeadClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 	if( text_info.width < (w - 24) )
 		ctx.fillText( this.id, 24,h * 0.7 );
 }
+HeadClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="lexeme"){
+			panel.addCombo(i, property,{values: HeadClip.lexemes, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
+}
+
 //HeadDirectionShiftClip
 function HeadDirectionShiftClip()
 {
@@ -1187,7 +1420,7 @@ function PostureClip()
 		stance : "", //[SITTING, CROUNCHING, STANDING, LYING]
 		ready : 0.25, //if it's not permanent
 		relax : 0.75, //if it's not permanent
-		permanent : false,
+	/*	permanent : false,*/
 	}
 	this.color = "black";
 	this.font = "40px Arial";
@@ -1222,7 +1455,7 @@ PostureClip.prototype.fromJSON = function( json )
 	this.properties.ready = json.ready;
 	this.properties.relax = json.relax;
 	this.duration = json.duration;
-	this.properties.permanent = json.permanent;
+	/*this.properties.permanent = json.permanent;*/
 }
 
 PostureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
@@ -1240,7 +1473,7 @@ function SpeechClip()
 {
 	this.id = "speech-"+ Math.ceil(getTime());
 	this.start = 0
-	this.duration = 1;
+	this.duration = 5;
 
 	this._width = 0;
 
