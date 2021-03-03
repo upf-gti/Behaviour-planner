@@ -11,16 +11,18 @@ body{
     padding:0!important;
 }
 .litetabs{
-    background-color: #343434!important;
+    /* background-color: #343434; */
     box-sizing: border-box;
 
 }
 .litetabs.buttons{
+    background-color: #222 !important;
     border-bottom: 2px solid #10c4b2;
     width: 20%;
     min-width: 30px;
     height: 26px;
 }
+
 .litetabs li.wtab:hover:not(.selected) {
     /*background-color: #10c4b2 !important;
     color: #DDD!important;*/

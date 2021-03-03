@@ -5,6 +5,10 @@
 
 */
 
+html {
+	overflow: hidden !important;
+}
+
 .inspector {
 	/* margin-top: 10px; */
 	/*margin-bottom: 20px;*/
@@ -18,7 +22,7 @@
 	overflow: scroll;
 }
 
-.inspector::-webkit-scrollbar {
+::-webkit-scrollbar {
 display: none;
 }
 
@@ -884,10 +888,10 @@ div {
 .litepanel .panel-header, .litedialog .panel-header {
 	font-size: 1.35em;
 	padding: 0.2em 0 0 0.2em;
-	background-color: #3d3d3d;/*#778;
+	background-color: #3d3d3d;
     background-image: linear-gradient(right , #555, #333);
     background-image: -moz-linear-gradient(right , #555, #333);
-    background-image: -webkit-linear-gradient(right , #555, #333);*/
+    background-image: -webkit-linear-gradient(right , #555, #333);
 
 	-moz-box-sizing: border-box;	
 	-webkit-box-sizing: border-box;	
@@ -1596,6 +1600,10 @@ button.litebutton.close-button {
 
 .litetabs.vertical {
 	height: 100%;
+}
+
+.wtabcontainer {
+	background: #222;
 }
 
 .litetabs ul.wtabcontainer {

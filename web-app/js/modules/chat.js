@@ -114,7 +114,10 @@ class Chat{
   }
   clearChat()
   {
-    var log_container = document.getElementById("log-container")
+    var log_container = document.getElementById("log-container");
+
+    if(!log_container)
+      return;
 
     while(log_container.children.length)
       log_container.removeChild(log_container.lastChild)
