@@ -341,6 +341,11 @@ class App{
 		}
 	}
 
+    loadBehaviour(data){
+        var hbt_graph = this.currentHBTGraph = currentHBTGraph = GraphManager.loadGraph(data);
+        this.currentContext = hbt_graph.graph.context;
+    }
+
     loadEnvironment(data){
         var that = this;
         var env = data.env;
@@ -368,8 +373,8 @@ class App{
             if(graph.behaviour){
                 var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph.name);
                 hbt_graph.graph.configure(graph.behaviour);
-                that.currentContext = hbt_graph.graph.context;
-                currentHBTGraph = that.graphManager.currentHBTGraph = hbt_graph;
+                this.currentContext = hbt_graph.graph.context;
+                this.currentHBTGraph = currentHBTGraph = that.graphManager.currentHBTGraph = hbt_graph;
                 //GraphManager.putGraphOnEditor( hbt_graph, i );
             }else{
                 var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);

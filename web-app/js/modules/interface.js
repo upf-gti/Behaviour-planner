@@ -351,57 +351,60 @@ class Interface {
 
     }
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
-    newTab(g)  {
-        var that = this;
-        that.graphTabs.removeTab("plus-tab");
+    //New tab without removing '+' tab
+    _newGraphTab(g) {
         var graph_area = document.createElement("DIV");
-        graph_area.id = g.id? g.id :"graph-canvas";
+        graph_area.id = g.id || "graph-canvas";
         graph_area.className = "graph-canvas";
-        var title = g.type==GraphManager.HBTGRAPH? "HBT Graph": "Basic Graph";
+        var title = g.name;
 
-        var tab = that.graphTabs.addTab(g.id, {title: title, closable:true, autoswitch:true, width:"100%", height:"calc(100% - 40px)",callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this) })
-        tab.add(  graph_area);
-        var ngraph_tab = that.graphTabs.addTab("plus-tab", { title:"+"});
-        ngraph_tab.tab.addEventListener("click", that.newGraphDialog.bind(that) );
-        GraphManager.graphSelected = g;
-
-        that.graphTabs.selectTab(tab)
-
-    }
-
-    tabsRefresh(id) {
-
-        var that = this;
-
-        this.graphTabs.clear();
-        var tab;
-
-        for(var i in GraphManager.graphs)
-        {
-            var g = GraphManager.graphs[i];
-            var graph_area = document.createElement("DIV");
-            graph_area.id = g.id? g.id :"graph-canvas";
-            graph_area.className = "graph-canvas";
-            var title = g.type==GraphManager.HBTGRAPH? "HBT Graph": "Basic Graph";
-            if(g.type==GraphManager.BASICGRAPH)
-            {
-
-                var canvasDOM = document.createElement("CANVAS");
+        if(g.type == GraphManager.BASICGRAPH){
+            var canvasDOM = document.createElement("CANVAS");
                 canvasDOM.id = "g"+graph_area.id;
                 canvasDOM.id = "g"+graph_area.id;
                 canvasDOM.width="954";
                 canvasDOM.height="937";
-                graph_area.appendChild(canvasDOM)
-            }
-            GraphManager.graphSelected = g;
-            tab = this.graphTabs.addTab(g.id, {title: title, editable: true, closable:true, width:"100%", height:"calc(100% - 25px)", callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this,g.id)})
-            tab.add(  graph_area);
-
+                graph_area.appendChild(canvasDOM);
         }
+
+        GraphManager.graphSelected = g;
+        var id = g.id;
+
+        var tab = this.graphTabs.addTab(id, {title: title, closable:true, autoswitch:true, width:"100%", height:"calc(100% - 40px)",callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this, id) });
+        tab.add(graph_area);
+        return tab;
+    }
+
+    //Check native addPlusTab of litegui
+    _newPlusTab() {
         var ngraph_tab = this.graphTabs.addTab("plus-tab", { title:"+"});
         ngraph_tab.tab.addEventListener("click", this.newGraphDialog.bind(this) );
+        return ngraph_tab;
+    }
 
-        this.graphTabs.selectTab(tab)
+    newTab(g) {
+        this.graphTabs.removeTab("plus-tab");
+
+        var tab = this._newGraphTab(g);
+
+        this._newPlusTab();
+        
+        GraphManager.graphSelected = g;
+        this.graphTabs.selectTab(tab);
+    }
+
+    tabsRefresh() {
+        this.graphTabs.clear();
+        var tab;
+
+        for(var i in GraphManager.graphs){
+            var g = GraphManager.graphs[i];
+            tab = this._newGraphTab(g);
+            GraphManager.graphSelected = g;
+        }
+        this.graphTabs.selectTab(tab);
+
+        this._newPlusTab();
 
         var canvas = document.getElementsByClassName("graph-content");
         if(canvas.length)
@@ -409,8 +412,7 @@ class Interface {
     }
 
     onContextTab(id) {
-        var that = this;
-        var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: that.renameTab.bind(this,id)})
+        var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: this.renameTab.bind(this,id)});
     }
 
     renameTab(id) {
@@ -418,6 +420,7 @@ class Interface {
         LiteGUI.prompt("Enter name", function(v){
             var tab = that.graphTabs.getTab(id);
             tab.setTitle(v);
+            GraphManager.onGraphRenamed(id, v);
         },{title: "Rename tab"});
     }
 
@@ -454,10 +457,9 @@ class Interface {
                 break;
         }
         var that = this;
-        var graph = GraphManager.newGraph(type, that.newTab.bind(that));
+        var graph = GraphManager.newGraph(type, "new_graph");
         if(data == "HBT Graph")
             CORE.App.agent_selected.hbt_graph = graph.name;
-       // this.newTab(graph);
     }
 
     openImportDialog(data, session_type) {
@@ -487,7 +489,7 @@ class Interface {
             else if(type == "dialogue-corpus")
                 CORE.App.loadCorpusData(data);
             else
-                GraphManager.putGraphOnEditor( data )
+                CORE.App.loadBehaviour(data);
         }
 
         if(session_type !== SESSION.IS_GUEST)

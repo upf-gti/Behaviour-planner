@@ -16,16 +16,15 @@ HBTEditor.prototype._ctor = function(id)
     this.time = 0;
     this.last_time = 0;
     this.root_node = null;
-    this.id = id? id: "graph-canvas"
 }
 HBTEditor.prototype.init = function( hbt_graph )
 {
     this.canvas2D = document.createElement("canvas");
     this.context2 = this.canvas2D.getContext("2d");
-    var HBTEditor_cont = document.getElementById(this.id);
+    var HBTEditor_cont = document.getElementById(hbt_graph.id);
     this.canvas2D.width = HBTEditor_cont.clientWidth;
     this.canvas2D.height = HBTEditor_cont.clientHeight;
-    this.canvas2D.id = "HBTEditor"+this.id
+    this.canvas2D.id = "HBTEditor"+hbt_graph.id;
     HBTEditor_cont.appendChild(this.canvas2D);
     LiteGraph.NODE_TITLE_COLOR = "#DDD";
     LiteGraph.NODE_TEXT_COLOR = "#DDD"
