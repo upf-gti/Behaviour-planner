@@ -128,17 +128,15 @@ class Interface {
         this.inspector_area.add(this.graphinspector);
         docked.add(this.inspector_area);
 
-        // BEHAVIOURS
-        var behaviour_tab = this.contentTabs.addTab("behaviour", { title: this.icons.search, width:"100%", height:"calc(100% - 40px)"});
-        behaviour_tab.tab.title = "Show behaviours";
-        var behaviour_area = new LiteGUI.Area({id: "behaviour-content", autoresize:false});
-        behaviour_tab.add(behaviour_area);
+        // OPEN BHV
+        var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>");//, this.onExpandInspector.bind(this,mainarea));
+        btn_tab.tab.style.width = "23px";
+        btn_tab.tab.title = "Show behaviours";
 
         // CHAT
         var chat_tab = this.contentTabs.addTab("chat", {selected:true, title: this.icons.chat, width:"100%", height:"calc(100% - 40px)"});
         var chat_area = new LiteGUI.Area({id:"chat-content", autoresize:false});
-        var chat = CORE.App.chat.createGUI();
-        chat_area.add(chat);
+        var chat = CORE.App.chat.createGUI(chat_area);
         chat_tab.add(chat_area);
 
         // DRIVE
