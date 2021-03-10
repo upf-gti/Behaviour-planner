@@ -240,7 +240,6 @@ class Interface {
         fixed_files_inspector.widgets_per_row = 5;
         fixed_files_inspector.addString("Filter", "", {name_width: "20%"});
         fixed_files_inspector.addString("Type", "", {name_width: "20%"});
-        fixed_files_inspector.addButton(null, "Import file", {width: "10%"});
         fixed_files_inspector.widgets_per_row = 1;
         fixed_files_inspector.addSeparator();
 
@@ -266,7 +265,7 @@ class Interface {
         for(var f in files)
         {
             let file = files[f];
-            widgets.addString(f, file.fullpath);
+            widgets.addString(f, file.fullpath, {disabled: true});
             widgets.addButton(null, "Load", {width: "10%", callback: (function() {
 
                 var fullpath = CORE["FileSystem"].root + folder + "/" + file.filename;
