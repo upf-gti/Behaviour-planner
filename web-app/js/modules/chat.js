@@ -9,12 +9,12 @@ class Chat{
       this.start_recognition = false;
       this.final_transcript = "";
   }
-  createGUI()
+  createGUI(area)
   {
       var typing_console = document.createElement("DIV");
       typing_console.id= "typing";
       typing_console.className = "console";
-      typing_console.style="display.none";
+      // typing_console.style="display.none";
 
       this.log_container = document.createElement("DIV");
       this.log_container.className = "log";
@@ -99,22 +99,15 @@ class Chat{
       start.id = "div_start";
       typing_console.appendChild(start);
 
-      /*<div id="typing" class="console" style= "display:none">
-		<div class='log'></div>
-		<div class='typing'>
-			<input type='text' placeHolder="type here..."/>
-			<button id="send">Send</button>
-			<button id="mic" class='' ></button>
-		</div>
-		<div id="div_start">
-
-		</div>
-      </div>*/
-      return typing_console;
+      area.add(typing_console);
+      // return typing_console;
   }
   clearChat()
   {
-    var log_container = document.getElementById("log-container")
+    var log_container = document.getElementById("log-container");
+
+    if(!log_container)
+      return;
 
     while(log_container.children.length)
       log_container.removeChild(log_container.lastChild)

@@ -374,97 +374,102 @@ class App{
 		}
 	}
 
-  loadEnvironment(data){
-      var that = this;
-      var env = data.env;
-      if(!env.token){
-          env.token = that.interface.tree.tree.token;
-      }else{
-          that.interface.tree.tree.token = env.token;
-          that.streamer.createRoom(env.token);
-      }
+    loadBehaviour(data){
+        var hbt_graph = this.currentHBTGraph = currentHBTGraph = GraphManager.loadGraph(data);
+        this.currentContext = hbt_graph.graph.context;
+    }
 
-      that.env_tree = {
-          id: "Environment",
-          type:"env",
-          token: env.token,
-          children: []
-      };
-      that.interface.tree.clear(true);
+    loadEnvironment(data){
+        var that = this;
+        var env = data.env;
+        if(!env.token){
+            env.token = that.interface.tree.tree.token;
+        }else{
+            that.interface.tree.tree.token = env.token;
+            that.streamer.createRoom(env.token);
+        }
 
-      AgentManager.removeAllAgents();
-      UserManager.removeAllUsers();
-      GraphManager.removeAllGraphs();
+        that.env_tree = {
+            id: "Environment",
+            type:"env",
+            token: env.token,
+            children: []
+        };
+        that.interface.tree.clear(true);
 
-      for(var i in env.graphs){
-          var graph = env.graphs[i];
-          if(graph.behaviour){
-              var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph.name);
-              hbt_graph.graph.configure(graph.behaviour);
-              that.currentContext = hbt_graph.graph.context;
-              currentHBTGraph = that.graphManager.currentHBTGraph = hbt_graph;
-              //GraphManager.putGraphOnEditor( hbt_graph, i );
-          }else{
-              var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
-              graph.name =i;
-              g.graph.configure(graph);
+        AgentManager.removeAllAgents();
+        UserManager.removeAllUsers();
+        GraphManager.removeAllGraphs();
 
-              //GraphManager.putGraphOnEditor(graph, i);
-              for(var j in graph.nodes){
-                  var node = graph.nodes[j];
-                  if(node.type == "network/sillyclient"){
-                      var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
+        for(var i in env.graphs){
+            var graph = env.graphs[i];
+            if(graph.behaviour){
+                var hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph.name);
+                hbt_graph.graph.configure(graph.behaviour);
+                this.currentContext = hbt_graph.graph.context;
+                this.currentHBTGraph = currentHBTGraph = that.graphManager.currentHBTGraph = hbt_graph;
+                //GraphManager.putGraphOnEditor( hbt_graph, i );
+            }else{
+                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
+                graph.name =i;
+                g.graph.configure(graph);
 
-                      node.connectSocket();
-                      //this.streamer = new Streamer();
-                      this.streamer.ws = node._server;
-                      node._server.onReady = this.streamer.onReady;
-                      this.streamer.is_connected = node._server.is_connected;
-                  }
-              }
+                //GraphManager.putGraphOnEditor(graph, i);
+                for(var j in graph.nodes){
+                    var node = graph.nodes[j];
+                    if(node.type == "network/sillyclient"){
+                        var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
 
-          }
-      }
-      for(var i in env.agents){
-          var data = env.agents[i];
-          var agent = new Agent(data);
-          that.agent_selected = agent;
-          that.agent_selected.is_selected = true;
-          that.env_tree.children.push({id:agent.uid, type: "agent"});
-          that.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
-      }
+                        node.connectSocket();
+                        //this.streamer = new Streamer();
+                        this.streamer.ws = node._server;
+                        node._server.onReady = this.streamer.onReady;
+                        this.streamer.is_connected = node._server.is_connected;
+                    }
+                }
 
-      if(env.user){
-          var user = new User(env.user);
-          that.env_tree.children.push({id:user.uid, type: "user"});
-          that.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
-      }
+            }
+        }
+        for(var i in env.agents){
+            var data = env.agents[i];
+            var agent = new Agent(data);
+            that.agent_selected = agent;
+            that.agent_selected.is_selected = true;
+            that.env_tree.children.push({id:agent.uid, type: "agent"});
+            that.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
+        }
 
-      if(env.gestures){
-          that.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
-          for(var i in env.gestures){
-              GestureManager.createGesture(env.gestures[i]);
-          }
+        if(env.user){
+            var user = new User(env.user);
+            that.env_tree.children.push({id:user.uid, type: "user"});
+            that.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
+        }
 
-          GestureManager.createGestureInspector();
-      }
+        if(env.gestures){
+            that.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
+            for(var i in env.gestures){
+                GestureManager.createGesture(env.gestures[i]);
+            }
 
-      if(that.agent_selected){
-          that.currentContext.agent_evaluated = that.agent_selected;
-      }
+            GestureManager.createGestureInspector();
+        }
 
-      if(user!=null){
-          that.interface.tree.setSelectedItem(that.env_tree.id, true, that.interface.createNodeInspector({
-              detail: {
-                  data: {
-                      id: that.env_tree.id,
-                      type: that.env_tree.type
-                  }
-              }
-          }));
-          that.currentContext.user = user;
-      }
-  }
+        if(that.agent_selected){
+            that.currentContext.agent_evaluated = that.agent_selected;
+        }
+
+        if(user!=null){
+            that.interface.tree.setSelectedItem(that.env_tree.id, true, that.interface.createNodeInspector({
+                detail: {
+                    data: {
+                        id: that.env_tree.id,
+                        type: that.env_tree.type
+                    }
+                }
+            }));
+            that.currentContext.user = user;
+        }
+    }
 
 	loadCorpusData(data){
 		corpus = data;

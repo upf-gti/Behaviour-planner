@@ -28,8 +28,11 @@ HBTreeInput.prototype.onAdded = function()
 {
     if(this.graph)
     {
-        this.graph.addInput( this.properties.name, this.properties.type );
-        this.graph.description_stack = [];
+        if(!this.graph._subgraph_node.inputs || this.graph._subgraph_node.inputs.length == 0)
+        {
+            this.graph.addInput( this.properties.name, this.properties.type );
+            this.graph.description_stack = [];
+        }
     }
 }
 
