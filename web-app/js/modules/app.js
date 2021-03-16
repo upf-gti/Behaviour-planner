@@ -222,27 +222,72 @@ class App{
 
                               case B_TYPE.intent:
 
-																var obj = {};
-                                  //TODO properly process intents and timetables to generate behaviours in protocol format
+                                var obj = {};
+                                //TODO properly process intents and timetables to generate behaviours in protocol format
                                 var data = behaviour.data;
+                            
                                 if(data.text){
                                     data.type = "speech";
-																		this.chat.showMessage(data.text, "me");
+                                    this.chat.showMessage(data.text, "me");
                                    	var obj = { "speech": { text: data.text } }; //speaking
 
                                 }else{
                                     var type = data.type = "anAnimation";
 																		var obj = { type: data };
                                 }
-																if(LS){
-																		//state = LS.Globals.SPEAKING;
-																		obj.control = LS.Globals.SPEAKING;
-																		LS.Globals.processMsg(JSON.stringify(obj), true);
-																}
+                                if(LS){
+                                        //state = LS.Globals.SPEAKING;
+                                        obj.control = LS.Globals.SPEAKING;
+                                        LS.Globals.processMsg(JSON.stringify(obj), true);
+                                }
                                 behaviours_message.data.push(data);
 
                                 break;
-
+                            case B_TYPE.timeline_intent:
+                                var obj = {};
+                                //TODO properly process intents and timetables to generate behaviours in protocol format
+                                var bh = behaviour.data;
+                                if(bh.data)
+                                {
+                                    for(var i in bh.data)
+                                    {
+                                        var data = bh.data[i];
+                                        
+                                        var obj = { type: data };
+                                       
+                                        if(LS){
+                                                //state = LS.Globals.SPEAKING;
+                                                LS.Globals.processMsg(JSON.stringify(obj), true);
+                                        }
+                                        behaviours_message.data.push(data);
+                                        
+                                    }
+                                }
+                                else{
+                                    for(var i in bh)
+                                    {
+                                        var data = bh[i];
+                                        if(data.type == "speech"){
+                                            
+                                            this.chat.showMessage(data.text, "me");
+                                            var obj = { "speech": { text: data.text } }; //speaking
+        
+                                        }else{
+                                            var obj = { type: data };
+                                        }
+                                        if(LS){
+                                            //state = LS.Globals.SPEAKING;
+                                            if(data.type == "speech"){
+                                                obj.control = LS.Globals.SPEAKING;
+                                            }
+                                            LS.Globals.processMsg(JSON.stringify(obj), true);
+                                        }
+                                        behaviours_message.data.push(data);
+                                        
+                                    }
+                                }
+                                
+                                break;
                               case B_TYPE.action:
 															//HARCODED
                                   var expressions = {

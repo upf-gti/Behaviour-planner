@@ -162,15 +162,16 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
   for(var i in this.tracks)
   {
     var track = this.tracks[i];
-		if(!bml[track.name]){
-			bml[track.name] = [];
-		}
-		for(var j in track.clips)
-    {
-			var data = track.clips[j].toJSON();
-			data.type = track.clips[j].constructor.type;
-			bml[track.name].push(data);
-    }
+	if(!bml[track.name]&&track.clips.length){
+		bml[track.name] = [];
+	}
+	for(var j in track.clips)
+	{
+		
+		var data = track.clips[j].toJSON();
+		data.type = track.clips[j].constructor.type;
+		bml[track.name].push(data);
+	}
     /*for(var j in track.clips)
     {
       var behaviour = new Behaviour();
@@ -193,7 +194,7 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
 			data = bml[i];
 		}
 		var behaviour = new Behaviour();
-		behaviour.type = B_TYPE.intent_timeline || 16;
+		behaviour.type = B_TYPE.timeline_intent || B_TYPE.intent;
 		behaviour.STATUS = STATUS.success;
 		behaviour.setData(data);
 		behaviours.push(behaviour);
@@ -201,7 +202,7 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
 	}
   agent.evaluation_trace.push(this.id);
 
-  return behaviours;
+  return {STATUS:STATUS.success, data:behaviours};
 
 }
 TimelineIntent.prototype.onDblClick = function()

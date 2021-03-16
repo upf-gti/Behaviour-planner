@@ -449,6 +449,7 @@ var B_TYPE =
   ParseCompare:15,
   intent: 16,
   request: 17,
+  timeline_intent:18
 }
 GestureNode.DURATION = ["Short-term", "Long-term"];
 GestureNode.PRIORITY = ["append","overwrite", "mix", "skip"];
