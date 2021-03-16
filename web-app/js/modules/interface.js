@@ -134,6 +134,8 @@ class Interface {
         var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>");//, this.onExpandInspector.bind(this,mainarea));
         btn_tab.tab.style.width = "23px";
         btn_tab.tab.title = "Show behaviours";
+        var btn_tab_area = new LiteGUI.Area({id:"behaviour-content", autoresize:false});
+        btn_tab.add(btn_tab_area);
 
         // CHAT
         var chat_tab = this.contentTabs.addTab("chat", {selected:true, title: this.icons.chat, width:"100%", height:"calc(100% - 40px)"});
@@ -1411,6 +1413,8 @@ class Interface {
     showContent(data)
     {
         var b_content = document.getElementById("behaviour-content");//document.querySelector('[data-id="behaviour-content"]');
+        if(!b_content)
+            return;
         b_content.innerHTML = "";
         for(var i in data)
         {
@@ -1451,6 +1455,12 @@ class Interface {
                     break;
                 case B_TYPE.facialExpression:
                     type = "Facial expression";
+                    break;
+                case B_TYPE.intent:
+                    type = "Speech intent";
+                    break;
+                case B_TYPE.timeline_intent:
+                    type = "Intent";
                     break;
             }
             for(var attr in behaviour)

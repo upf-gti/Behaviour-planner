@@ -376,7 +376,7 @@ class App{
 
     loadBehaviour(data){
         var hbt_graph = this.currentHBTGraph = currentHBTGraph = GraphManager.loadGraph(data);
-        this.currentContext = hbt_graph.graph.context;
+        //this.currentContext = hbt_graph.graph.context;
     }
 
     loadEnvironment(data){
