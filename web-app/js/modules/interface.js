@@ -28,6 +28,8 @@ class Interface {
             pause: '<span class="material-icons">pause</span>'
         }
 
+        this.sidePanelExpanded = false;
+
     }
 
     createTabs() {
@@ -134,7 +136,7 @@ class Interface {
         docked.add(this.inspector_area);
 
         // OPEN BHV
-        var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>");//, this.onExpandInspector.bind(this,mainarea));
+        var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>", this.onExpandInspector.bind(this,mainarea));
         btn_tab.tab.style.width = "23px";
         btn_tab.tab.title = "Show behaviours";
         var btn_tab_area = new LiteGUI.Area({id:"behaviour-content", autoresize:false});
@@ -288,6 +290,10 @@ class Interface {
         this.timeline_dialog.resize = function()
         {
             var that = this;
+
+            if(!that.timeline_dialog)
+            return;
+
             var height = "250px";
             if(that.timeline_dialog.root.parentElement)
                 height = that.timeline_dialog.root.parentElement.offsetHeight;
@@ -309,28 +315,28 @@ class Interface {
     }
 
     onExpandInspector(area,e) {
+
         var that = this;
-        if(e.currentTarget.classList.contains("invert"))
+        if(this.sidePanelExpanded)
         {
-            var w= area.getSection(0).getWidth();
-            area.moveSplit(w-30);
-            that.sceneTabs.hide();
-            e.currentTarget.classList.remove("invert");
+            this.mainarea.moveSplit(-200);
+            // that.sceneTabs.hide();
         }else
         {
-            var w= area.getSection(0).getWidth();
-            area.moveSplit(-270);
-            that.sceneTabs.show();
-            e.currentTarget.classList.add("invert");
+            this.mainarea.moveSplit(200);
+            // that.sceneTabs.show();
         }
+        this.sidePanelExpanded = !this.sidePanelExpanded;
         GraphManager.resize();
-        that.timeline_dialog.resize()
+        that.timeline_dialog.resize();
         onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
     }
+
     timeline()
     {
 
     }
+
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
     //New tab without removing '+' tab
     _newGraphTab(g) {
