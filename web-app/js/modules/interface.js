@@ -89,16 +89,20 @@ class Interface {
 
         this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"", 
 			callback: function(tab_id){
-                if(that.panel_drive) {
-                    that.panel_drive.inspector.on_refresh();
-                    that.panel_drive.show();
-                    that.sidepanel.add( that.panel_drive );
+
+                var drive_panel = CORE["Drive"].panel_drive;
+
+                if(drive_panel) {
+                    drive_panel.inspector.on_refresh();
+                    drive_panel.show();
+                    that.sidepanel.add( drive_panel );
                 }
 
-                that.refreshDrive();
+                CORE.modules["Drive"].refresh();
 			},
 			callback_leave: function(tab_id) {
-                that.panel_drive.hide();
+                if(CORE["Drive"].panel_drive)
+                    CORE["Drive"].panel_drive.hide();
 			}
 		});
 
@@ -113,13 +117,12 @@ class Interface {
         this.sidepanel = docked;
         sidepanel.add(docked);
 
-
         //close button
         var close_button = new LiteGUI.Button( LiteGUI.special_codes.close , function() {  });
         close_button.root.style.float = "right";
         close_button.root.style.marginTop = "-6px";
         close_button.content.style.width = "25px";
-        docked.header.appendChild( close_button.root );
+        // docked.header.appendChild( close_button.root );
 
         // TREE
         this.tree = this.createTree();
@@ -144,34 +147,7 @@ class Interface {
         chat_tab.add(chat_area);
 
         // DRIVE
-        this.panel_drive = new LiteGUI.Area({id :"paneldrivearea", content_id:"paneldrive-area", autoresize: true, inmediateResize: true});;
-        var panel_drive_inspector = new LiteGUI.Inspector({id:"drive-inspector"});
-        this.panel_drive.add(panel_drive_inspector);
-        this.panel_drive.inspector = panel_drive_inspector;
-        
-        panel_drive_inspector.on_refresh = function() {
-
-            panel_drive_inspector.clear();
-            panel_drive_inspector.addTitle("Session");
-
-            var session = CORE["FileSystem"].getSession();
-            if(session) {
-                var user = session.user;
-
-                panel_drive_inspector.addInfo("Username", user.username);
-                panel_drive_inspector.addInfo("Email", user.email);
-                panel_drive_inspector.addSeparator();
-                panel_drive_inspector.addInfo("Unit size", user.total_space / 1e6 + " MB");
-
-                var roles = [];
-
-                for(var o in user.roles)
-                    if(user.roles[o] === true)
-                        roles.push(o);
-
-                panel_drive_inspector.addList("Roles", roles, {height: "100px", disabled: true});
-            }
-        }
+        CORE["Drive"].createSidePanel();
     }
 
     createMenuBar() {
@@ -217,170 +193,6 @@ class Interface {
         }).bind(this);
 
         LiteGUI.menubar.refresh();
-    }
-
-    createDrive() {
-
-        var drive_area = new LiteGUI.Area({id :"drivearea", content_id:"drive-area", autoresize: true, inmediateResize: true});;
-        drive_area.split("horizontal",[250,null], true);
-
-        var dt_area = drive_area.getSection(0);
-        var fixed_dt_inspector = new LiteGUI.Inspector();
-        dt_area.add( fixed_dt_inspector );
-
-        var title = fixed_dt_inspector.addTitle("Files");
-        title.style.fontSize = "large";
-
-        var dt_inspector = new LiteGUI.Inspector({id: "drive-tree-inspector"});
-        this.dt_inspector = dt_inspector;
-        dt_area.add( dt_inspector );
-
-        var files_area = drive_area.getSection(1);
-        var fixed_files_inspector = new LiteGUI.Inspector();
-        files_area.add( fixed_files_inspector );
-
-        fixed_files_inspector.widgets_per_row = 5;
-        fixed_files_inspector.addString("Filter", "", {name_width: "20%"});
-        fixed_files_inspector.addString("Type", "", {name_width: "20%"});
-        fixed_files_inspector.widgets_per_row = 1;
-        fixed_files_inspector.addSeparator();
-
-        fixed_files_inspector.root.style.background = "#222";
-
-        var files_inspector = new LiteGUI.Inspector({id: "drive-files-inspector"});
-        this.files_inspector = files_inspector;
-        files_area.add( files_inspector );
-
-        this.drive_area = drive_area;
-        this._drive_tab.add( drive_area );
-    }
-
-    refreshDriveFiles(folder, files) {
-
-        console.log("TODO: refresh files", files);
-        var files_area = this.drive_area.getSection(1);
-
-        var widgets = this.files_inspector;
-        widgets.clear();
-        widgets.widgets_per_row = 2;
-
-        for(var f in files)
-        {
-            let file = files[f];
-            widgets.addString(f, file.fullpath, {disabled: true});
-            widgets.addButton(null, "Load", {width: "10%", callback: (function() {
-
-                var fullpath = CORE["FileSystem"].root + folder + "/" + file.filename;
-                this.importFromURL( fullpath );
-                this.lastLoadedFile = {
-                    filename: file.filename.split(".").shift(),
-                    path: folder + "/"
-                };
-            }.bind(this))});
-        }
-    }
-
-    refreshDrive() {
-
-        var curr_session = CORE["FileSystem"].getSession();
-        if(!curr_session)
-        return;
-
-        var user_name = curr_session.user.username;
-        var files = {};
-        var file_selected = "";
-        var folder_selected = user_name;
-        var path = "";
-        var widgets = this.dt_inspector, that = this;
-
-        curr_session.getFolders(user_name, (function(data) {
-
-            function __getFolderFiles(unit, folder, callback) {
-
-                var _folder = folder;
-
-                if(!_folder)
-                _folder = "";
-
-                CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
-
-                    data.forEach(function(e){
-
-                        if(e.unit !== unit)
-                            return;
-                        files[e.filename] = e;
-                    });
-                    
-                    that.refreshDriveFiles(folder_selected, files);
-                });
-            }
-
-            /*
-                recursive function to get each item parent
-            */
-            function __getParent(id)
-            {
-                var parent = litetree.getParent(id);
-                if(parent)
-                {
-                    var parent_id = parent.data.id;
-                    path = parent_id + "/" + path;
-                    __getParent(parent_id);
-                }
-            }
-
-            /*
-                recursive function to get all folders in unit
-                as a data tree
-            */
-            function __showFolders(object, parent)
-            {
-                for(var f in object)
-                {
-                    if(f === "thb") // discard thumb previews for folders
-                    continue;
-                    litetree.insertItem({id: f}, parent);
-                    if(object[f])
-                        __showFolders(object[f], f);
-                }
-            }
-
-            var selected = null;
-            var litetree = new LiteGUI.Tree({id: user_name});
-            LiteGUI.bind( litetree.root, "item_selected", function(item) {
-                selected = item.detail.data.id;
-
-                path = "";
-                files = {};
-                file_selected = null;
-
-                // get full path
-                __getParent(selected);
-                path += selected;
-                var tk = path.split("/");
-                tk.shift();
-                path = tk.join("/");
-                if(!path.length)
-                    path = null;
-
-                // fetch files in folder
-                folder_selected = user_name + (path ? "/" + path : "");
-                __getFolderFiles(user_name, path);
-            });
-
-            __showFolders(data, user_name);
-
-            widgets.on_refresh = function(){
-
-                console.log("refreshing drive tree");
-                widgets.clear();
-                widgets.root.appendChild(litetree.root);
-                widgets.addSeparator();
-            }
-
-            widgets.on_refresh();
-            __getFolderFiles(user_name, null);
-        }));
     }
 
     preInit() {
@@ -441,8 +253,7 @@ class Interface {
         graph_area.onResize = GraphManager.resize.bind(this);
         
         // Drive tab
-
-        this.createDrive();
+        CORE["Drive"].createTab();
 
         // ***********************************************
 

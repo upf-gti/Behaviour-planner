@@ -22,6 +22,7 @@
         "js/modules/gestureMap.js",
         "js/modules/chat.js",
         "js/modules/filesystem.js",
+        "js/modules/drive.js",
         "js/modules/interface.js",
         "js/modules/entity.js",
         "js/modules/app.js"
