@@ -116,8 +116,8 @@ Streamer.prototype.sendMessage = function(type, data){
 	if(!type) return;
 
 	console.log("Streamer: message sended: ", type, data);
-	this.ws.send({
+	this.ws.send(JSON.stringify({
 		type: type,
 		data: data || null,
-	});
+	}));
 }
