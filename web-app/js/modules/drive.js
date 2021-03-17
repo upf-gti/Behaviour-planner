@@ -247,7 +247,6 @@ class Drive {
     // add a new file to the browser window
     addItemToBrowser( folder_selected, resource )
     {
-        console.log(resource);
         var that = this;
         var parent = this.browser_container.querySelector(".file-list");
 
@@ -345,7 +344,13 @@ class Drive {
 
         function item_dblclick(e)
         {
-            var file = resource;
+            console.log(resource);
+            var fullpath = CORE["FileSystem"].root + element.dataset["fullpath"];
+            CORE["Interface"].importFromURL( fullpath );
+            CORE["Interface"].lastLoadedFile = {
+                filename: element.dataset["filename"].split(".").shift(),
+                path: folder_selected + "/"
+            };
         }
     }
 
