@@ -1019,9 +1019,9 @@ ParseCompare.prototype.processPhrase = function(phraseElement, tags, inspector)
         toCompare = toCompare.replace(tag, "(\\w+)");
 
     }
-    component.visible_phrases.push(currentPhrase);
-    component.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
-    component.onInspect(inspector)
+    this.visible_phrases.push(currentPhrase);
+    this.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
+    if(inspector) this.onInspect(inspector);
 }
 ParseCompare.prototype.onDeselected = function ()
 {
