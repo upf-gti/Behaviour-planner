@@ -1,7 +1,8 @@
 class Drive {
 
     constructor() {
-        this.filter_by_name = null;
+        this.filter_by_name         = null;
+        this.currentBrowserInfo     = null;
     }
 
     createTab() {
@@ -89,6 +90,8 @@ class Drive {
             return;
             
             file_info_inspector.addString("Filename", item.filename, {disabled: true});
+            file_info_inspector.addString("Fullpath", item.fullpath.replace("//", "/"), {disabled: true});
+            file_info_inspector.addTags("Metadata", "", {values: item.metadata});
             file_info_inspector.endCurrentSection();
         }
     }
@@ -100,9 +103,9 @@ class Drive {
         return;
 
         var user_name = curr_session.user.username;
-        var files = {};
+        var files = [];
         var file_selected = "";
-        var folder_selected = user_name;
+        var folder_selected = this.currentBrowserInfo ? this.currentBrowserInfo[0] : user_name;
         var path = "";
         var widgets = this.dt_inspector, that = this;
 
@@ -121,7 +124,7 @@ class Drive {
 
                         if(e.unit !== unit)
                             return;
-                        files[e.filename] = e;
+                        files.push(e);
                     });
                     
                     that.showInBrowserContent(folder_selected, files);
@@ -146,7 +149,7 @@ class Drive {
                 recursive function to get all folders in unit
                 as a data tree
             */
-            function __showFolders(object, parent)
+            function __setFolderTree(object, parent)
             {
                 for(var f in object)
                 {
@@ -154,7 +157,7 @@ class Drive {
                     continue;
                     litetree.insertItem({id: f}, parent);
                     if(object[f])
-                        __showFolders(object[f], f);
+                        __setFolderTree(object[f], f);
                 }
             }
 
@@ -169,7 +172,7 @@ class Drive {
                 selected = item.detail.data.id;
 
                 path = "";
-                files = {};
+                files = [];
                 file_selected = null;
 
                 // get full path
@@ -186,24 +189,27 @@ class Drive {
                 __getFolderFiles(user_name, path);
             });
 
-            __showFolders(data, user_name);
+            __setFolderTree(data, user_name);
 
             widgets.on_refresh = function(){
-
-                console.log("refreshing drive tree");
                 widgets.clear();
                 widgets.root.appendChild(litetree.root);
                 widgets.addSeparator();
             }
 
             widgets.on_refresh();
-            __getFolderFiles(user_name, null);
+            
+            var currentFolder = that.currentBrowserInfo ? that.currentBrowserInfo[0].replace(user_name + "/", "") : null;
+            __getFolderFiles(user_name, currentFolder);
         }));
     }
 
     //where items is object with files
     showInBrowserContent( folder_selected, items, options )
     {
+        this.currentBrowserInfo = [folder_selected, items, options];
+        // console.log(this.currentBrowserInfo);
+
         options = options || {};
         var parent = this.browser_container;
 
@@ -223,7 +229,7 @@ class Drive {
         this.visible_resources = items;
         this._last_options = options;
 
-        if(Object.keys(items).length)
+        if(items.length)
             for(var i in items)
             {
                 if(i[0] == ":") //local resource
@@ -352,6 +358,75 @@ class Drive {
                 path: folder_selected + "/"
             };
         }
+
+        element.addEventListener("contextmenu", function(e) { 
+            if(e.button != 2) //right button
+                return false;
+            that.showItemContextMenu(this,e, folder_selected);
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault(); 
+            return false;
+        });
+    }
+
+    showItemContextMenu( item, event, folder )
+    {
+        var that = this;
+        var actions = ["Load","Rename",null,"Delete"];
+    
+        var menu = new LiteGUI.ContextMenu( actions, { ignore_item_callbacks: true, event: event, title: "Resource", callback: function(action, options, event) {
+            var fullpath = item.dataset["fullpath"] || item.dataset["filename"];
+            if(!fullpath)
+                return;
+
+            var server_fullpath = CORE["FileSystem"].root + fullpath;
+    
+            if(action == "Load")
+            {
+                CORE["Interface"].importFromURL( server_fullpath );
+                CORE["Interface"].lastLoadedFile = {
+                    filename: item.dataset["filename"].split(".").shift(),
+                    path: folder + "/"
+                };
+            }
+            else if(action == "Rename")
+            {
+                LiteGUI.alert("Not implemented yet");
+            }
+            else if(action == "Delete")
+            {
+                LiteGUI.confirm("Do you want to delete this file?", function(v){
+                    if(!v)
+                        return;
+                    
+                    that.deleteFile(fullpath, function(v){
+                        if(v) {
+
+                            var _folder_selected = that.currentBrowserInfo[0], 
+                                _items = that.currentBrowserInfo[1].filter(e => e.filename != item.dataset["filename"]),
+                                _options = that.currentBrowserInfo[2];
+                            that.showInBrowserContent(_folder_selected, _items, _options);
+                        }
+                    }, function(e){
+                        console.error(e);
+                    });
+                });
+            }
+            else
+                LiteGUI.alert("Unknown action");
+        }});
+    }
+    
+    deleteFile(fullpath, on_complete, on_error)
+    {
+        var session = CORE["FileSystem"].session;
+        if(!session) {
+            console.error("no session, cant delete file");
+            return;
+        }
+
+        session.deleteFile(fullpath, on_complete, on_error);
     }
 
     applyFilters( items )
