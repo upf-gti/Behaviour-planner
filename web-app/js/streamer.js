@@ -73,7 +73,7 @@ Streamer.prototype.processMessage = function(data){
 	if( data.constructor === ArrayBuffer ){
 		if(this.onArrayDataReceived) this.onArrayDataReceived(data);
 	}else if(data.constructor === String ){
-		if(this.onDataRecvieved) this.onDataReceived(data);
+		if(this.onDataReceived) this.onDataReceived(data);
 	}else{
 		console.warn("Unknown message type");
 	}
