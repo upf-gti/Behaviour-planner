@@ -752,7 +752,7 @@ function FaceLexemeClip()
   //this.icon_id = 37;
 }
 FaceLexemeClip.type = "faceLexeme";
-FaceLexemeClip.id = ANIM.FACE_LEXEME? ANIM.FACE_LEXEME:1;
+FaceLexemeClip.id = ANIM.FACELEXEME? ANIM.FACELEXEME:2;
 FaceLexemeClip.clip_color = "cyan";
 ANIM.registerClipType( FaceLexemeClip );
 
@@ -867,7 +867,7 @@ function FaceFACSClip()
 
 }
 
-FaceFACSClip.id = ANIM.FACE_FACS? ANIM.FACE_FACS:2;
+FaceFACSClip.id = ANIM.FACEFACS? ANIM.FACEFACS:3;
 FaceFACSClip.clip_color = "#00BDFF";
 ANIM.registerClipType( FaceFACSClip );
 
@@ -993,7 +993,7 @@ function GazeClip()
 
 }
 
-GazeClip.id = ANIM.GAZE? ANIM.GAZE:3;
+GazeClip.id = ANIM.GAZE? ANIM.GAZE:4;
 GazeClip.clip_color = "fuchsia";
 ANIM.registerClipType( GazeClip );
 
@@ -1128,7 +1128,7 @@ function GestureClip()
 
 }
 
-GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:4;
+GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:5;
 GestureClip.clip_color = "lime";
 ANIM.registerClipType( GestureClip );
 
@@ -1252,7 +1252,7 @@ function HeadClip()
 
 }
 
-HeadClip.id = ANIM.HEAD? ANIM.HEAD:5;
+HeadClip.id = ANIM.HEAD? ANIM.HEAD:6;
 HeadClip.clip_color = "yellow";
 ANIM.registerClipType( HeadClip );
 
@@ -1363,7 +1363,7 @@ function HeadDirectionShiftClip()
 
 }
 
-HeadDirectionShiftClip.id = ANIM.HEAD_DIRECTION? ANIM.HEAD_DIRECTION:6;
+HeadDirectionShiftClip.id = ANIM.HEADDIRECTION? ANIM.HEADDIRECTION:7;
 HeadDirectionShiftClip.clip_color = "orange";
 ANIM.registerClipType( HeadDirectionShiftClip );
 
@@ -1610,7 +1610,7 @@ Object.defineProperty( AudioClip.prototype, "src", {
 	}
 });
 
-AudioClip.id = ANIM.AUDIO_CLIP;
+AudioClip.id = ANIM.AUDIO;
 ANIM.registerClipType( AudioClip );
 
 AudioClip.prototype.drawCanvas = function( ctx, local_time, track, project )
