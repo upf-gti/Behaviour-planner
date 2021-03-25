@@ -14,7 +14,7 @@ function fillTimeline(timelineN, lines){
                 id: "faceLexeme-" + (++_clip_id_count),
                 lexeme: "", //TODO
                 relax: 0.75,
-                start: i*10,
+                start: (i-1)*10,
             };
             _clip_data[0] = 2; //FaceFACSClip
             _clip_data[1] = emotionClipData.start;
@@ -29,7 +29,7 @@ function fillTimeline(timelineN, lines){
         var speechClipData = {
             duration: 10,
             id: "speech-" + + (++_clip_id_count),
-            start: i*10,
+            start: (i-1)*10,
             text: line,
         };
         _clip_data[0] = 0; //SpeechClip
