@@ -834,7 +834,7 @@ class Interface {
                 if(CORE["Interface"].lastLoadedFile)
                 {
                     // get path and remove unit
-                    f_folder = CORE["Interface"].lastLoadedFile.path.replace(user_name + "/", "");
+                    f_folder = CORE["Interface"].lastLoadedFile.path;//.replace(user_name + "/", "");
                     if(!f_folder.length)
                         f_folder = null;
                     else
@@ -844,7 +844,7 @@ class Interface {
                     }
                 }
                 
-                __getFolderFiles(user_name, f_folder);
+                __getFolderFiles(user_name, f_folder ? f_folder.replace(user_name + "/", "") : null);
     
                 widgets.on_refresh();
                 widget_fullpath.on_refresh();
