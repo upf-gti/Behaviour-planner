@@ -165,201 +165,206 @@ class App{
   }
 
   update(dt)
-	{
-		var LS = null;
-		if(iframeWindow){
-			var iframe = iframeWindow.document.querySelector("#iframe-character");
-			this.iframe = iframe;
-			if(this.iframe && this.iframe.contentWindow)
-          LS = this.iframe.contentWindow.LS;
-		}
+  {
+      var LS = null;
+      if(iframeWindow){
+          var iframe = iframeWindow.document.querySelector("#iframe-character");
+          this.iframe = iframe;
+          if(this.iframe && this.iframe.contentWindow)
+        LS = this.iframe.contentWindow.LS;
+      }
 
-      //AgentManager.agent_selected = this.currentContext.agent_selected
-      if(this.state == PLAYING){
-          accumulate_time+=dt;
-          if(accumulate_time>=execution_t){
-              //Evaluate each agent on the scene
-              for(var c in AgentManager.agents){
-                  var character_ = AgentManager.agents[c];
+    //AgentManager.agent_selected = this.currentContext.agent_selected
+    if(this.state == PLAYING){
+        accumulate_time+=dt;
+        if(accumulate_time>=execution_t){
+            //Evaluate each agent on the scene
+            for(var c in AgentManager.agents){
+                var character_ = AgentManager.agents[c];
 
-                  var agent_graph = currentHBTGraph = this.graphManager.graphs[character_.hbtgraph];
-                  if(!agent_graph){
-                      agent_graph = currentHBTGraph = this.graphManager.graphs[0];
-                  }
+                var agent_graph = currentHBTGraph = this.graphManager.graphs[character_.hbtgraph];
+                if(!agent_graph){
+                    agent_graph = currentHBTGraph = this.graphManager.graphs[0];
+                }
 
-                  /*
-                  if(userText){
-                  	var node = null;
-                  	if(this.currentContext.last_event_node){
-                  	    node = this.graphManager.currentHBTGraph.graph.getNodeById(this.currentContext.last_event_node);
-                      }
-                  }
-                  */
+                /*
+                if(userText){
+                    var node = null;
+                    if(this.currentContext.last_event_node){
+                        node = this.graphManager.currentHBTGraph.graph.getNodeById(this.currentContext.last_event_node);
+                    }
+                }
+                */
 
-                  if(this.currentContext.last_event_node==null ||this.currentContext.last_event_node==undefined){
-                		tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
-                  }
+                if(this.currentContext.last_event_node==null ||this.currentContext.last_event_node==undefined){
+                      tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
+                }
 
-                  /*
-                  userText = false;
-				triggerEvent = true;
-                  }*/
+                /*
+                userText = false;
+              triggerEvent = true;
+                }*/
 
-                  if(tmp.behaviours && tmp.behaviours.length){
-                      //Temp to manage messages to stream
-                      var behaviours_message = {type: "behaviours", data: []};
-                      var messages_to_stream = [];
+                if(tmp.behaviours && tmp.behaviours.length){
+                    //Temp to manage messages to stream
+                    var behaviours_message = {type: "behaviours", data: []};
+                    var messages_to_stream = [];
 
-                      //Process all behaviours from HBT graph
-                      for(var b in tmp.behaviours){
-                          var behaviour = tmp.behaviours[b];
-                          character_.applyBehaviour( behaviour);
+                    //Process all behaviours from HBT graph
+                    for(var b in tmp.behaviours){
+                        var behaviour = tmp.behaviours[b];
+                        character_.applyBehaviour( behaviour);
 
-                          switch(behaviour.type){
-                              case B_TYPE.setProperty:
-                                  character_.properties[behaviour.data.name] = behaviour.data.value;
-                                  break;
+                        switch(behaviour.type){
+                            case B_TYPE.setProperty:
+                                character_.properties[behaviour.data.name] = behaviour.data.value;
+                                break;
 
-                              case B_TYPE.intent:
+                            case B_TYPE.intent:
 
-                                var obj = {};
-                                //TODO properly process intents and timetables to generate behaviours in protocol format
-                                var data = behaviour.data;
-                            
-                                if(data.text){
-                                    data.type = "speech";
-                                    this.chat.showMessage(data.text, "me");
-                                   	var obj = { "speech": { text: data.text } }; //speaking
+                              var obj = {};
+                              //TODO properly process intents and timetables to generate behaviours in protocol format
+                              var data = behaviour.data;
+                          
+                              if(data.text){
+                                  data.type = "speech";
+                                  this.chat.showMessage(data.text, "me");
+                                     var obj = { "speech": { text: data.text } }; //speaking
 
-                                }else{
-                                    var type = data.type = "anAnimation";
-																		var obj = { type: data };
+                              }else{
+                                  var type = data.type = "anAnimation";
+                                                                      var obj = { type: data };
+                              }
+                             /* if(LS){
+                                      //state = LS.Globals.SPEAKING;
+                                      obj.control = LS.Globals.SPEAKING;
+                                      LS.Globals.processMsg(JSON.stringify(obj), true);
+                              }*/
+                              behaviours_message.data.push(data);
+
+                              break;
+                          case B_TYPE.timeline_intent:
+                              var obj = {};
+                              //TODO properly process intents and timetables to generate behaviours in protocol format
+                              var bh = behaviour.data;
+                              if(bh.data)
+                              {
+                                  for(var i in bh.data)
+                                  {
+                                      var data = bh.data[i];
+                                      
+                                      var obj = { type: data };
+                                     
+                                      /*if(LS){
+                                              //state = LS.Globals.SPEAKING;
+                                              LS.Globals.processMsg(JSON.stringify(obj), true);
+                                      }*/
+                                      behaviours_message.data.push(data);
+                                      
+                                  }
+                              }
+                              else{
+                                  for(var i in bh)
+                                  {
+                                      var data = bh[i];
+                                      if(data.type == "speech"){
+                                          
+                                          this.chat.showMessage(data.text, "me");
+                                          var obj = { "speech": { text: data.text } }; //speaking
+      
+                                      }else{
+                                          var obj = { type: data };
+                                      }
+                                      /*if(LS){
+                                          //state = LS.Globals.SPEAKING;
+                                          if(data.type == "speech"){
+                                              obj.control = LS.Globals.SPEAKING;
+                                          }
+                                          LS.Globals.processMsg(JSON.stringify(obj), true);
+                                      }*/
+                                      behaviours_message.data.push(data);
+                                      
+                                  }
+                              }
+                              
+                              break;
+                            case B_TYPE.action:
+                                                          //HARCODED
+                                var expressions = {
+                                    angry:[-0.76,-0.64],
+                                    happy:[0.95,-0.25],
+                                    sad:[-0.81,0.57],
+                                    surprised:[0.22,-0.98],
+                                    sacred:[-0.23,-0.97],
+                                    disgusted:[-0.97,-0.23],
+                                    contempt:[-0.98,0.21],
+                                    neutral:[0,0]
+                                };
+                                var va = [0,0];
+                                if(behaviour.data.animation_to_merge){
+                                    var g = behaviour.data.animation_to_merge.toLowerCase();
+                                    va = expressions[g];
+                                }
+                                var obj = {facialExpression: {va: va}}
+                                if(behaviour.data.speed){
+                                    obj.facialExpression.duration = behaviour.data.speed;
                                 }
                                 if(LS){
-                                        //state = LS.Globals.SPEAKING;
-                                        obj.control = LS.Globals.SPEAKING;
-                                        LS.Globals.processMsg(JSON.stringify(obj), true);
+                                    LS.Globals.processMsg(JSON.stringify(obj), true);
                                 }
-                                behaviours_message.data.push(data);
 
-                                break;
-                            case B_TYPE.timeline_intent:
-                                var obj = {};
                                 //TODO properly process intents and timetables to generate behaviours in protocol format
-                                var bh = behaviour.data;
-                                if(bh.data)
-                                {
-                                    for(var i in bh.data)
-                                    {
-                                        var data = bh.data[i];
-                                        
-                                        var obj = { type: data };
-                                       
-                                        if(LS){
-                                                //state = LS.Globals.SPEAKING;
-                                                LS.Globals.processMsg(JSON.stringify(obj), true);
-                                        }
-                                        behaviours_message.data.push(data);
-                                        
-                                    }
-                                }
-                                else{
-                                    for(var i in bh)
-                                    {
-                                        var data = bh[i];
-                                        if(data.type == "speech"){
-                                            
-                                            this.chat.showMessage(data.text, "me");
-                                            var obj = { "speech": { text: data.text } }; //speaking
-        
-                                        }else{
-                                            var obj = { type: data };
-                                        }
-                                        if(LS){
-                                            //state = LS.Globals.SPEAKING;
-                                            if(data.type == "speech"){
-                                                obj.control = LS.Globals.SPEAKING;
-                                            }
-                                            LS.Globals.processMsg(JSON.stringify(obj), true);
-                                        }
-                                        behaviours_message.data.push(data);
-                                        
-                                    }
-                                }
-                                
+                                var data = behaviour.data;
+                                data.type = "facialLexeme";
+                                data.lexeme = data.animation_to_merge; //Wrong, just a placeholder
+                                behaviours_message.data.push(data);
                                 break;
-                              case B_TYPE.action:
-															//HARCODED
-                                  var expressions = {
-                                      angry:[-0.76,-0.64],
-                                      happy:[0.95,-0.25],
-                                      sad:[-0.81,0.57],
-                                      surprised:[0.22,-0.98],
-                                      sacred:[-0.23,-0.97],
-                                      disgusted:[-0.97,-0.23],
-                                      contempt:[-0.98,0.21],
-                                      neutral:[0,0]
-                                  };
-                                  var va = [0,0];
-                                  if(behaviour.data.animation_to_merge){
-                                      var g = behaviour.data.animation_to_merge.toLowerCase();
-                                      va = expressions[g];
-                                  }
-                                  var obj = {facialExpression: {va: va}}
-                                  if(behaviour.data.speed){
-                                      obj.facialExpression.duration = behaviour.data.speed;
-                                  }
-                                  if(LS){
-                                      LS.Globals.processMsg(JSON.stringify(obj), true);
-                                  }
 
-                                  //TODO properly process intents and timetables to generate behaviours in protocol format
-                                  var data = behaviour.data;
-                                  data.type = "facialLexeme";
-                                  data.lexeme = data.animation_to_merge; //Wrong, just a placeholder
-                                  behaviours_message.data.push(data);
-                                  break;
+                            case B_TYPE.request:
+                                if(behaviour.data.type.length != 0){
+                                    messages_to_stream.push({type: "custom_action", data: behaviour.data});
+                                }
+                                break;
+                        }
 
-                              case B_TYPE.request:
-                                  if(behaviour.data.type.length != 0){
-                                      messages_to_stream.push({type: "custom_action", data: behaviour.data});
-                                  }
-                                  break;
-                          }
+                        triggerEvent = false;
+                    }
 
-                          triggerEvent = false;
+                    if(behaviours_message.data.length) messages_to_stream.push(behaviours_message);
+
+                    //Send messages through streamer
+                    if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+                        for(var m of messages_to_stream){
+                            this.streamer.sendMessage(m.type, m.data);
+                            if(LS){
+                              //state = LS.Globals.SPEAKING;
+                              obj.control = LS.Globals.SPEAKING;
+                              LS.Globals.processMsg(JSON.stringify(m.data), true);
                       }
+                        }
+                    }
+                }
 
-                      if(behaviours_message.data.length) messages_to_stream.push(behaviours_message);
+            }
+            tmp.behaviours = [];
 
-                      //Send messages through streamer
-                      if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
-                          for(var m of messages_to_stream){
-                              this.streamer.sendMessage(m.type, m.data);
-                          }
-                      }
-                  }
+            for(var i in GraphManager.graphs){
+                var graph = GraphManager.graphs[i];
+                if(graph.type == GraphManager.BASICGRAPH){
+                    graph.graph.runStep();
+                }
+            }
 
-              }
-              tmp.behaviours = [];
+            accumulate_time=0;
+            // var behaviours = hbt_graph.runBehaviour(info, hbt_context, dt);
 
-              for(var i in GraphManager.graphs){
-                  var graph = GraphManager.graphs[i];
-                  if(graph.type == GraphManager.BASICGRAPH){
-                      graph.graph.runStep();
-                  }
-              }
-
-              accumulate_time=0;
-              // var behaviours = hbt_graph.runBehaviour(info, hbt_context, dt);
-
-              this.interface.showContent(tmp.behaviours );
-          }
-      }else{
-      	this.currentContext.last_event_node = null;
-		this.chat.clearChat();
-      }
-  }
+            this.interface.showContent(tmp.behaviours );
+        }
+    }else{
+        this.currentContext.last_event_node = null;
+      this.chat.clearChat();
+    }
+}
 
 	onEvent(e){
 		var character_ = AgentManager.agent_selected;
