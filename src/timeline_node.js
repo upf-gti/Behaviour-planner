@@ -56,17 +56,18 @@ ANIM.SPEECH = 0;
 ANIM.AUDIO = 1;
 ANIM.FACELEXEME = 2;
 ANIM.FACEFACS = 3;
-ANIM.GAZE = 4;
-ANIM.GESTURE = 5;
-ANIM.HEAD = 6;
-ANIM.HEADDIRECTION = 7;
-ANIM.POSTURE = 8;
-ANIM.LOCOMOTION = 9;
+ANIM.FACEEMOTION = 4;
+ANIM.GAZE = 5;
+ANIM.GESTURE = 6;
+ANIM.HEAD = 7;
+ANIM.HEADDIRECTION = 8;
+ANIM.POSTURE = 9;
+ANIM.LOCOMOTION = 10;
 
-ANIM.CUSTOM = 10;
+ANIM.CUSTOM = 11;
 
-ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
-ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
+ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, FaceEmotionClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
+ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip, FaceEmotionClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
 ANIM.registerClipType = function(ctor)
 {
 	var name = ctor.name;
@@ -966,6 +967,122 @@ FaceFACSClip.prototype.showInfo = function(panel)
 		}
 	}
 }
+//FaceEmotionClip
+FaceEmotionClip.type = "faceEmotion";
+FaceEmotionClip.emotions = ["HAPPINESS", "SADNESS", "SURPRISE", "FEAR","ANGER","DISGUST", "CONTEMPT"];
+function FaceEmotionClip()
+{
+	this.id= "faceEmotion-"+Math.ceil(getTime());;
+	this.start = 0
+	this.duration = 1;
+	this._width = 0;
+
+	this.properties = {
+		amount : 0.5,
+		attackPeak : 0.25,
+		relax : 0.75,
+		au : 0,
+		emotion : "HAPPINESS", 
+	}
+	this.color = "black";
+	this.font = "40px Arial";
+
+}
+
+FaceEmotionClip.id = ANIM.FACEEMOTION? ANIM.EMOTION:4;
+FaceEmotionClip.clip_color = "#00BDFF";
+ANIM.registerClipType( FaceEmotionClip );
+
+FaceEmotionClip.prototype.toJSON = function()
+{
+	var json = {
+		id: this.id,
+		start: this.start,
+		duration: this.duration,
+
+	}
+	for(var i in this.properties)
+	{
+		
+		json[i] = this.properties[i];
+	}
+	return json;
+}
+
+FaceEmotionClip.prototype.fromJSON = function( json )
+{
+	this.id = json.id;
+	this.properties.amount = json.amount;
+	this.start = json.start;
+	this.properties.attackPeak = json.attackPeak;
+	this.properties.relax = json.relax;
+	this.duration = json.duration;
+	this.properties.emotion = json.emotion;
+	/*this.properties.permanent = json.permanent;*/
+
+}
+
+FaceEmotionClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
+{
+	ctx.globalCompositeOperation =  "source-over";
+	var text_info = ctx.measureText( this.id );
+	ctx.fillStyle = this.color;
+	if( text_info.width < (w - 24) )
+		ctx.fillText( this.id, 24,h * 0.7 );
+}
+FaceEmotionClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="EMOTION"){
+			panel.addCombo(i, property,{values: FaceEmotionClip.emotions, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+				break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
+}
 /*----------------------------------Gaze Behaviour-----------------------------------*/
 //GazeClip
 GazeClip.type = "gaze";
@@ -993,7 +1110,7 @@ function GazeClip()
 
 }
 
-GazeClip.id = ANIM.GAZE? ANIM.GAZE:4;
+GazeClip.id = ANIM.GAZE? ANIM.GAZE:5;
 GazeClip.clip_color = "fuchsia";
 ANIM.registerClipType( GazeClip );
 
@@ -1128,7 +1245,7 @@ function GestureClip()
 
 }
 
-GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:5;
+GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:6;
 GestureClip.clip_color = "lime";
 ANIM.registerClipType( GestureClip );
 
@@ -1252,7 +1369,7 @@ function HeadClip()
 
 }
 
-HeadClip.id = ANIM.HEAD? ANIM.HEAD:6;
+HeadClip.id = ANIM.HEAD? ANIM.HEAD:7;
 HeadClip.clip_color = "yellow";
 ANIM.registerClipType( HeadClip );
 
@@ -1363,7 +1480,7 @@ function HeadDirectionShiftClip()
 
 }
 
-HeadDirectionShiftClip.id = ANIM.HEADDIRECTION? ANIM.HEADDIRECTION:7;
+HeadDirectionShiftClip.id = ANIM.HEADDIRECTION? ANIM.HEADDIRECTION:8;
 HeadDirectionShiftClip.clip_color = "orange";
 ANIM.registerClipType( HeadDirectionShiftClip );
 
@@ -1420,7 +1537,7 @@ function PostureClip()
 
 }
 
-PostureClip.id = ANIM.POSTURE? ANIM.POSTURE:7;
+PostureClip.id = ANIM.POSTURE? ANIM.POSTURE:9;
 PostureClip.clip_color = "#7CFF00";
 ANIM.registerClipType( PostureClip );
 
