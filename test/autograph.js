@@ -7,16 +7,21 @@ function fillTimeline(timelineN, lines){
         var line = lines[i];
         if(lines[i].startsWith("<EMOTION:")){
             var emotion = line.substr(10, line.indexOf(">")-10);
+            //emotions ["HAPPINESS", "SADNESS", "SURPRISE", "FEAR","ANGER","DISGUST", "CONTEMPT"];
+            //script only contains "HAPPY", "SAD" and "SURPRISE"
+            var emotionName = emotion.toUpperCase();
+            if(emotionName.startsWith("SAD")) emotionName = "SADNESS";
+            else if(emotionName.startsWith("HAPPY")) emotionName = "HAPPINESS";
             var emotionClipData = {
                 amount: 0.5,
                 attackPeak: 0.25,
-                duration: 2,
-                id: "faceLexeme-" + (++_clip_id_count),
-                lexeme: "", //TODO
+                duration: 1,
+                id: "faceEmotion-" + (++_clip_id_count),
+                emotion: emotionName,
                 relax: 0.75,
                 start: (i-1)*10,
             };
-            _clip_data[0] = 2; //FaceFACSClip
+            _clip_data[0] = ANIM.FACEEMOTION;
             _clip_data[1] = emotionClipData.start;
             _clip_data[2] = emotionClipData.duration;
             _clip_data[3] = emotionClipData;
@@ -65,6 +70,26 @@ function testAuto(){
     hbtgraph.graph.add(intentN);
     parallelN.connect(0,intentN,0);
 }
+
+function positiveParse(node){
+    node.processPhrase({value: "yes"}, []);
+    node.processPhrase({value: "sure"}, []);
+    node.processPhrase({value: "i can"}, []);
+    node.processPhrase({value: "i do it"}, []);
+    node.processPhrase({value: "of course"}, []);
+    node.processPhrase({value: "yeah"}, []);
+    node.processPhrase({value: "ok"}, []);
+    node.processPhrase({value: "okay"}, []);
+}
+
+function negativeParse(node){
+    node.processPhrase({value: "no"}, []);
+    node.processPhrase({value: "i can't"}, []);
+    node.processPhrase({value: "i don't hear you"}, []);
+    node.processPhrase({value: "i don't want"}, []);
+    node.processPhrase({value: "i do not"}, []);
+}
+
 function convertNoSubgraph(script){
     var hbtgraph = GraphManager.newGraph(GraphManager.HBTGRAPH);
     var sections = script.split("\n---\n");
@@ -110,7 +135,13 @@ function convertNoSubgraph(script){
                     var parseN = LiteGraph.createNode("btree/ParseCompare");
                     parseN.pos[0] = c*400;
                     parseN.pos[1] = h*200;
-                    parseN.processPhrase({value: key}, []);
+                    if(key == "Yes"){
+                        positiveParse(parseN);
+                    }else if(key == "No"){
+                        negativeParse(parseN);
+                    }else{
+                        parseN.processPhrase({value: key}, []);
+                    }
                     hbtgraph.graph.add(parseN);
 
                     eventN.connect(0, parseN, 0);
@@ -201,7 +232,7 @@ function testAuto2(){
     sectionG.subgraph.add(intentN);
     parallelN.connect(0,intentN,0);
 }
-function convert(script){
+function _convert(script){
     var hbtgraph = GraphManager.newGraph(GraphManager.HBTGRAPH);
     var sections = script.split("\n---\n");
 
