@@ -981,7 +981,6 @@ function FaceEmotionClip()
 		amount : 0.5,
 		attackPeak : 0.25,
 		relax : 0.75,
-		au : 0,
 		emotion : "HAPPINESS", 
 	}
 	this.color = "black";
@@ -1035,7 +1034,7 @@ FaceEmotionClip.prototype.showInfo = function(panel)
 	for(var i in this.properties)
 	{
 		var property = this.properties[i];
-		if(i=="EMOTION"){
+		if(i=="emotion"){
 			panel.addCombo(i, property,{values: FaceEmotionClip.emotions, callback: function(i,v)
 			{
 				this.properties[i] = v;
