@@ -988,7 +988,7 @@ function FaceEmotionClip()
 
 }
 
-FaceEmotionClip.id = ANIM.FACEEMOTION? ANIM.EMOTION:4;
+FaceEmotionClip.id = ANIM.FACEEMOTION? ANIM.FACEEMOTION:4;
 FaceEmotionClip.clip_color = "#00BDFF";
 ANIM.registerClipType( FaceEmotionClip );
 
