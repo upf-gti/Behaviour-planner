@@ -691,11 +691,12 @@ onTimelineMouse: function( e, time, timeline )
           {
             this.showRightPanel(true);
             this.showClipInfo( this.selected_clip );
-			CORE.Interface._graph_tab.click();
           }
         //   else
         //     this.timeline_mode = "clip";
-          return true;
+
+			CORE.Interface._graph_tab.click();
+          	return true;
         }
         else
         {
