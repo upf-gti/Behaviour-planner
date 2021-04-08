@@ -1909,7 +1909,21 @@ CustomRequest.prototype.onExecute = function(){
 
 CustomRequest.prototype.tick = function(agent, dt, info){
   this.behaviour.type = B_TYPE.request;
-  this.behaviour.setData({type: this.properties.type, parameters: this.properties.parameters});
+
+  var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
+  if(info && info.tags){
+    for(var p in parameters){
+      var value = parameters[p];
+      if(value.constructor === String && value[0] == "#"){ //Try to match a tag from info
+        if(info.tags[value]){
+          parameters[p] = info.tags[value];
+        }
+      }
+    }
+  }
+  
+
+  this.behaviour.setData({type: this.properties.type, parameters: parameters});
   this.behaviour.STATUS = STATUS.success;
   this.graph.evaluation_behaviours.push(this.behaviour);
   return this.behaviour;
