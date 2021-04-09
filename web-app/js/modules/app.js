@@ -217,9 +217,14 @@ class App{
 
                         switch(behaviour.type){
                             case B_TYPE.setProperty:
-                                character_.properties[behaviour.data.name] = behaviour.data.value;
+                                var data = behaviour.data;
+                                if(!data.type || data.type == "agent"){
+                                    this.currentContext.agent_evaluated.properties[data.name] = data.value;
+                                }else if(data.type == "user"){
+                                    this.currentContext.user.properties[data.name] = data.value;
+                                }
                                 break;
-
+                                
                             case B_TYPE.intent:
 
                               var obj = {};
