@@ -140,7 +140,7 @@ GraphWidget.prototype.onDraw = function()
 			tex = this.inspected_node.getPreviewTexture();
 		if(!tex)
 			tex = this.inspected_node.getOutputData(0);
-		if(!tex || tex.constructor !== GL.Texture)
+		if(!tex || (window.hasOwnProperty("GL") && tex.constructor !== GL.Texture))
 			widget._texture = null;
 		else
 		{
@@ -545,7 +545,7 @@ GraphWidget.prototype.onSelectOvergraph = function()
 GraphWidget.prototype.onDrawLinkTooltip = function( ctx, link, graphcanvas )
 {
 	var tex = null;
-	if(link && link.data && link.data.constructor === GL.Texture)
+	if(link && link.data && (window.hasOwnProperty("GL") && link.data.constructor === GL.Texture))
 		tex = link.data;
 
 	if(GraphModule._link_texture != tex)
@@ -750,7 +750,7 @@ LiteGraph.LGraph.prototype.onGetNodeMenuOptions = function( options, node )
 		for(var i = 0; i < node.outputs.length; ++i)
 		{
 			var info = node.getOutputInfo(i);
-			if(!info || !info._data || info._data.constructor !== GL.Texture )
+			if(!info || !info._data || (window.hasOwnProperty("GL") && info._data.constructor !== GL.Texture ))
 				continue;
 			preview_textures.push( { content: info.name, texture: info._data });
 		}
