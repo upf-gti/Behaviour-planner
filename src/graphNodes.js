@@ -1671,7 +1671,10 @@ function EventNode()
     this.addProperty("type", EventNode.TYPES[0]);
 
     this.event_type = EVENTS.textRecieved;
-    this.widgetType = this.addWidget("combo","type", this.properties.type, function(v){this.properties.type = v},  {values: EventNode.TYPES});
+    this.widgetType = this.addWidget("combo","type", this.properties.type, function(v){
+      this.properties.type = v;
+      this.event_type = EventNode.TYPES.indexOf(v);
+    }.bind(this),  {values: EventNode.TYPES});
 
     this.addInput("", "path");
     this.behaviour = new Behaviour();
@@ -1693,6 +1696,8 @@ EventNode.prototype.onAdded = function()
   ctx.fillText("Id: "+ this.id, 20, 50);
   ctx.restore();
 }*/
+
+//Does not get called
 EventNode.prototype.onPropertyChanged = function(name, value)
 {
     if(name == "type")
