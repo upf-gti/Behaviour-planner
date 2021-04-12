@@ -141,7 +141,7 @@ class Chat{
 	{
 
     text_message = text_message.replace(/\b\w/g, l => l.toUpperCase());
-    CORE.App.onDataReceived({type:"user-data", data: {text: text_message}});
+    CORE.App.onDataReceived({type:"data", data: {user: {text: text_message}}});
     /*var user = CORE.UserManager.getUserById("User-1600260845413");
     if(user.properties.text!=undefined)
       user.setProperty("text", text_message);*/

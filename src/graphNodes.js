@@ -1668,18 +1668,14 @@ function EventNode()
     this.properties = {};
     this.horizontal = true;
     this.widgets_up = true;
-    this.addProperty("type", EventNode.TYPES[0]);
+    this.addProperty("type", "user.text");
 
-    this.event_type = EVENTS.textRecieved;
-    this.widgetType = this.addWidget("combo","type", this.properties.type, function(v){
-      this.properties.type = v;
-      this.event_type = EventNode.TYPES.indexOf(v);
-    }.bind(this),  {values: EventNode.TYPES});
+    this.widgetType = this.addWidget("string", "type", this.properties.type, function(v){this.properties.type = v;}.bind(this));
 
     this.addInput("", "path");
     this.behaviour = new Behaviour();
-
 }
+
 EventNode.prototype.onAdded = function()
 {
   this.title = "Event "+this.id;
@@ -1702,7 +1698,7 @@ EventNode.prototype.onPropertyChanged = function(name, value)
 {
     if(name == "type")
     {
-      this.event_type = EventNode.TYPES.indexOf(value);
+      this.widgetType.value = this.properties.type = value;
     }
 }
 EventNode.prototype.tick = function(agent, dt, info)
@@ -1749,8 +1745,10 @@ EventNode.prototype.tick = function(agent, dt, info)
 
 EventNode.prototype.onConfigure = function(info)
 {
-    onConfig(info, this.graph);
-
+  onConfig(info, this.graph);
+  //["userText", "imageRecieved","faceDetected", "infoRecieved"]
+  if(this.properties.type == "userText") this.properties.type = "user.text";
+  this.widgetType.value = this.properties.type;
 }
 
 EventNode.title = "Event";
@@ -2263,15 +2261,25 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 	}
 }
 
-HBTGraph.prototype.processEvent = function(e)
+HBTGraph.prototype.processEvent = function(data)
 {
-  if(this.graph.context.last_event_node!=undefined)
+  if(this.graph.context.last_event_node !== undefined)
   {
     var node = this.graph.getNodeById(this.graph.context.last_event_node)
-    if(node && node.event_type == e.type)
-    {
-      node.data = e.data;
-      return node;
+    if(node){
+      var event_type = node.properties.type.split("."); //class.property
+      var c = event_type.length > 0 ? event_type[0] : "*"; //class
+      var p = event_type.length > 1 ? event_type[1] : "*"; //property
+      if(c == "*"){
+        node.data = data;
+        return node;
+      }
+      else if(data.hasOwnProperty(c)){ //class
+        if(p == "*" || data[c].hasOwnProperty(p)){ //* or property
+          node.data = data[c]; //TODO think other options to have all data
+          return node;
+        }
+      } 
     }
   }
   return false;

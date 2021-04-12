@@ -16,7 +16,6 @@ var last = now = performance.now();
 var dt;
 var accumulate_time = 0;
 var execution_t = 1;
-var triggerEvent = false;
 var corpus;
 Object.assign(window, glMatrix);
 var tmp = {
@@ -25,7 +24,8 @@ var tmp = {
 	axis2 : vec3.create(),
 	inv_mat : mat4.create(),
 	agent_anim : null,
-	behaviours : null
+	behaviours : null,
+    event_behaviours : null,
 }
 var userText = false;
 var currentContext = null;
@@ -187,23 +187,12 @@ class App{
                     agent_graph = currentHBTGraph = this.graphManager.graphs[0];
                 }
 
-                /*
-                if(userText){
-                    var node = null;
-                    if(this.currentContext.last_event_node){
-                        node = this.graphManager.currentHBTGraph.graph.getNodeById(this.currentContext.last_event_node);
-                    }
+                if(tmp.event_behaviours){
+                    tmp.behaviours = tmp.event_behaviours;
+                    tmp.event_behaviours = null;
+                }else if(this.currentContext.last_event_node == null || this.currentContext.last_event_node === undefined){
+                    tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
                 }
-                */
-
-                if(this.currentContext.last_event_node==null ||this.currentContext.last_event_node==undefined){
-                      tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time); //agent_graph -> HBTGraph, character puede ser var a = {prop1:2, prop2:43...}
-                }
-
-                /*
-                userText = false;
-              triggerEvent = true;
-                }*/
 
                 if(tmp.behaviours && tmp.behaviours.length){
                     //Temp to manage messages to stream
@@ -240,11 +229,7 @@ class App{
                                   var type = data.type = "anAnimation";
                                                                       var obj = { type: data };
                               }
-                             /* if(LS){
-                                      //state = LS.Globals.SPEAKING;
-                                      obj.control = LS.Globals.SPEAKING;
-                                      LS.Globals.processMsg(JSON.stringify(obj), true);
-                              }*/
+
                               behaviours_message.data.push(data);
 
                               break;
@@ -259,11 +244,7 @@ class App{
                                       var data = bh.data[i];
                                       
                                       var obj = { type: data };
-                                     
-                                      /*if(LS){
-                                              //state = LS.Globals.SPEAKING;
-                                              LS.Globals.processMsg(JSON.stringify(obj), true);
-                                      }*/
+
                                       behaviours_message.data.push(data);
                                       
                                   }
@@ -280,13 +261,7 @@ class App{
                                       }else{
                                           var obj = { type: data };
                                       }
-                                      /*if(LS){
-                                          //state = LS.Globals.SPEAKING;
-                                          if(data.type == "speech"){
-                                              obj.control = LS.Globals.SPEAKING;
-                                          }
-                                          LS.Globals.processMsg(JSON.stringify(obj), true);
-                                      }*/
+
                                       behaviours_message.data.push(data);
                                       
                                   }
@@ -294,7 +269,7 @@ class App{
                               
                               break;
                             case B_TYPE.action:
-                                                          //HARCODED
+                                //HARCODED
                                 var expressions = {
                                     angry:[-0.76,-0.64],
                                     happy:[0.95,-0.25],
@@ -331,8 +306,6 @@ class App{
                                 }
                                 break;
                         }
-
-                        triggerEvent = false;
                     }
 
                     if(behaviours_message.data.length) messages_to_stream.push(behaviours_message);
@@ -345,7 +318,10 @@ class App{
                               //state = LS.Globals.SPEAKING;
                               obj.control = LS.Globals.SPEAKING;
                               LS.Globals.processMsg(JSON.stringify(m.data), true);
-                      }
+                            }
+                            if(m.type == "custom_action"){ //Placeholder stuff
+                                this.placeholderProcessRequest(m);
+                            }
                         }
                     }
                 }
@@ -379,8 +355,7 @@ class App{
 	      }
 		var node = agent_graph.processEvent(e);
 		if(node){
-			tmp.behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
-			triggerEvent=true;
+			tmp.event_behaviours = agent_graph.runBehaviour(character_, this.currentContext, accumulate_time, node);
 		}
 	}
 
@@ -515,41 +490,17 @@ class App{
 	            break;
 
 	        case "data":
-	            //Context data
+	            //Process data in App
 	            if(data.user){
 	                this.currentContext.user.update(data.user);
-	                var text = data.user.text;
-	                if(text){
-	                    var event = {
-	                        type: EVENTS.textRecieved,
-	                        data: {
-	                            text: text
-	                        }
-	                    };
-	                    this.onEvent(event); //TODO allow to set events on other data properties
-	                    if(this.chat){
-	                        this.chat.showMessage(text);
-	                    }
+                    if(data.user.text && this.chat){
+	                    this.chat.showMessage(data.user.text);
 	                }
-	            }
-                //Context data
-                if(data.info){
-                    
-                    var data = data.info.msg;
-                    if(data){
-                        var event = {
-                            type: EVENTS.infoRecieved,
-                            data: {
-                                msg: data
-                            }
-                        };
-                        this.onEvent(event); //TODO allow to set events on other data properties
-                        /*if(this.chat){
-                            this.chat.showMessage(text);
-                        }*/
-                    }
                 }
-	            //TODO blackboard
+                //TODO think about adding data of agent or for blackboard
+
+                //Create event and process it in Graph
+                this.onEvent(data);
 
 	            break;
 	    }
