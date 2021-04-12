@@ -89,12 +89,6 @@ class Agent{
     /* A parameter is	 if we want to load an agent */
     constructor( o , pos){
 
-        if(o)
-        {
-            this.configure(o, this)
-            return;
-        }
-
         this.uid =  "Agent-" + Date.now();
 	      this.num_id = Object.keys(AgentManager.agents).length;
 
@@ -124,6 +118,11 @@ class Agent{
         };
 
         this.position = this.properties.position;
+        if(o)
+        {
+            this.configure(o, this)
+            return;
+        }
         //Store agents
         this.bt_info = {};
         this.bt_info.running_data = {};
@@ -185,9 +184,9 @@ class Agent{
                 gestures.push(this.gesture_manager.gestures[i]);
             }
             o.gestures = gestures;
-        }
+        }*/
 
-        return o;*/
+        return o;
     }
     applyBehaviour(behaviour)
     {

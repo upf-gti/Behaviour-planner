@@ -446,13 +446,13 @@ class App{
             that.agent_selected = agent;
             that.agent_selected.is_selected = true;
             that.env_tree.children.push({id:agent.uid, type: "agent"});
-            that.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
+            that.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
         }
 
         if(env.user){
             var user = new User(env.user);
             that.env_tree.children.push({id:user.uid, type: "user"});
-            that.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
+            that.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
         }
 
         if(env.gestures){
