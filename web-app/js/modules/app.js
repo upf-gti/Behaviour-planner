@@ -582,6 +582,36 @@ class App{
 	  downloadAnchorNode.click();
 	  downloadAnchorNode.remove();
   }
+
+    placeholderData = {
+        phoneNumber: "5552020",
+        code: "1234",
+        
+    }
+
+    placeholderProcessRequest(msg){
+        var msg_data = msg.data;
+        var type = msg_data.type;
+        var params = msg_data.parameters;
+        var placeholderResponse = {
+            type: "data",
+            data: {
+                user: {
+
+                }
+            }
+        };
+        switch(type){
+            case "InfoCert_sendSMS":
+                placeholderResponse.data.user.codeSended = (params.phoneNumber == this.placeholderData.phoneNumber);
+                break;
+            case "InfoCert_confirmSMSCode":
+                placeholderResponse.data.user.codeConfirmed = (params.code.toString() == this.placeholderData.code);
+                break;
+        }
+
+        this.onDataReceived(placeholderResponse);
+    }
 }
 
 CORE.registerModule( App );
