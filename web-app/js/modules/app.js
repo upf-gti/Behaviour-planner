@@ -9,7 +9,7 @@ EVENTS = {
 	textRecieved: 0,
 	imageRecieved: 1,
 	faceDetected: 2,
-	codeRecieved: 3
+	infoRecieved: 3
 };
 var baseURL = "https://webglstudio.org";
 var last = now = performance.now();
@@ -532,7 +532,23 @@ class App{
 	                    }
 	                }
 	            }
-
+                //Context data
+                if(data.info){
+                    
+                    var data = data.info.msg;
+                    if(data){
+                        var event = {
+                            type: EVENTS.infoRecieved,
+                            data: {
+                                msg: data
+                            }
+                        };
+                        this.onEvent(event); //TODO allow to set events on other data properties
+                        /*if(this.chat){
+                            this.chat.showMessage(text);
+                        }*/
+                    }
+                }
 	            //TODO blackboard
 
 	            break;
