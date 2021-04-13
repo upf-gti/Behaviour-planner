@@ -496,6 +496,22 @@ class App{
                     if(data.user.text && this.chat){
 	                    this.chat.showMessage(data.user.text);
 	                }
+                    
+                }
+                if(data.img)
+                {
+                    var img = new Image();
+                    img.src = data.img;
+                    if(!img.width)
+                        img.width = 200;
+                    if(!img.height)
+                        img.height = 100;
+                    var canvas = document.createElement("CANVAS");
+                    var ctx = canvas.getContext('2d')
+                    
+                    ctx.drawImage(img,0,0); 
+                    this.chat.log_container.appendChild(img)
+                    this.placeholderData.faceMatching = true;
                 }
                 //TODO think about adding data of agent or for blackboard
 
@@ -586,6 +602,8 @@ class App{
     placeholderData = {
         phoneNumber: "5552020",
         code: "1234",
+        documentID: "00000000A",
+        faceMatching: false,
         
     }
 
@@ -607,6 +625,12 @@ class App{
                 break;
             case "InfoCert_confirmSMSCode":
                 placeholderResponse.data.user.codeConfirmed = (params.code.toString() == this.placeholderData.code);
+                break;
+            case "InfoCert_confirmDocumentID":
+                placeholderResponse.data.user.confirmDocumentID = (params.code.toString() == this.placeholderData.documentID);
+                break;
+            case "InfoCert_faceMatching":
+                placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
                 break;
         }
 
