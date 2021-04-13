@@ -316,7 +316,7 @@ class App{
                             this.streamer.sendMessage(m.type, m.data);
                             if(LS){
                               //state = LS.Globals.SPEAKING;
-                              obj.control = LS.Globals.SPEAKING;
+                              m.control = LS.Globals.SPEAKING;
                               LS.Globals.processMsg(JSON.stringify(m.data), true);
                             }
                             if(m.type == "custom_action"){ //Placeholder stuff
