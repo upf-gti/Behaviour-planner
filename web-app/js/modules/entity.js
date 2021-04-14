@@ -36,10 +36,13 @@ var EntitiesManager = {
     },
 	getEntity(text, entity)
     {
-        if(entity == "#PhoneNumber")
-            return this.checkPhoneFormatValidity(text)
-        
         var doc = nlp(text)
+        if(entity == "#PhoneNumber")
+        {
+            var text = doc.match("#NumericValue").text();
+            return this.checkPhoneFormatValidity(text)
+        }
+      
         var text = doc.match(entity).text();
         if(text!="")
             return text;

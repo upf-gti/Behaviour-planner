@@ -511,7 +511,9 @@ class App{
                     
                     ctx.drawImage(img,0,0); 
                     this.chat.log_container.appendChild(img)
-                    this.placeholderData.faceMatching = true;
+                    data.user.imageTaken = true;
+                    this.currentContext.user.update(data.user);
+                    //this.placeholderData.faceMatching = true;
                 }
                 //TODO think about adding data of agent or for blackboard
 
@@ -627,11 +629,12 @@ class App{
                 placeholderResponse.data.user.codeConfirmed = (params.code.toString() == this.placeholderData.code);
                 break;
             case "InfoCert_confirmDocumentID":
-                placeholderResponse.data.user.confirmDocumentID = (params.code.toString() == this.placeholderData.documentID);
+                placeholderResponse.data.user.documentIDconfirmed = (params.documentID.toString().includes(this.placeholderData.documentID));
                 break;
             case "InfoCert_faceMatching":
                 placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
                 break;
+            
         }
 
         this.onDataReceived(placeholderResponse);
