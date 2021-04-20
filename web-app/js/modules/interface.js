@@ -1,9 +1,9 @@
 class Interface {
 
     constructor() {
-        this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"calc(100% - 30px)"});
+        this.sceneTabs = new LiteGUI.Tabs({id: "scene-tabs", height:"calc(100% - 20px)"});
         this.contentTabs = new LiteGUI.Tabs({id: "content-tabs", height:"100%"});
-        this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"100%"});
+        this.graphTabs = new LiteGUI.Tabs({id: "graph-tabs", height:"calc(100%)"});
         this.tree = null;
         this.timeline_dialog = null;
         this.timeline_section = null;
@@ -28,204 +28,268 @@ class Interface {
             pause: '<span class="material-icons">pause</span>'
         }
 
+        this.sidePanelExpanded = false;
+        
     }
 
-    preInit() {
-        //create a left panel
-        LiteGUI.init();
+    createTabs() {
 
-        var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
-        mainarea.split("horizontal",[300,null], false);
+        var main_tabs = new LiteGUI.Tabs( { id: "worktabs", width: "full", mode: "vertical", autoswitch: true });
+		this.mainarea.getSection(0).add( main_tabs );
+		LiteGUI.main_tabs = main_tabs;
 
-        /* Left area */
-        var left_area = mainarea.getSection(0);
-        left_area.root.id = "left-inspector"
-        left_area.root.className += " content";
+        var that = this;
 
-        // Create a menu bar
-        var menu = new LiteGUI.Menubar();
-        this.menu = menu;
+        this._graph_tab = LiteGUI.main_tabs.addTab( "Graph", {id:"_graphtab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-graph.png", size: "full", content:"", 
+			callback: function(tab_id){
+                
+                if(that.graph_area) {
+                    var tab = LiteGUI.main_tabs.getTab(tab_id);
+                    tab.add( that.graph_area );
+                }
+                if(that.inspector_area) {
+                    that.inspector_area.show();
+                    that.sidepanel.add( that.inspector_area );
+                }
+
+			},
+			callback_leave: function(tab_id) {
+                if(that.inspector_area) {
+                    that.inspector_area.hide();
+                }
+			}
+		});
+
+        this._debugger_tab = LiteGUI.main_tabs.addTab( "Debugger", {id:"_debugertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-debug.png", size: "full", content:"", 
+			callback: function(tab_id){
+
+				if(that.graph_area) {
+                    var tab = LiteGUI.main_tabs.getTab(tab_id);
+                    tab.add( that.graph_area );
+                }
+                if(that.contentTabs) {
+                    that.contentTabs.show();
+                    that.sidepanel.add( that.contentTabs );
+                }
+			},
+			callback_leave: function(tab_id) {
+                that.contentTabs.hide();
+			}
+		});
+
+        this._player_tab = LiteGUI.main_tabs.addTab( "Player", {id:"_playertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-player.png", size: "full", content:"", 
+			callback: function(tab_id){
+                if(that.iframearea && !that.iframe.contentWindow)
+                    that._player_tab.add(that.iframearea)
+
+                if(that.contentTabs) {
+                    that.contentTabs.show();
+                    that.sidepanel.add( that.contentTabs );
+                }
+			},
+			callback_leave: function(tab_id) {
+                that.contentTabs.hide();
+			}
+		});
+
+        this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"", 
+			callback: function(tab_id){
+
+                var drive_panel = CORE["Drive"].panel_drive;
+
+                if(drive_panel) {
+                    drive_panel.inspector.on_refresh();
+                    drive_panel.show();
+                    that.sidepanel.add( drive_panel );
+                }
+
+                CORE.modules["Drive"].refresh();
+			},
+			callback_leave: function(tab_id) {
+                if(CORE["Drive"].panel_drive)
+                    CORE["Drive"].panel_drive.hide();
+			}
+		});
+
+    }
+
+    createSidePanel() {
+        // Side panel
+        var sidepanel = this.mainarea.getSection(1);
+        this.inspector_area = new LiteGUI.Area({id :"inspectorarea", content_id:"inspector-area", autoresize: true, inmediateResize: true});;
+
+        var docked = new LiteGUI.Panel("side_panel", {title:'Panel'});
+        this.sidepanel = docked;
+        sidepanel.add(docked);
+
+        //close button
+        var close_button = new LiteGUI.Button( LiteGUI.special_codes.close , function() {  });
+        close_button.root.style.float = "right";
+        close_button.root.style.marginTop = "-6px";
+        close_button.content.style.width = "25px";
+        // docked.header.appendChild( close_button.root );
+
+        // TREE
+        this.tree = this.createTree();
+        this.inspector_area.add(this.tree);
+
+        // INSPECTOR
+        this.graphinspector = new LiteGUI.Inspector({id:"edit-inspector"});
+        this.inspector_area.add(this.graphinspector);
+        docked.add(this.inspector_area);
+
+        // OPEN BHV
+        var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>", this.onExpandInspector.bind(this,mainarea));
+        btn_tab.tab.style.width = "23px";
+        btn_tab.tab.title = "Show behaviours";
+        var btn_tab_area = new LiteGUI.Area({id:"behaviour-content", autoresize:false});
+        btn_tab.add(btn_tab_area);
+
+        // CHAT
+        var chat_tab = this.contentTabs.addTab("chat", {selected:true, title: this.icons.chat, width:"100%", height:"calc(100% - 40px)"});
+        var chat_area = new LiteGUI.Area({id:"chat-content", autoresize:false});
+        var chat = CORE.App.chat.createGUI(chat_area);
+        chat_tab.add(chat_area);
+
+        // DRIVE
+        CORE["Drive"].createSidePanel();
+    }
+
+    createMenuBar() {
+
+        //create menubar
+		LiteGUI.createMenubar(null,{sort_entries: false});
 
         var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
 
-        menu.refresh = (function()
+        LiteGUI.menubar.refresh = (function()
         {
             // Clean first
-            this.menu.clear();
+            LiteGUI.menubar.clear();
 
-            this.menu.add("Project/New/Empty"); //clear all
-            this.menu.add("Project/New/Template", {callback: this.importFromURL.bind(this, example_url)});
+            LiteGUI.menubar.add("Project/New/Empty"); //clear all
+            LiteGUI.menubar.add("Project/New/Template", {callback: this.importFromURL.bind(this, example_url)});
             // Server options
-            this.menu.separator("Project");
-            this.menu.add("Project/Save", { callback: this.showExportDialog.bind(this)});
-            this.menu.add("Project/Load", { callback: this.showLoadFromServerDialog.bind(this)});
-            this.menu.separator("Project");
+            LiteGUI.menubar.separator("Project");
+            LiteGUI.menubar.add("Project/Save", { callback: this.showExportDialog.bind(this)});
+            LiteGUI.menubar.add("Project/Load", { callback: this.showLoadFromServerDialog.bind(this)});
+            LiteGUI.menubar.separator("Project");
             // Disc options
-            this.menu.add("Project/Import From Disc", { callback: this.openImportFromFileDialog.bind(this)});
-            this.menu.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
-            this.menu.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
+            LiteGUI.menubar.add("Project/Import From Disc", { callback: this.openImportFromFileDialog.bind(this)});
+            LiteGUI.menubar.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
+            LiteGUI.menubar.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
             // Other
-            this.menu.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
-            // this.menu.add("Actions");
+            LiteGUI.menubar.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
+            // LiteGUI.menubar.add("Actions");
 
             if(!CORE.modules["FileSystem"].session)
             {
-                this.menu.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
+                LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
             }else
             {
-                this.menu.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
-                this.menu.add("Account/Logout", {callback: function(e){
+                // LiteGUI.menubar.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
+                LiteGUI.menubar.add("Account/Logout", {callback: function(e){
                     var FS = CORE.modules["FileSystem"];
                     FS.session.logout(FS.onLogout.bind(FS, function(){
-                        menu.refresh();
+                        LiteGUI.menubar.refresh();
                     }));
                 }});
             }
         }).bind(this);
 
-        menu.refresh();
-        left_area.add(menu);
+        LiteGUI.menubar.refresh();
+    }
 
-        var div = document.createElement("DIV");
-        div.className+= " litetabs buttons right";
-        var btn_expand = this.addButton(null,{title: "Minimize/Expand", innerHTML: this.icons.minimize,callback: this.onExpandInspector.bind(this,mainarea)});
-        btn_expand.className+= "btn btn-icon btn-expand invert right";
-        div.append(btn_expand);
-        left_area.add(div);
-        /*EDIT*/
-        var edit_tab = this.sceneTabs.addTab("edit", { title: this.icons.tree, selected:true, width:"100%", height:"calc(100% - 26px)"});
-        edit_tab.tab.title = "Edit environment";
-        edit_tab.content.className+=" content";
+    preInit() {
+        
+        LiteGUI.init();
 
-        var edit_area = new LiteGUI.Area({id: "eidtareditareaea", autoresize:true, height: "fit-content"});
+        this.createMenuBar();
 
-        edit_area.split("vertical", ["fit-content",null], false);
-        /* Tree */
-        var tree_area = edit_area.getSection(0);
-        this.tree = this.createTree();
+        var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
+        mainarea.split("horizontal",[null,300], true);
+        this.mainarea = mainarea;
 
-        tree_area.add(this.tree);
+        LiteGUI.add( mainarea );
 
-        var insp_area = edit_area.getSection(1);
-        insp_area.content.id = "edit-inspect";
-        insp_area.content.style.height = "fit-content"
+        LiteGUI.bind( mainarea, "split_moved", function(e){
+			GraphManager.resize();
+		});
 
-        this.graphinspector = new LiteGUI.Inspector({id:"edit-inspector"})
-        insp_area.add(this.graphinspector)
-        edit_tab.add(edit_area  )
-
-        /*
-        FILE ACTIONS
-        */
-        if ( 0 ) {
-            var actions_tab = this.sceneTabs.addTab("actions", { title: this.icons.folder, width:"100%", height:"calc(100% - 26px)"});
-            actions_tab.tab.title = "Files";
-            actions_tab.content.className+=" content";
-            var actions_inspector = new LiteGUI.Inspector( {width:"100%"});
-
-            /*Import section*/
-            actions_inspector.addSection("Import", {width:"100%"});
-            actions_inspector.addInfo("Environment", "");
-            var env_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-            var env_fromURL = this.addButton("From URL", {className:"btn btn-str"});
-            actions_inspector.current_section.children[1].append(env_fromfile);
-            actions_inspector.current_section.children[1].append(env_fromURL);
-
-            actions_inspector.addInfo("Graphs", "");
-            var graph_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-            var graph_fromURL = this.addButton("From URL", {className:"btn btn-str"});
-            actions_inspector.current_section.children[1].append(graph_fromfile);
-            actions_inspector.current_section.children[1].append(graph_fromURL);
-
-            actions_inspector.addInfo("Corpus", "");
-            var corpus_fromfile = this.addButton("From file", {className:"btn btn-str", callback: this.openImportFromFileDialog.bind(this)});
-            var corpus_fromURL = this.addButton("From URL", {className:"btn btn-str", callback:   this.openImportURLDialog.bind(this)});
-            actions_inspector.current_section.children[1].append(corpus_fromfile);
-            actions_inspector.current_section.children[1].append(corpus_fromURL);
-
-            /*Export section*/
-            actions_inspector.addSection("Export", {width:"100%"});
-            var env_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-env", callback: this.showDownloadDialog.bind(this)});
-            actions_inspector.addInfo("Environment",env_download, {height:"20px"});
-            var graph_download= this.addButton("", {className: "btn btn-icon", innerHTML: this.icons.download, id: "download-graph", callback: this.showDownloadDialog.bind(this)});
-            actions_inspector.addInfo("Graph selected",graph_download, {height:"20px"});
-            actions_tab.add(actions_inspector);
-        }
+        this.createTabs();
+        this.createSidePanel();
 
         /*-------------------------------------------------------------------------------------------*/
-        /* Right area */
-        var right_area = mainarea.getSection(1);
-        right_area.split("horizontal",[null,"30%"], true);
-        right_area.id = "right-area"
-        /* Graph area */
-        var graph_area = this.graph_area = right_area.getSection(0);
+        // Left area
+        var canvas_area = new LiteGUI.Area({id :"canvasarea", content_id:"canvas-area", autoresize: true, inmediateResize: true});
+        this.canvas_area = canvas_area;
+        this._graph_tab.add( canvas_area );
+        //canvas_area.split("horizontal",[null,"20%"], true);
+        canvas_area.id = "left-area";
+
+        // Graph area
+        // var graph_area = this.graph_area = canvas_area.getSection(0);
+        var graph_area = this.graph_area = canvas_area;
         graph_area.split("vertical", [null,"250px"], true);
-        //graph_area.split("vertical", [25,null], false);
-        //LiteGUI.bind(graph_area, "resized", function(){GraphManager.resize()})
-
-        //var graph_bar = graph_area.getSection(0);
-
-        // Create a menu bar
-        //graph_bar.root.className+= " litetabs";
+     
         var div = document.createElement("DIV");
 
         div.className+= " litetabs buttons right";
         var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
         stream_btn.style.display="none";
         var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: GraphManager.clearCurrentGraph});
-        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right",innerHTML: this.icons.play, callback: function(){
+        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
+        }});
+        var show_btn = this.addButton("", {title: "Show scene", id: "show-btn", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
+            iframeWindow = window.open("iframe.html", "otherWindow");
         }});
 
         div.append(clear_btn);
         div.append(play_btn);
         div.append(stream_btn);
+        div.append(show_btn);
+        
+        
+        var div_area = graph_area.add(div);
+
+        graph_area.content.className+= " graph-content";
+        graph_area.onResize = GraphManager.resize.bind(this);
 
         /*IFRAME*/
+        this.iframearea = new LiteGUI.Area({id :"", content_id:"iframe-area", autoresize: true, inmediateResize: true});
+     
+        var div2 = document.createElement("DIV");
 
-        var show_btn = this.addButton("", {title: "Show scene", id: "show-btn", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
-        iframeWindow = window.open("iframe.html", "otherWindow");
-
+        div2.className+= " litetabs buttons right";
+        
+        var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
+            CORE.App.onPlayClicked();
         }});
-        div.append(show_btn);
-        var div_area = graph_area.add(div);
-        /*graph_bar.add(clear_btn);
-        graph_bar.add(play_btn);
-        graph_bar.add(stream_btn);
+        var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
+            iframeWindow = window.open("iframe.html", "otherWindow");
+        }});
+        var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.clear, callback: function () {
+            that.iframearea.add(that.iframe)
+        }});
+        
+        div2.append(play_btn2);
+        
+        div2.append(show_btn2);
+        div2.append(reload_btn2);
+        this.iframearea.add(div2); 
+        this.iframe = document.createElement("iframe");
+        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
+        this.iframe.id="iframe-character";
+        this.iframearea.add(this.iframe)
+        iframeWindow = this.iframearea
+        
+        // Drive tab
+        CORE["Drive"].createTab();
 
-        var graph = graph_area.getSection(1);*/
-        /*graph.content.className+= " graph-content";
-        graph.onresize = GraphManager.resize.bind(this);*/
-        graph_area.getSection(0).content.className+= " graph-content";
-        graph_area.getSection(0).onResize = GraphManager.resize.bind(this);
-        /* Content area */
-      /*  var iframe_tab = this.contentTabs.addTab("iframe", {title: this.icons.visibility, width:"100%", height:"calc(100% - 27px)"});
-        iframe_tab.tab.title = "Show scene";
-        var iframe = document.createElement("IFRAME");
-        iframe.id = "iframe-character"
-        iframe.src ="https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json" //"/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBPtest.scene.json";
-        var iframe_area = new LiteGUI.Area("iframe-content", {autoresize:false});
-        iframe_area.add(iframe);
-        iframe_tab.add(iframe_area)
-*/
-        var behaviour_tab = this.contentTabs.addTab("behaviour", { title: this.icons.search, width:"100%", height:"calc(100% - 27px)"});
-        behaviour_tab.tab.title = "Show behaviours";
-        var behaviour_area = new LiteGUI.Area({id: "behaviour-content", autoresize:false});
-        behaviour_tab.add(behaviour_area)
+        // ***********************************************
 
-        /*CHAT*/
-        var chat_tab = this.contentTabs.addTab("chat", {selected:true, title: this.icons.chat, width:"100%", height:"calc(100% - 27px)"});
-        //this.contentTabs.root.className+= " right";
-        var chat_area = new LiteGUI.Area({id:"chat-content", autoresize:false});
-        var chat = CORE.App.chat.createGUI();
-        chat_area.add(chat);
-        chat_tab.add(chat_area);
-        var right_content = right_area.getSection(1);
-
-        right_content.add(this.contentTabs);
-        mainarea.add(this.sceneTabs);
-        LiteGUI.add( mainarea );
-        this.tabsRefresh()
+        this.tabsRefresh();
 
         // assign drop area -> only once
         let that = this;
@@ -237,6 +301,7 @@ class Interface {
             that.openImportDialog(file);
 
         }));
+
         /*Timeline*/
         this.timeline_section = graph_area.getSection(1);
 
@@ -254,101 +319,117 @@ class Interface {
 
         this.timeline_dialog.resize = function()
         {
-          var that = this;
-          var height = "250px";
-          if(that.timeline_dialog.root.parentElement)
-            height = that.timeline_dialog.root.parentElement.offsetHeight;
-          that.timeline_dialog.setSize(that.timeline_dialog.root.parentElement.offsetWidth,height)
-          onResize(that.timeline_dialog.content)
-          onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
+            var that = this;
+
+            if(!that.timeline_dialog)
+            return;
+
+            var height = "250px";
+            if(that.timeline_dialog.root.parentElement)
+                height = that.timeline_dialog.root.parentElement.offsetHeight;
+            that.timeline_dialog.setSize(that.timeline_dialog.root.parentElement.offsetWidth,height)
+            onResize(that.timeline_dialog.content)
+            onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
         }
+        
         graph_area.hideSection(1);
         this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
+
+        window.addEventListener('resize', function(e)
+        {
+            GraphManager.resize();
+
+            // Call here any other resize
+            // ...
+        });
     }
 
     onExpandInspector(area,e) {
+
         var that = this;
-        if(e.currentTarget.classList.contains("invert"))
+        if(this.sidePanelExpanded)
         {
-            var w= area.getSection(0).getWidth();
-            area.moveSplit(w-30);
-            that.sceneTabs.hide();
-            e.currentTarget.classList.remove("invert");
+            this.mainarea.moveSplit(-200);
+            // that.sceneTabs.hide();
         }else
         {
-            var w= area.getSection(0).getWidth();
-            area.moveSplit(-270);
-            that.sceneTabs.show();
-            e.currentTarget.classList.add("invert");
+            this.mainarea.moveSplit(200);
+            // that.sceneTabs.show();
         }
+        this.sidePanelExpanded = !this.sidePanelExpanded;
         GraphManager.resize();
-        that.timeline_dialog.resize()
+        that.timeline_dialog.resize();
         onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
     }
+
     timeline()
     {
 
     }
+
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
-    newTab(g)  {
-        var that = this;
-        that.graphTabs.removeTab("plus-tab");
+    //New tab without removing '+' tab
+    _newGraphTab(g) {
         var graph_area = document.createElement("DIV");
-        graph_area.id = g.id? g.id :"graph-canvas";
+        graph_area.id = g.id || "graph-canvas";
         graph_area.className = "graph-canvas";
-        var title = g.type==GraphManager.HBTGRAPH? "HBT Graph": "Basic Graph";
+        var title = g.name;
 
-        var tab = that.graphTabs.addTab(g.id, {title: title, closable:true, autoswitch:true, width:"100%", height:"calc(100% - 27px)",callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this) })
-        tab.add(  graph_area);
-        var ngraph_tab = that.graphTabs.addTab("plus-tab", { title:"+"});
-        ngraph_tab.tab.addEventListener("click", that.newGraphDialog.bind(that) );
-        GraphManager.graphSelected = g;
-
-        that.graphTabs.selectTab(tab)
-
-    }
-
-    tabsRefresh(id) {
-
-        var that = this;
-
-        this.graphTabs.clear();
-        var tab;
-
-        for(var i in GraphManager.graphs)
-        {
-            var g = GraphManager.graphs[i];
-            var graph_area = document.createElement("DIV");
-            graph_area.id = g.id? g.id :"graph-canvas";
-            graph_area.className = "graph-canvas";
-            var title = g.type==GraphManager.HBTGRAPH? "HBT Graph": "Basic Graph";
-            if(g.type==GraphManager.BASICGRAPH)
-            {
-
-                var canvasDOM = document.createElement("CANVAS");
+        if(g.type == GraphManager.BASICGRAPH){
+            var canvasDOM = document.createElement("CANVAS");
                 canvasDOM.id = "g"+graph_area.id;
                 canvasDOM.id = "g"+graph_area.id;
                 canvasDOM.width="954";
                 canvasDOM.height="937";
-                graph_area.appendChild(canvasDOM)
-            }
-            GraphManager.graphSelected = g;
-            tab = this.graphTabs.addTab(g.id, {title: title, editable: true, closable:true, width:"100%", height:"calc(100% - 27px)", callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this,g.id)})
-            tab.add(  graph_area);
-
+                graph_area.appendChild(canvasDOM);
         }
+
+        GraphManager.graphSelected = g;
+        var id = g.id;
+
+        var tab = this.graphTabs.addTab(id, {title: title, closable:true, autoswitch:true, width:"100%", height:"calc(100% - 40px)",callback: GraphManager.onGraphSelected, onclose: this.onCloseTab.bind(this), callback_context: this.onContextTab.bind(this, id) });
+        tab.add(graph_area);
+        return tab;
+    }
+
+    //Check native addPlusTab of litegui
+    _newPlusTab() {
         var ngraph_tab = this.graphTabs.addTab("plus-tab", { title:"+"});
         ngraph_tab.tab.addEventListener("click", this.newGraphDialog.bind(this) );
+        return ngraph_tab;
+    }
 
-        this.graphTabs.selectTab(tab)
+    newTab(g) {
+        this.graphTabs.removeTab("plus-tab");
+
+        var tab = this._newGraphTab(g);
+
+        this._newPlusTab();
+        
+        GraphManager.graphSelected = g;
+        this.graphTabs.selectTab(tab);
+    }
+
+    tabsRefresh() {
+        this.graphTabs.clear();
+        var tab;
+
+        for(var i in GraphManager.graphs){
+            var g = GraphManager.graphs[i];
+            tab = this._newGraphTab(g);
+            GraphManager.graphSelected = g;
+        }
+        this.graphTabs.selectTab(tab);
+
+        this._newPlusTab();
 
         var canvas = document.getElementsByClassName("graph-content");
-        canvas[0].appendChild(this.graphTabs.root)
+        if(canvas.length)
+            canvas[0].appendChild(this.graphTabs.root)
     }
 
     onContextTab(id) {
-        var that = this;
-        var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: that.renameTab.bind(this,id)})
+        var contextmenu = new LiteGUI.ContextMenu( ["Rename"], { callback: this.renameTab.bind(this,id)});
     }
 
     renameTab(id) {
@@ -356,6 +437,7 @@ class Interface {
         LiteGUI.prompt("Enter name", function(v){
             var tab = that.graphTabs.getTab(id);
             tab.setTitle(v);
+            GraphManager.onGraphRenamed(id, v);
         },{title: "Rename tab"});
     }
 
@@ -392,10 +474,9 @@ class Interface {
                 break;
         }
         var that = this;
-        var graph = GraphManager.newGraph(type, that.newTab.bind(that));
+        var graph = GraphManager.newGraph(type, "new_graph");
         if(data == "HBT Graph")
             CORE.App.agent_selected.hbt_graph = graph.name;
-       // this.newTab(graph);
     }
 
     openImportDialog(data, session_type) {
@@ -420,12 +501,15 @@ class Interface {
 
         function processFile(data, type)
         {
+            // make sure graph tab is active
+            CORE.modules["Interface"]._graph_tab.click();
+
             if(type == "Environment")
                 CORE.App.loadEnvironment(data);
             else if(type == "dialogue-corpus")
                 CORE.App.loadCorpusData(data);
             else
-                GraphManager.putGraphOnEditor( data )
+                CORE.App.loadBehaviour(data);
         }
 
         if(session_type !== SESSION.IS_GUEST)
@@ -528,281 +612,281 @@ class Interface {
 		dialog.makeModal();
 	}
 
-  showExportDialog() {
+    showExportDialog() {
 
-     var curr_session = CORE["FileSystem"].getSession();
-     if(!curr_session)
-     return;
+        var curr_session = CORE["FileSystem"].getSession();
+        if(!curr_session)
+        return;
 
-     if(curr_session.user.username === "guest"
-         && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
-     ) {
-         LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
-         return;
-     }
+        if(curr_session.user.username === "guest"
+            && !CORE["FileSystem"].ALLOW_GUEST_UPLOADS
+        ) {
+            LiteGUI.alert("Create your own account to upload files to the server", {title: "Guest"});
+            return;
+        }
 
-     var canvas = GraphManager.currentCanvas.canvas2D;
-     var tbh_data, boo;
-     var user_name = curr_session.user.username;
-     var files = {};
-     var file_selected = "";
-     var folder_selected = user_name;
-     var path = "", filename = this.lastLoadedFile ? this.lastLoadedFile.filename : "export";
+        var canvas = GraphManager.currentCanvas.canvas2D;
+        var tbh_data, boo;
+        var user_name = curr_session.user.username;
+        var files = {};
+        var file_selected = "";
+        var folder_selected = user_name;
+        var path = "", filename = this.lastLoadedFile ? this.lastLoadedFile.filename : "export";
 
-     if(!canvas) {
-         console.warn("nothing to export");
-         return;
-     }
+        if(!canvas) {
+            console.warn("nothing to export");
+            return;
+        }
 
-     var uploadFile = function(v)
-     {
-         try
-         {
-             boo = CORE.App.toJSON(
-                 v === "Graph" ? "download-graph" : "download-env",
-                 filename
-             );
-             boo = JSON.stringify(boo);
-         }
-         catch (e)
-         {
-             console.error("Error creating json", e);
-             LiteGUI.alert("Something went wrong");
-             return;
-         }
+        var uploadFile = function(v)
+        {
+            try
+            {
+                boo = CORE.App.toJSON(
+                    v === "Graph" ? "download-graph" : "download-env",
+                    filename
+                );
+                boo = JSON.stringify(boo);
+            }
+            catch (e)
+            {
+                console.error("Error creating json", e);
+                LiteGUI.alert("Something went wrong");
+                return;
+            }
 
-         var FS = CORE["FileSystem"];
+            var FS = CORE["FileSystem"];
 
-         var path = folder_selected + "/" + filename + ".json";
+            var path = folder_selected + "/" + filename + ".json";
 
-         console.warn("Uploading file: " + path);
+            console.warn("Uploading file: " + path);
 
-         // upload file
-         FS.uploadFile(path, new File([boo], filename + ".json"), []);
+            // upload file
+            FS.uploadFile(path, new File([boo], filename + ".json"), []);
 
-         // upload thb
-         if(tbh_data){
-             // change file extension and folder for thb
-             var tkn = path.split("/");
-             var _name = tkn.pop().replace("json", "png"); // name.png
-             path = tkn.join("/") + "/thb/" + _name;
-             FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
-         }
-     }
+            // upload thb
+            if(tbh_data){
+                // change file extension and folder for thb
+                var tkn = path.split("/");
+                var _name = tkn.pop().replace("json", "png"); // name.png
+                path = tkn.join("/") + "/thb/" + _name;
+                FS.uploadFile(path, new File([tbh_data], filename + ".png"), [] );
+            }
+        }
 
-     var inner = function(v) {
+        var inner = function(v) {
 
-         if(!filename.length) {
-             LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
-             return;
-         }
+            if(!filename.length) {
+                LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
+                return;
+            }
+            
+            // CHECK IF FILE EXISTS
+            var _folder = folder_selected.replace(user_name, "");
+            CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
+    
+                
+                var jName = filename + ".json";
+                data = data.filter(e => e.unit === user_name && e.filename === jName);
+                
+                if(data.length)
+                {
+                    LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
+                        if(choice_resp == "Yes")
+                            uploadFile(v);
+                    }, {title:"File already exists"} )
+                }else
+                {
+                    uploadFile(v);
+                }
+                
+            });
+        };
 
-         // CHECK IF FILE EXISTS
-         var _folder = folder_selected.replace(user_name, "");
-         CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
+        canvas.toBlob(function(v){
 
+            tbh_data = v;
+            var url =  URL.createObjectURL( tbh_data );
 
-             var jName = filename + ".json";
-             data = data.filter(e => e.unit === user_name && e.filename === jName);
+            curr_session.getFolders(user_name, (function(data) {
+    
+                function __getFolderFiles(unit, folder, callback) {
+    
+                    var _folder = folder;
+    
+                    if(!_folder)
+                    _folder = "";
+    
+                    CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
+    
+                        data.forEach(function(e){
+    
+                            if(e.unit !== unit)
+                                return;
+                            files[e.filename] = e;
+                        });
+                        widgets.refresh();
+                        widget_fullpath.on_refresh();
+                    });
+                }
+    
+                /*
+                    recursive function to get each item parent
+                */
+                function __getParent(id)
+                {
+                    var parent = litetree.getParent(id);
+                    if(parent)
+                    {
+                        var parent_id = parent.data.id;
+                        path = parent_id + "/" + path;
+                        __getParent(parent_id);
+                    }
+                }
+    
+                /*
+                    recursive function to get all folders in unit
+                    as a data tree
+                */
+                function __showFolders(object, parent)
+                {
+                    for(var f in object)
+                    {
+                        if(f === "thb") // discard thumb previews for folders
+                        continue;
+                        litetree.insertItem({id: f}, parent);
+                        if(object[f])
+                            __showFolders(object[f], f);
+                    }
+                }
+    
+                var selected = null;
+                var litetree = new LiteGUI.Tree({id: user_name});
+                LiteGUI.bind( litetree.root, "item_selected", function(item) {
+                    selected = item.detail.data.id;
+    
+                    path = "";
+                    files = {};
+                    file_selected = null;
+    
+                    // get full path
+                    __getParent(selected);
+                    path += selected;
+                    var tk = path.split("/");
+                    tk.shift();
+                    path = tk.join("/");
+                    if(!path.length)
+                        path = null;
+    
+                    // fetch files in folder
+                    folder_selected = user_name + (path ? "/" + path : "");
+                    // console.log(folder_selected);
+                    __getFolderFiles(user_name, path);
+                });
+    
+                __showFolders(data, user_name);
 
-             if(data.length)
-             {
-                 LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
-                     if(choice_resp == "Yes")
-                         uploadFile(v);
-                 }, {title:"File already exists"} )
-             }else
-             {
-                 uploadFile(v);
-             }
+                var id = "Save to Server";
+                var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
+                var w = 400;
+                var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
+                dialog.makeModal('fade');
 
-         });
-     };
+                var fixed_widgets = new LiteGUI.Inspector();
 
-     canvas.toBlob(function(v){
+                fixed_widgets.on_refresh = function()
+                {
+                    fixed_widgets.clear();
+                    fixed_widgets.addTitle( "Filename");
+                    window.filename_w = fixed_widgets.addString( null, filename );
 
-         tbh_data = v;
-         var url =  URL.createObjectURL( tbh_data );
+                    filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
+                        filename = filename_w.getValue();
+                        widget_fullpath.on_refresh();
+                    });
+                }
 
-         curr_session.getFolders(user_name, (function(data) {
+                fixed_widgets.on_refresh();
 
-             function __getFolderFiles(unit, folder, callback) {
+                var widgets = new LiteGUI.Inspector();
+                var widget_fullpath = new LiteGUI.Inspector();
+    
+                widget_fullpath.on_refresh = function(){
+    
+                    widget_fullpath.clear();
+                    widget_fullpath.addTitle("Fullpath");
+                    widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
+                }
 
-                 var _folder = folder;
+                widgets.on_refresh = function(){
+    
+                    widgets.clear();
+    
+                    widgets.addTitle("Folders");
+                    widgets.root.appendChild(litetree.root);
+                    widgets.addTitle( "Files");
+                    widgets.widgets_per_row = 2;
+                    widgets.addList( null, files, {height: "150px", callback: function(file){
 
-                 if(!_folder)
-                 _folder = "";
+                        filename = file.filename.split(".").shift();
+                        fixed_widgets.on_refresh();
+                        widget_fullpath.on_refresh();
+                    }});
+    
+                    var thb = widgets.addContainer("thb");
+                    thb.style.width = "50%";
+                    thb.style.height = "145px";
+                    thb.style.display = "inline-block";
+                    thb.style.marginTop = "5px";
+                    thb.innerHTML = "<img height='100%' src='" + url + "'>";
+    
+                    widgets.addSeparator();
+                    widgets.widgets_per_row = 2;
+                    widgets.addButton( null, "Save graph", {callback: function() {
+    
+                       inner("Graph");
+                       dialog.close();
 
-                 CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
+                    } });
 
-                     data.forEach(function(e){
+                    widgets.addButton( null, "Save Environment", {callback: function() {
+    
+                        inner("Environment");
+                        dialog.close();
 
-                         if(e.unit !== unit)
-                             return;
-                         files[e.filename] = e;
-                     });
-                     widgets.refresh();
-                     widget_fullpath.on_refresh();
-                 });
-             }
+                    } });
+                    widgets.widgets_per_row = 1;
+                    widgets.addSeparator();
+                }
+    
+                var f_folder = null;
 
-             /*
-                 recursive function to get each item parent
-             */
-             function __getParent(id)
-             {
-                 var parent = litetree.getParent(id);
-                 if(parent)
-                 {
-                     var parent_id = parent.data.id;
-                     path = parent_id + "/" + path;
-                     __getParent(parent_id);
-                 }
-             }
+                if(CORE["Interface"].lastLoadedFile)
+                {
+                    // get path and remove unit
+                    f_folder = CORE["Interface"].lastLoadedFile.path;//.replace(user_name + "/", "");
+                    if(!f_folder.length)
+                        f_folder = null;
+                    else
+                    {
+                        // remove last "/"
+                        folder_selected = f_folder.substr(0, f_folder.length - 1);
+                    }
+                }
+                
+                __getFolderFiles(user_name, f_folder ? f_folder.replace(user_name + "/", "") : null);
+    
+                widgets.on_refresh();
+                widget_fullpath.on_refresh();
+                dialog.add(fixed_widgets);
+                dialog.add(widget_fullpath);
+                dialog.add(widgets);
+                dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
+    
+            }));
+        });
 
-             /*
-                 recursive function to get all folders in unit
-                 as a data tree
-             */
-             function __showFolders(object, parent)
-             {
-                 for(var f in object)
-                 {
-                     if(f === "thb") // discard thumb previews for folders
-                     continue;
-                     litetree.insertItem({id: f}, parent);
-                     if(object[f])
-                         __showFolders(object[f], f);
-                 }
-             }
-
-             var selected = null;
-             var litetree = new LiteGUI.Tree({id: user_name});
-             LiteGUI.bind( litetree.root, "item_selected", function(item) {
-                 selected = item.detail.data.id;
-
-                 path = "";
-                 files = {};
-                 file_selected = null;
-
-                 // get full path
-                 __getParent(selected);
-                 path += selected;
-                 var tk = path.split("/");
-                 tk.shift();
-                 path = tk.join("/");
-                 if(!path.length)
-                     path = null;
-
-                 // fetch files in folder
-                 folder_selected = user_name + (path ? "/" + path : "");
-                 // console.log(folder_selected);
-                 __getFolderFiles(user_name, path);
-             });
-
-             __showFolders(data, user_name);
-
-             var id = "Save to Server";
-             var dialog_id = UTILS.replaceAll(id," ", "-").toLowerCase();
-             var w = 400;
-             var dialog = new LiteGUI.Dialog( {id: dialog_id, parent: "body", close: true, title: id, width: w, draggable: true });
-             dialog.makeModal('fade');
-
-             var fixed_widgets = new LiteGUI.Inspector();
-
-             fixed_widgets.on_refresh = function()
-             {
-                 fixed_widgets.clear();
-                 fixed_widgets.addTitle( "Filename");
-                 window.filename_w = fixed_widgets.addString( null, filename );
-
-                 filename_w.lastElementChild.lastElementChild.lastElementChild.addEventListener("keyup", function(e){
-                     filename = filename_w.getValue();
-                     widget_fullpath.on_refresh();
-                 });
-             }
-
-             fixed_widgets.on_refresh();
-
-             var widgets = new LiteGUI.Inspector();
-             var widget_fullpath = new LiteGUI.Inspector();
-
-             widget_fullpath.on_refresh = function(){
-
-                 widget_fullpath.clear();
-                 widget_fullpath.addTitle("Fullpath");
-                 widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
-             }
-
-             widgets.on_refresh = function(){
-
-                 widgets.clear();
-
-                 widgets.addTitle("Folders");
-                 widgets.root.appendChild(litetree.root);
-                 widgets.addTitle( "Files");
-                 widgets.widgets_per_row = 2;
-                 widgets.addList( null, files, {height: "150px", callback: function(file){
-
-                     filename = file.filename.split(".").shift();
-                     fixed_widgets.on_refresh();
-                     widget_fullpath.on_refresh();
-                 }});
-
-                 var thb = widgets.addContainer("thb");
-                 thb.style.width = "50%";
-                 thb.style.height = "145px";
-                 thb.style.display = "inline-block";
-                 thb.style.marginTop = "5px";
-                 thb.innerHTML = "<img height='100%' src='" + url + "'>";
-
-                 widgets.addSeparator();
-                 widgets.widgets_per_row = 2;
-                 widgets.addButton( null, "Save graph", {callback: function() {
-
-                    inner("Graph");
-                    dialog.close();
-
-                 } });
-
-                 widgets.addButton( null, "Save Environment", {callback: function() {
-
-                     inner("Environment");
-                     dialog.close();
-
-                 } });
-                 widgets.widgets_per_row = 1;
-                 widgets.addSeparator();
-             }
-
-             var f_folder = null;
-
-             if(CORE["Interface"].lastLoadedFile)
-             {
-                 // get path and remove unit
-                 f_folder = CORE["Interface"].lastLoadedFile.path.replace(user_name + "/", "");
-                 if(!f_folder.length)
-                     f_folder = null;
-                 else
-                 {
-                     // remove last "/"
-                     folder_selected = f_folder.substr(0, f_folder.length - 1);
-                 }
-             }
-
-             __getFolderFiles(user_name, f_folder);
-
-             widgets.on_refresh();
-             widget_fullpath.on_refresh();
-             dialog.add(fixed_widgets);
-             dialog.add(widget_fullpath);
-             dialog.add(widgets);
-             dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
-
-         }));
-     });
-
- }
+    }
 
     showLoadFromServerDialog() {
 
@@ -944,10 +1028,6 @@ class Interface {
                         dialog.close();
 
                         var fullpath = CORE["FileSystem"].root + folder_selected + "/" + file_selected.filename;
-                        // LiteGUI.requestJSON( fullpath, function(data){
-                        //     console.log(data);
-                        // });
-
                         CORE["Interface"].importFromURL( fullpath );
                         CORE["Interface"].lastLoadedFile = {
                             filename: file_selected.filename.split(".").shift(),
@@ -962,7 +1042,7 @@ class Interface {
 
             widgets.on_refresh();
             dialog.add(widgets);
-            dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 150 );
+            dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
 
         }));
     }
@@ -1021,7 +1101,7 @@ class Interface {
                     );
 
                     dialog.close();
-                    CORE["Interface"].menu.refresh();
+                    LiteGUI.menubar.refresh();
                 }
                 else
                 {
@@ -1058,7 +1138,7 @@ class Interface {
                         var FS = CORE.modules["FileSystem"];
                         LFS.login( user, pass, FS.onLogin.bind(FS, function(){
                             dialog.close();
-                            CORE["Interface"].menu.refresh();
+                            LiteGUI.menubar.refresh();
                         }));
                     }else
                     {
@@ -1180,6 +1260,8 @@ class Interface {
     showContent(data)
     {
         var b_content = document.getElementById("behaviour-content");//document.querySelector('[data-id="behaviour-content"]');
+        if(!b_content)
+            return;
         b_content.innerHTML = "";
         for(var i in data)
         {
@@ -1220,6 +1302,12 @@ class Interface {
                     break;
                 case B_TYPE.facialExpression:
                     type = "Facial expression";
+                    break;
+                case B_TYPE.intent:
+                    type = "Speech intent";
+                    break;
+                case B_TYPE.timeline_intent:
+                    type = "Intent";
                     break;
             }
             for(var attr in behaviour)

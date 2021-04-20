@@ -8,7 +8,7 @@ var GraphManager = {
    graphSelected: null,
     HBTGRAPH : 0,
     BASICGRAPH : 1,
-    newGraph(type, name, callback){
+    newGraph(type, name){
         var graph = null;
         switch(type)
         {
@@ -18,18 +18,16 @@ var GraphManager = {
                 var hbt_context = new HBTContext();
 
                 graph.graph.context = hbt_context;
-                //graph.name = "graph-canvas-"+Object.entries(GraphManager.graphs).length;
                 graph.id = "graph-canvas-"+graph.name;
                 this.graphs[graph.name] = graph;
-                CORE.Interface.tabsRefresh()
+                CORE.Interface.tabsRefresh();
 
                 var hbt_canvas = new HBTEditor(graph.id);
                 hbt_canvas.init(graph);
                 GraphManager.graph_canvas[graph.id] = hbt_canvas;
-                this.currentCanvas = hbt_canvas;
-                LGraphCanvas.active_canvas = this.currentCanvas;
-
+                LGraphCanvas.active_canvas = this.currentCanvas = hbt_canvas;
                 break;
+
             case this.BASICGRAPH:
                 var graph = {}
                 graph.graph = new LGraph(name);
@@ -45,40 +43,79 @@ var GraphManager = {
                // var tab = CORE.Interface.tabs.addTab(canvasDOM.id, {id: canvasDOM.id,size:"full", title: "Basic Graph", width:"100%", height:"100%" });
                 var canvas =  new GraphEditor(graph.id);//new LGraphCanvas("#g"+graph.id, graph);
                 GraphManager.graph_canvas[graph.id] = canvas;
-                canvas.init(graph)
+                canvas.init(graph);
                 this.currentCanvas = canvas;
                 LGraphCanvas.active_canvas = this.currentCanvas;
                 break;
         }
-       /* if(callback)
-            callback(GraphManager.graphs[GraphManager.graphs.length-1])*/
+
         return graph;
     },
-    onGraphSelected(data, g)
+    loadGraph(data)
     {
-        GraphManager.currentCanvas = GraphManager.graph_canvas[data];
-        if(data.startsWith("graph-canvas"))
+        var graph;
+        var graph_name = (data.behaviour ? data.behaviour.name : data.name) || "default";
+        
+        if(data.constructor === HBTGraph){
+            data = {behaviour: data};
+        }
+
+        if(data.behaviour){
+            graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph_name);
+            graph.graph.configure(data.behaviour);
+        }else{
+            graph = GraphManager.newGraph(GraphManager.BASICGRAPH, graph_name);
+            graph.graph.configure(data);
+        }
+        
+        return graph;
+    },
+    onGraphSelected(id)
+    {
+        GraphManager.currentCanvas = GraphManager.graph_canvas[id];
+        if(id.startsWith("graph-canvas"))
         {
-            var arr = data.split("-");
-            var name = arr[2];
-            if(arr.length>3)
-            {
-                arr = arr.slice(2);
-                name = arr.join("-");
-            }
+            var name = id.substr(13);
             GraphManager.graphSelected = GraphManager.graphs[name];
         }
 
 
         LGraphCanvas.active_canvas = GraphManager.currentCanvas;
-        console.log(data)
+        console.log(id)
+    },
+    onGraphRenamed(id, newname)
+    {
+        var graph;
+        if(id.startsWith("graph-canvas"))
+        {
+            var oldname = id.substr(13);
+            graph = GraphManager.graphs[oldname];
+        }
+        
+        var canvas = GraphManager.graph_canvas[id];
+
+        if(!graph) return;
+
+        var oldname = graph.name;
+        graph.name = newname;
+        graph.id =  "graph-canvas-" + newname;
+
+        this.graphs[newname] = graph;
+        delete this.graphs[oldname];
+
+        this.graph_canvas[graph.id] = canvas;
+        delete this.graph_canvas[id];
+
+        CORE.Interface.tabsRefresh();
+        canvas.init(graph);
+        LGraphCanvas.active_canvas = GraphManager.currentCanvas;
     },
     clearCurrentGraph()
     {
         GraphManager.currentCanvas.graph.clear();
     }
     ,
-    putGraphOnEditor( data, name )
+    putGraphOnEditor( data )
 	{
         var that = this;
         if(that.constructor.name != "Object")
@@ -86,38 +123,18 @@ var GraphManager = {
         if(!data)
             return;
 
-        var new_graph = {};
-        if(data.behaviour)
-        {
-            new_graph = new HBTGraph(name);
-            new_graph.type = this.HBTGRAPH;
-            new_graph.graph.configure(data.behaviour);
-            new_graph.graph.context = this.hbt_context;
-            that.graphs[new_graph.name] = new_graph;
-
-        }
-        else if(data.constructor.name == "HBTGraph")
-        {
-            new_graph = data;
-        }
-        else
-        {
-            new_graph.graph = new LGraph();
-            new_graph.type = this.BASICGRAPH;
-            new_graph.graph.configure(data)
-            that.graphs[new_graph.graph.name] = new_graph;
-
-        }
+        var new_graph = this.loadGraph(data);
+        var real_graph = new_graph.constructor === HBTGraph ? new_graph.graph : new_graph;
 
         if(!that.currentCanvas)
         {
-          CORE.Interface.newTab(new_graph.grap);
+          CORE.Interface.newTab(real_graph);
           that.newGraph(new_graph.type)
         }
-        that.currentCanvas.graph_canvas.setGraph(new_graph.graph);
+        that.currentCanvas.graph_canvas.setGraph(real_graph);
         that.graphSelected = new_graph;
         
-
+        return new_graph;
     },
     init(){
         window.addEventListener("resize", this.resize.bind(this));

@@ -56,17 +56,18 @@ ANIM.SPEECH = 0;
 ANIM.AUDIO = 1;
 ANIM.FACELEXEME = 2;
 ANIM.FACEFACS = 3;
-ANIM.GAZE = 4;
-ANIM.GESTURE = 5;
-ANIM.HEAD = 6;
-ANIM.HEADDIRECTION = 7;
-ANIM.POSTURE = 8;
-ANIM.LOCOMOTION = 9;
+ANIM.FACEEMOTION = 4;
+ANIM.GAZE = 5;
+ANIM.GESTURE = 6;
+ANIM.HEAD = 7;
+ANIM.HEADDIRECTION = 8;
+ANIM.POSTURE = 9;
+ANIM.LOCOMOTION = 10;
 
-ANIM.CUSTOM = 10;
+ANIM.CUSTOM = 11;
 
-ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
-ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
+ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, FaceEmotionClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
+ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip, FaceEmotionClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
 ANIM.registerClipType = function(ctor)
 {
 	var name = ctor.name;
@@ -118,12 +119,6 @@ function TimelineIntent(o)
 		{
 				this.add( new ANIM.Track(i) );
 		}
-		/*this.add( new ANIM.Track("Speech") );
-		this.add( new ANIM.Track("Face") );
-		this.add( new ANIM.Track("Gaze") );
-		this.add( new ANIM.Track("Head") );
-		this.add( new ANIM.Track("Gesture") );
-		this.add( new ANIM.Track("Posture") );*/
 	}
 
 	TimelineIntent.instance = this;
@@ -163,11 +158,22 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
 {
 	if(this.facade == null)
 		this.facade = this.graph.context.facade;
-    var behaviours = [];
+  var behaviours = [];
+	var bml = {};
   for(var i in this.tracks)
   {
     var track = this.tracks[i];
-    for(var j in track.clips)
+	if(!bml[track.name]&&track.clips.length){
+		bml[track.name] = [];
+	}
+	for(var j in track.clips)
+	{
+		
+		var data = track.clips[j].toJSON();
+		data.type = track.clips[j].constructor.type;
+		bml[track.name].push(data);
+	}
+    /*for(var j in track.clips)
     {
       var behaviour = new Behaviour();
       behaviour.type = B_TYPE.intent_timeline || 16;
@@ -175,11 +181,29 @@ TimelineIntent.prototype.tick = function(agent, dt, info)
       behaviour.setData(track.clips[j].toJSON());
       behaviours.push(behaviour);
       this.graph.evaluation_behaviours.push(behaviour);
-    }
+    }*/
   }
+	for(var i in bml)
+	{
+		var data = {};
+		if(i.includes("Shift"))
+		{
+			data.type = i;
+			data.data = bml[i]
+		}
+		else{
+			data = bml[i];
+		}
+		var behaviour = new Behaviour();
+		behaviour.type = B_TYPE.timeline_intent || B_TYPE.intent;
+		behaviour.STATUS = STATUS.success;
+		behaviour.setData(data);
+		behaviours.push(behaviour);
+		this.graph.evaluation_behaviours.push(behaviour);
+	}
   agent.evaluation_trace.push(this.id);
 
-  return behaviours;
+  return {STATUS:STATUS.success, data:behaviours};
 
 }
 TimelineIntent.prototype.onDblClick = function()
@@ -232,7 +256,6 @@ LiteGraph.registerNodeType("btree/TimelineIntent", TimelineIntent );
 function Project()
 {
 	this.name = "unnamed";
-
 
 	//timing
 	this.mode = ANIM.PAUSED;
@@ -367,40 +390,9 @@ Project.prototype.fromJSON = function(json, callback)
 
 	this.tracks.length = 0;
 	this.markers = json.markers || [];
-
-	if(json.includes)
-		this.includes = json.includes;
-
-	if( !this.includes.length )
-		inner.call(this);
-	else
-		this.loadScripts( inner.bind(this) );
-
-	function inner()
-	{
-		this.scripts = {};
-		if(json.scripts)
-		for(var i = 0; i < json.scripts.length; ++i)
-		{
-			var script = json.scripts[i];
-			this.registerScript( script.name, script.code );
-		}
-
-		if(json.tracks)
-		for(var i = 0; i < json.tracks.length; ++i)
-		{
-			var track = new Track();
-			track.fromJSON( json.tracks[i] );
-			this.add( track );
-		}
-
-		if(this.fonts.length)
-			this.loadFonts();
-
 		if(callback)
 			callback();
 	}
-}
 
 //when coding clips from external scripts, you need a way to ensure clip classes hasnt been modifyed
 Project.prototype.checkClips = function()
@@ -418,8 +410,6 @@ Project.prototype.checkClips = function()
 			new_clip.fromJSON( clip.toJSON() );
 			new_clip.start = clip.start;
 			new_clip.duration = clip.duration;
-			new_clip.fadein = clip.fadein;
-			new_clip.fadeout = clip.fadeout;
 			this.clips[i] = new_clip;
 		}
 	}
@@ -535,9 +525,7 @@ ANIM.clipFromJSON = function( clip_data, clip )
 	else if( clip.constructor !== ANIM.MissingClip )
 		console.warn("Clip without fromJSON: ", clip_data[0] );
 	var data = clip_data[3];
-	if( data.fadein )
-		clip.fadein = data.fadein;
-	if( data.fadeout )
+
 		clip.fadeout = data.fadeout;
 	if( data.ccs )
 	{
@@ -740,7 +728,11 @@ ControlChannel.prototype.getSample = function( time )
 // CLIPS *******************************************************
 //-----------------------------Face Behaviour-----------------------------//
 //FaceLexemeClip to show captions
-FaceLexemeClip.lexemes = ["OBLIQUE_BROWS", "RAISE_BROWS", "RAISE_LEFT_BROW", "RAISE_RIGHT_BROW", "LOWER_BROWS", "LOWER_LEFT_BROW", "LOWER_RIGHT_BROW", "LOWER_MOUTH_CORNERS", "LOWER_LEFT_MOUTH_CORNER", "LOWER_RIGHT_MOUTH_CORNER", "RAISE_MOUTH_CORNERS", "RAISE_RIGHT_MOUTH_CORNER", "RAISE_LEFT_MOUTH_CORNER", "OPEN_MOUTH", "OPEN_LIPS", "WIDEN_EYES", "CLOSE_EYES"];
+FaceLexemeClip.lexemes = ["LIP_CORNER_DEPRESSOR", "LIP_CORNER_DEPRESSOR_LEFT","LIP_CORNER_DEPRESSOR_RIGHT",	"LIP_CORNER_PULLER","LIP_CORNER_PULLER_LEFT","LIP_CORNER_PULLER_RIGHT", "MOUTH_OPEN","LOWER_LIP_DEPRESSOR",
+	"CHIN_RAISER","LIP_PUCKERER","TONGUE_SHOW","LIP_STRECHER","LIP_FUNNELER","LIP_TIGHTENER","LIP_PRESSOR","BROW_LOWERER","BROW_LOWERER_LEFT","LOWER_RIGHT_BROW",	"INNER_BROW_RAISER","OUTER_BROW_RAISER",	"RAISE_LEFT_BROW","RAISE_RIGHT_BROW",	"UPPER_LID_RAISER",	"LID_TIGHTENER",
+	"EYES_CLOSED","BLINK","WINK","NOSE_WRINKLER","UPPER_LIP_RAISER","DIMPLER","JAW_DROP","MOUTH_STRETCH"];
+
+
 function FaceLexemeClip()
 {
 	this.id= "faceLexeme-"+Math.ceil(getTime());;
@@ -764,8 +756,8 @@ function FaceLexemeClip()
   this.clip_color = "#94e9d9";
   //this.icon_id = 37;
 }
-
-FaceLexemeClip.id = ANIM.FACE_LEXEME? ANIM.FACE_LEXEME:1;
+FaceLexemeClip.type = "faceLexeme";
+FaceLexemeClip.id = ANIM.FACELEXEME? ANIM.FACELEXEME:2;
 FaceLexemeClip.clip_color = "cyan";
 ANIM.registerClipType( FaceLexemeClip );
 
@@ -858,6 +850,7 @@ FaceLexemeClip.prototype.showInfo = function(panel)
 	}
 }
 //FaceFACSClip
+FaceFACSClip.type = "faceFACS";
 FaceFACSClip.sides = ["LEFT", "RIGHT", "BOTH"];
 function FaceFACSClip()
 {
@@ -879,7 +872,7 @@ function FaceFACSClip()
 
 }
 
-FaceFACSClip.id = ANIM.FACE_FACS? ANIM.FACE_FACS:2;
+FaceFACSClip.id = ANIM.FACEFACS? ANIM.FACEFACS:3;
 FaceFACSClip.clip_color = "#00BDFF";
 ANIM.registerClipType( FaceFACSClip );
 
@@ -978,10 +971,126 @@ FaceFACSClip.prototype.showInfo = function(panel)
 		}
 	}
 }
+//FaceEmotionClip
+FaceEmotionClip.type = "faceEmotion";
+FaceEmotionClip.emotions = ["HAPPINESS", "SADNESS", "SURPRISE", "FEAR","ANGER","DISGUST", "CONTEMPT"];
+function FaceEmotionClip()
+{
+	this.id= "faceEmotion-"+Math.ceil(getTime());;
+	this.start = 0
+	this.duration = 1;
+	this._width = 0;
+
+	this.properties = {
+		amount : 0.5,
+		attackPeak : 0.25,
+		relax : 0.75,
+		emotion : "HAPPINESS", 
+	}
+	this.color = "black";
+	this.font = "40px Arial";
+
+}
+
+FaceEmotionClip.id = ANIM.FACEEMOTION? ANIM.FACEEMOTION:4;
+FaceEmotionClip.clip_color = "#00BDFF";
+ANIM.registerClipType( FaceEmotionClip );
+
+FaceEmotionClip.prototype.toJSON = function()
+{
+	var json = {
+		id: this.id,
+		start: this.start,
+		duration: this.duration,
+
+	}
+	for(var i in this.properties)
+	{
+		
+		json[i] = this.properties[i];
+	}
+	return json;
+}
+
+FaceEmotionClip.prototype.fromJSON = function( json )
+{
+	this.id = json.id;
+	this.properties.amount = json.amount;
+	this.start = json.start;
+	this.properties.attackPeak = json.attackPeak;
+	this.properties.relax = json.relax;
+	this.duration = json.duration;
+	this.properties.emotion = json.emotion;
+	/*this.properties.permanent = json.permanent;*/
+
+}
+
+FaceEmotionClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
+{
+	ctx.globalCompositeOperation =  "source-over";
+	var text_info = ctx.measureText( this.id );
+	ctx.fillStyle = this.color;
+	if( text_info.width < (w - 24) )
+		ctx.fillText( this.id, 24,h * 0.7 );
+}
+FaceEmotionClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="emotion"){
+			panel.addCombo(i, property,{values: FaceEmotionClip.emotions, callback: function(i,v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
+
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+				break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
+}
 /*----------------------------------Gaze Behaviour-----------------------------------*/
 //GazeClip
- GazeClip.influences = ["EYES", "HEAD", "SHOULDER", "WAIST", "WHOLE"];
- GazeClip.directions = ["","RIGHT", "LEFT", "UP", "DOWN", "UPRIGHT", "UPLEFT", "DOWNLEFT", "DOWNRIGHT"];
+GazeClip.type = "gaze";
+GazeClip.influences = ["EYES", "HEAD", "SHOULDER", "WAIST", "WHOLE"];
+GazeClip.directions = ["","RIGHT", "LEFT", "UP", "DOWN", "UPRIGHT", "UPLEFT", "DOWNLEFT", "DOWNRIGHT"];
 function GazeClip()
 {
 	this.id= "gaze-"+Math.ceil(getTime());
@@ -1004,7 +1113,7 @@ function GazeClip()
 
 }
 
-GazeClip.id = ANIM.GAZE? ANIM.GAZE:3;
+GazeClip.id = ANIM.GAZE? ANIM.GAZE:5;
 GazeClip.clip_color = "fuchsia";
 ANIM.registerClipType( GazeClip );
 
@@ -1113,6 +1222,7 @@ GazeClip.prototype.showInfo = function(panel)
 }
 /*----------------------------------Gesture Behaviour-----------------------------------*/
 //GestureClip
+GestureClip.type = "gesture";
 GestureClip.modes = ["","LEFT_HAND", "RIGHT_HAND", "BOTH_HANDS"];
 function GestureClip()
 {
@@ -1138,7 +1248,7 @@ function GestureClip()
 
 }
 
-GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:4;
+GestureClip.id = ANIM.GESTURE? ANIM.GESTURE:6;
 GestureClip.clip_color = "lime";
 ANIM.registerClipType( GestureClip );
 
@@ -1235,6 +1345,7 @@ GestureClip.prototype.showInfo = function(panel)
 }
 /*----------------------------------Head Behaviour-----------------------------------*/
 //HeadClip
+HeadClip.type = "head";
 HeadClip.lexemes = ["NOD", "SHAKE", "TILD"];
 function HeadClip()
 {
@@ -1261,7 +1372,7 @@ function HeadClip()
 
 }
 
-HeadClip.id = ANIM.HEAD? ANIM.HEAD:5;
+HeadClip.id = ANIM.HEAD? ANIM.HEAD:7;
 HeadClip.clip_color = "yellow";
 ANIM.registerClipType( HeadClip );
 
@@ -1357,6 +1468,7 @@ HeadClip.prototype.showInfo = function(panel)
 }
 
 //HeadDirectionShiftClip
+HeadDirectionShiftClip.type = "headDirectionShift";
 function HeadDirectionShiftClip()
 {
 	this.id= "headDir-"+Math.ceil(getTime());
@@ -1371,7 +1483,7 @@ function HeadDirectionShiftClip()
 
 }
 
-HeadDirectionShiftClip.id = ANIM.HEAD_DIRECTION? ANIM.HEAD_DIRECTION:6;
+HeadDirectionShiftClip.id = ANIM.HEADDIRECTION? ANIM.HEADDIRECTION:8;
 HeadDirectionShiftClip.clip_color = "orange";
 ANIM.registerClipType( HeadDirectionShiftClip );
 
@@ -1405,6 +1517,7 @@ HeadDirectionShiftClip.prototype.drawTimeline = function( ctx, project, w,h, sel
 }
 /*----------------------------------Posture Behaviour-----------------------------------*/
 //PostureClip
+PostureClip.type = "posture";
 function PostureClip()
 {
 	this.id= "posture-"+Math.ceil(getTime());
@@ -1427,7 +1540,7 @@ function PostureClip()
 
 }
 
-PostureClip.id = ANIM.POSTURE? ANIM.POSTURE:7;
+PostureClip.id = ANIM.POSTURE? ANIM.POSTURE:9;
 PostureClip.clip_color = "#7CFF00";
 ANIM.registerClipType( PostureClip );
 
@@ -1469,6 +1582,7 @@ PostureClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 
 /*-------------------------Speech Behaviour---------------------------------*/
 //Speech to show captions
+SpeechClip.type = "speech";
 function SpeechClip()
 {
 	this.id = "speech-"+ Math.ceil(getTime());
@@ -1616,7 +1730,7 @@ Object.defineProperty( AudioClip.prototype, "src", {
 	}
 });
 
-AudioClip.id = ANIM.AUDIO_CLIP;
+AudioClip.id = ANIM.AUDIO;
 ANIM.registerClipType( AudioClip );
 
 AudioClip.prototype.drawCanvas = function( ctx, local_time, track, project )

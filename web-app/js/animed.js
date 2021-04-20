@@ -692,9 +692,11 @@ onTimelineMouse: function( e, time, timeline )
             this.showRightPanel(true);
             this.showClipInfo( this.selected_clip );
           }
-          else
-            this.timeline_mode = "clip";
-          return true;
+        //   else
+        //     this.timeline_mode = "clip";
+
+			CORE.Interface._graph_tab.click();
+          	return true;
         }
         else
         {
@@ -1001,11 +1003,7 @@ getClipAtTimelinePosition: function( e, reverse, margin )
         this.clip_in_panel.duration = v;
       }.bind(this)})
   		panel.addSection("Content");
-      if(clip.showInfo)
-      {
-        clip.showInfo(panel);
-        return;
-      }
+
       for(var i in clip.properties)
       {
         if(clip.showInfo)

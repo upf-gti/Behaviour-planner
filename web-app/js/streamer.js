@@ -73,7 +73,7 @@ Streamer.prototype.processMessage = function(data){
 	if( data.constructor === ArrayBuffer ){
 		if(this.onArrayDataReceived) this.onArrayDataReceived(data);
 	}else if(data.constructor === String ){
-		if(this.onDataRecvieved) this.onDataReceived(data);
+		if(this.onDataReceived) this.onDataReceived(JSON.parse(data));
 	}else{
 		console.warn("Unknown message type");
 	}
@@ -116,8 +116,8 @@ Streamer.prototype.sendMessage = function(type, data){
 	if(!type) return;
 
 	console.log("Streamer: message sended: ", type, data);
-	this.ws.send({
+	this.ws.send(JSON.stringify({
 		type: type,
 		data: data || null,
-	});
+	}));
 }

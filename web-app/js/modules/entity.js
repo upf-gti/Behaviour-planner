@@ -34,8 +34,15 @@ var EntitiesManager = {
         for(var i in nlp.world().tags)
             this.entities.push("#"+i);
     },
-	getEntity(text, entity){
+	getEntity(text, entity)
+    {
         var doc = nlp(text)
+        if(entity == "#PhoneNumber")
+        {
+            var text = doc.match("#NumericValue").text();
+            return this.checkPhoneFormatValidity(text)
+        }
+      
         var text = doc.match(entity).text();
         if(text!="")
             return text;
@@ -53,6 +60,12 @@ var EntitiesManager = {
     getAllEntitiesInfo()
     {
         return nlp.world.tags;
+    },
+    checkPhoneFormatValidity(text)
+    {
+        if(text.length >= 7 && text.length <= 9 )
+            return text
+        return false
     }
 
 }

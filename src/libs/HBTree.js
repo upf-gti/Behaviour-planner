@@ -327,7 +327,6 @@ function HBTproperty()
 	this.addOutput("root","string", {pos:[w,75], dir:LiteGraph.RIGHT});
     this.flags = {};
   	this.properties = {value:null, node_name: this.title, type:"float", property_type: this.property_type};
-    this.data = {};
 	this.size = [w, h];
 	var that = this;
 	this.combo = this.addWidget("combo","Type:", "float", function(v){that.properties.type = v;}, { values:function(widget, node)
@@ -2556,35 +2555,36 @@ LiteGraph.registerNodeType("btree/SetMotionVelocity", SetMotionVelocity);
 //lack of type choice --> on progress
 function SetProperty()
 {
-	this.shape = 2;
+    this.shape = 2;
     this.color = "#2e542e"
     this.bgcolor = "#496b49";
     this.boxcolor = "#999";
     this.size = [200,80];
-	this.addInput("","path", {pos:[200*0.5,-LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});	
-	this.addInput("name","", {pos:[0,35], dir:LiteGraph.LEFT});
-	this.addInput("root","", {pos:[0,55], dir:LiteGraph.LEFT});
-	this.addProperty("priority", "append", "enum", {
-		values: [
-			"append",
-			"overwrite",
-			"mix",
-			"skip"
-		]
-	});    
-	this.editable = { property:"value", type:"number" };
-  	this.widgets_up = true;
-	this.horizontal = true;
-  	this.properties = {value:1.0};
-  	var that = this;
-	this.dynamic = null;
-	this.widget_type = "number";
-	this.target_type = "agent";
-	this.dynamic = this.addWidget("string","value", 5, function(v){ that.properties.value = v; }, this.properties );
-	this.tmp_data = {};
-	this.facade = null;
-	this.behaviour = new Behaviour();
-	this.serialize_widgets = true;
+    this.addInput("","path", {pos:[200*0.5,-LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+    this.addInput("name","", {pos:[0,35], dir:LiteGraph.LEFT});
+    this.addInput("root","", {pos:[0,55], dir:LiteGraph.LEFT});
+    this.addProperty("priority", "append", "enum", {
+        values: [
+            "append",
+            "overwrite",
+            "mix",
+            "skip"
+        ]
+    });
+    this.editable = { property:"value", type:"number" };
+      this.widgets_up = true;
+    this.horizontal = true;
+      this.properties = {value:1.0, property_to_compare:""};
+      var that = this;
+    this.dynamic = null;
+    this.widget_type = "number";
+    this.target_type = "agent";
+    this.dynamic = this.addWidget("string","name", "", function(v){ that.properties.property_to_compare = v; }, this.properties );
+    this.dynamic = this.addWidget("string","value", 5, function(v){ that.properties.value = v; }, this.properties );
+    this.tmp_data = {};
+    this.facade = null;
+    this.behaviour = new Behaviour();
+    this.serialize_widgets = true;
 
 }
 	

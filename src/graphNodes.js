@@ -28,8 +28,11 @@ HBTreeInput.prototype.onAdded = function()
 {
     if(this.graph)
     {
-        this.graph.addInput( this.properties.name, this.properties.type );
-        this.graph.description_stack = [];
+        if(!this.graph._subgraph_node.inputs || this.graph._subgraph_node.inputs.length == 0)
+        {
+            this.graph.addInput( this.properties.name, this.properties.type );
+            this.graph.description_stack = [];
+        }
     }
 }
 
@@ -449,6 +452,7 @@ var B_TYPE =
   ParseCompare:15,
   intent: 16,
   request: 17,
+  timeline_intent:18
 }
 GestureNode.DURATION = ["Short-term", "Long-term"];
 GestureNode.PRIORITY = ["append","overwrite", "mix", "skip"];
@@ -982,7 +986,7 @@ ParseCompare.prototype.onInspect = function(  inspector )
         if(e.key == "#")
         {
           autocomplete(phrase, EntitiesManager.getEntities(), tags, {})
-
+            //displayEntity(i, phrase, e, tags)
           newPhrase = e.target.value;
 
         }
@@ -1015,9 +1019,9 @@ ParseCompare.prototype.processPhrase = function(phraseElement, tags, inspector)
         toCompare = toCompare.replace(tag, "(\\w+)");
 
     }
-    component.visible_phrases.push(currentPhrase);
-    component.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
-    component.onInspect(inspector)
+    this.visible_phrases.push(currentPhrase);
+    this.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
+    if(inspector) this.onInspect(inspector);
 }
 ParseCompare.prototype.onDeselected = function ()
 {
@@ -1664,15 +1668,14 @@ function EventNode()
     this.properties = {};
     this.horizontal = true;
     this.widgets_up = true;
-    this.addProperty("type", EventNode.TYPES[0]);
+    this.addProperty("type", "user.text");
 
-    this.event_type = EVENTS.textRecieved;
-    this.widgetType = this.addWidget("combo","type", this.properties.type, function(v){this.properties.type = v},  {values: EventNode.TYPES});
+    this.widgetType = this.addWidget("string", "type", this.properties.type, function(v){this.properties.type = v;}.bind(this));
 
     this.addInput("", "path");
     this.behaviour = new Behaviour();
-
 }
+
 EventNode.prototype.onAdded = function()
 {
   this.title = "Event "+this.id;
@@ -1689,11 +1692,13 @@ EventNode.prototype.onAdded = function()
   ctx.fillText("Id: "+ this.id, 20, 50);
   ctx.restore();
 }*/
+
+//Does not get called
 EventNode.prototype.onPropertyChanged = function(name, value)
 {
     if(name == "type")
     {
-      this.event_type = EventNode.TYPES.indexOf(value);
+      this.widgetType.value = this.properties.type = value;
     }
 }
 EventNode.prototype.tick = function(agent, dt, info)
@@ -1740,8 +1745,10 @@ EventNode.prototype.tick = function(agent, dt, info)
 
 EventNode.prototype.onConfigure = function(info)
 {
-    onConfig(info, this.graph);
-
+  onConfig(info, this.graph);
+  //["userText", "imageRecieved","faceDetected", "infoRecieved"]
+  if(this.properties.type == "userText") this.properties.type = "user.text";
+  this.widgetType.value = this.properties.type;
 }
 
 EventNode.title = "Event";
@@ -1905,7 +1912,21 @@ CustomRequest.prototype.onExecute = function(){
 
 CustomRequest.prototype.tick = function(agent, dt, info){
   this.behaviour.type = B_TYPE.request;
-  this.behaviour.setData({type: this.properties.type, parameters: this.properties.parameters});
+
+  var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
+  if(info && info.tags){
+    for(var p in parameters){
+      var value = parameters[p];
+      if(value.constructor === String && value[0] == "#"){ //Try to match a tag from info
+        if(info.tags[value]){
+          parameters[p] = info.tags[value];
+        }
+      }
+    }
+  }
+  
+
+  this.behaviour.setData({type: this.properties.type, parameters: parameters});
   this.behaviour.STATUS = STATUS.success;
   this.graph.evaluation_behaviours.push(this.behaviour);
   return this.behaviour;
@@ -2240,15 +2261,25 @@ HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node)
 	}
 }
 
-HBTGraph.prototype.processEvent = function(e)
+HBTGraph.prototype.processEvent = function(data)
 {
-  if(this.graph.context.last_event_node!=undefined)
+  if(this.graph.context.last_event_node !== undefined)
   {
     var node = this.graph.getNodeById(this.graph.context.last_event_node)
-    if(node && node.event_type == e.type)
-    {
-      node.data = e.data;
-      return node;
+    if(node){
+      var event_type = node.properties.type.split("."); //class.property
+      var c = event_type.length > 0 ? event_type[0] : "*"; //class
+      var p = event_type.length > 1 ? event_type[1] : "*"; //property
+      if(c == "*"){
+        node.data = data;
+        return node;
+      }
+      else if(data.hasOwnProperty(c)){ //class
+        if(p == "*" || data[c].hasOwnProperty(p)){ //* or property
+          node.data = data[c]; //TODO think other options to have all data
+          return node;
+        }
+      } 
     }
   }
   return false;
@@ -2270,12 +2301,12 @@ function ParseEvent()
   this.event_type = EVENTS.textRecieved;
   var that = this;
   this.widgetType = this.addWidget("combo","type", that.properties.type, function(v){that.properties.type = v},  {values: EventNode.TYPES});
-
+  
   this.input_contexts = [];
   this.output_contexts = [];
   this.visible_phrases = [];
   this.phrases =  [];
-
+  
   this.addInput("", "path");
   this.behaviour = new Behaviour();
 
@@ -2418,15 +2449,15 @@ ParseEvent.prototype.tick = function(agent, dt)
 	}
 }
 
-ParseEvent.prototype.compare = function (inputString, vocabulary)
+ParseEvent.prototype.compare = function (inputString, vocabulary) 
 {
   var found = false;
-  for (var i in vocabulary)
+  for (var i in vocabulary) 
   {
     var currentVocab = vocabulary[i]
     var currentText = currentVocab.text;
     found = new RegExp(currentVocab.toCompare.toLowerCase()).test(inputString.toLowerCase());
-
+    
     if (found)
       return currentVocab;
   }
@@ -2556,7 +2587,7 @@ ParseEvent.prototype.onInspect = function(  inspector )
       div.appendChild(div_highlight);
       div.appendChild(input);
       container.appendChild(div)
-
+     
       var btn = new LiteGUI.Button('<img src="https://webglstudio.org/latest/imgs/mini-icon-trash.png">' ,{width:40,  callback: function(v){
             var id = this.toString();
             if(id > -1) {
@@ -2672,7 +2703,7 @@ LiteGraph.LGraph.prototype.getEvaluationBehaviours = function(){
       }
     }
   }
-
+  
   return behaviours;
 }
 
