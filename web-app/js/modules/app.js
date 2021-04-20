@@ -182,7 +182,7 @@ class App{
             var iframe = iframeWindow.document.querySelector("#iframe-character");
             iframe = this.iframe;
         }
-        
+
     if(this.iframe && this.iframe.contentWindow)
         LS = this.iframe.contentWindow.LS;
       }
@@ -226,13 +226,13 @@ class App{
                                     this.currentContext.user.properties[data.name] = data.value;
                                 }
                                 break;
-                                
+
                             case B_TYPE.intent:
 
                               var obj = {};
                               //TODO properly process intents and timetables to generate behaviours in protocol format
                               var data = behaviour.data;
-                          
+
                               if(data.text){
                                   data.type = "speech";
                                   this.chat.showMessage(data.text, "me");
@@ -255,11 +255,11 @@ class App{
                                   for(var i in bh.data)
                                   {
                                       var data = bh.data[i];
-                                      
+
                                       var obj = { type: data };
 
                                       behaviours_message.data.push(data);
-                                      
+
                                   }
                               }
                               else{
@@ -267,19 +267,19 @@ class App{
                                   {
                                       var data = bh[i];
                                       if(data.type == "speech"){
-                                          
+
                                           this.chat.showMessage(data.text, "me");
                                           var obj = { "speech": { text: data.text } }; //speaking
-      
+
                                       }else{
                                           var obj = { type: data };
                                       }
 
                                       behaviours_message.data.push(data);
-                                      
+
                                   }
                               }
-                              
+
                               break;
                             case B_TYPE.action:
                                 //HARCODED
@@ -509,7 +509,7 @@ class App{
                     if(data.user.text && this.chat){
 	                    this.chat.showMessage(data.user.text);
 	                }
-                    
+
                 }
                 if(data.img)
                 {
@@ -521,8 +521,8 @@ class App{
                         img.height = 100;
                     var canvas = document.createElement("CANVAS");
                     var ctx = canvas.getContext('2d')
-                    
-                    ctx.drawImage(img,0,0); 
+
+                    ctx.drawImage(img,0,0);
                     this.chat.log_container.appendChild(img)
                     data.user.imageTaken = true;
                     this.currentContext.user.update(data.user);
@@ -619,7 +619,7 @@ class App{
         code: "1234",
         documentID: "00000000A",
         faceMatching: false,
-        
+
     }
 
     placeholderProcessRequest(msg){
@@ -647,7 +647,7 @@ class App{
             case "InfoCert_faceMatching":
                 placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
                 break;
-            
+
         }
 
         this.onDataReceived(placeholderResponse);

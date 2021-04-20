@@ -49,7 +49,7 @@ class Drive {
         var session_drive_inspector = new LiteGUI.Inspector({id:"drive-inspector"});
         this.panel_drive.add(session_drive_inspector);
         this.panel_drive.inspector = session_drive_inspector;
-        
+
         session_drive_inspector.on_refresh = function() {
 
             session_drive_inspector.clear();
@@ -86,9 +86,9 @@ class Drive {
             file_info_inspector.addSection("Item");
 
             var session = CORE["FileSystem"].getSession();
-            if(!session) 
+            if(!session)
             return;
-            
+
             file_info_inspector.addString("Filename", item.filename, {disabled: true});
             file_info_inspector.addString("Fullpath", item.fullpath.replace("//", "/"), {disabled: true});
             file_info_inspector.addTags("Metadata", "", {values: item.metadata});
@@ -126,7 +126,7 @@ class Drive {
                             return;
                         files.push(e);
                     });
-                    
+
                     that.showInBrowserContent(folder_selected, files);
                 });
             }
@@ -198,7 +198,7 @@ class Drive {
             }
 
             widgets.on_refresh();
-            
+
             var currentFolder = that.currentBrowserInfo ? that.currentBrowserInfo[0].replace(user_name + "/", "") : null;
             __getFolderFiles(user_name, currentFolder);
         }));
@@ -285,7 +285,7 @@ class Drive {
             element.className += " modified";
 
         var filename = resource.filename;
-        if(!filename) 
+        if(!filename)
             filename = resource.fullpath || "";
 
         element.title = type + ": " + resource.filename;
@@ -302,12 +302,12 @@ class Drive {
             type_title = type;
         else
             type_title = type_title.toUpperCase();
-        
+
 
         var preview = "https://webglstudio.org/projects/present/repository/files/" + folder_selected + "/thb/" + resource.filename.replace(extension, "png");
         if(preview)
         {
-            if( typeof(preview) == "string") 
+            if( typeof(preview) == "string")
             {
                 var img = new Image();
                 img.src = preview;
@@ -320,7 +320,7 @@ class Drive {
                 img = preview;
             element.appendChild(img);
         }
-        
+
         var info = document.createElement("span");
         info.className = "info";
         info.innerHTML = "<span class='category'>" + category + "</span><span class='extension'>." + type_title.toLowerCase() + "</span>";
@@ -359,13 +359,13 @@ class Drive {
             };
         }
 
-        element.addEventListener("contextmenu", function(e) { 
+        element.addEventListener("contextmenu", function(e) {
             if(e.button != 2) //right button
                 return false;
             that.showItemContextMenu(this,e, folder_selected);
             e.stopImmediatePropagation();
             e.stopPropagation();
-            e.preventDefault(); 
+            e.preventDefault();
             return false;
         });
     }
@@ -374,14 +374,14 @@ class Drive {
     {
         var that = this;
         var actions = ["Load","Rename",null,"Delete"];
-    
+
         var menu = new LiteGUI.ContextMenu( actions, { ignore_item_callbacks: true, event: event, title: "Resource", callback: function(action, options, event) {
             var fullpath = item.dataset["fullpath"] || item.dataset["filename"];
             if(!fullpath)
                 return;
 
             var server_fullpath = CORE["FileSystem"].root + fullpath;
-    
+
             if(action == "Load")
             {
                 CORE["Interface"].importFromURL( server_fullpath );
@@ -399,11 +399,11 @@ class Drive {
                 LiteGUI.confirm("Do you want to delete this file?", function(v){
                     if(!v)
                         return;
-                    
+
                     that.deleteFile(fullpath, function(v){
                         if(v) {
 
-                            var _folder_selected = that.currentBrowserInfo[0], 
+                            var _folder_selected = that.currentBrowserInfo[0],
                                 _items = that.currentBrowserInfo[1].filter(e => e.filename != item.dataset["filename"]),
                                 _options = that.currentBrowserInfo[2];
                             that.showInBrowserContent(_folder_selected, _items, _options);
@@ -417,7 +417,7 @@ class Drive {
                 LiteGUI.alert("Unknown action");
         }});
     }
-    
+
     deleteFile(fullpath, on_complete, on_error)
     {
         var session = CORE["FileSystem"].session;

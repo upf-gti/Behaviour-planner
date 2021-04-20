@@ -1,6 +1,5 @@
 /*
 	shiny-blue: #5AF
-
 */
 
 .inspector {
@@ -78,9 +77,9 @@
     background-image: -webkit-linear-gradient(right , #555, #444);
 	*/
 
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 	width: 100%;
 	padding: 2px;
 	padding-left: 8px;
@@ -269,8 +268,8 @@
 
 .inspector .wname {
 	display: inline-block;
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 2px;
 	padding-left: 4px;
@@ -285,7 +284,7 @@
 	width: 80px;
 }
 
-.inspector.one_line .wname 
+.inspector.one_line .wname
 {
 	width: auto;
 }
@@ -297,8 +296,8 @@
 
 .inspector .wcontent {
 	display: inline-block;
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 2px;
 
@@ -325,9 +324,9 @@
 	display: inline-block;
 	background-color: #222;
 	border: 0;
-	border-top: 1px solid #000; 
-	border-bottom: 1px solid #3f3f3f; 
-	border-radius: 3px;	
+	border-top: 1px solid #000;
+	border-bottom: 1px solid #3f3f3f;
+	border-radius: 3px;
 }
 
 .inspector .wcontent .inputfield input:focus, .inspector .wcontent .inputfield textarea:focus
@@ -335,15 +334,15 @@
 	outline: none;
 }
 
-.inspector input::placeholder { 
+.inspector input::placeholder {
     color: #687177;
 }
 
-.inspector input::-webkit-input-placeholder { 
+.inspector input::-webkit-input-placeholder {
     color: #687177;
 }
 
-.inspector input::-moz-input-placeholder { 
+.inspector input::-moz-input-placeholder {
     color: #687177;
 }
 
@@ -377,8 +376,8 @@
 }
 
 .inspector .wcontent .inputcombo {
-	border-bottom: 1px solid #666; 
-	border-top: 1px solid #111; 
+	border-bottom: 1px solid #666;
+	border-top: 1px solid #111;
 	/*
     background: -webkit-linear-gradient(#4B4947, #32302D) repeat scroll 0 0 transparent;
     background: -moz-linear-gradient(#4B4947, #32302D) repeat scroll 0 0 transparent;
@@ -795,9 +794,9 @@ div {
 .litearea {
 	vertical-align: top;
 	position: relative;
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 	width: 100%;
 	height: 100%;
 	position: relative;
@@ -836,16 +835,16 @@ div {
     background-image: -moz-linear-gradient(right , #555, #333);
     background-image: -webkit-linear-gradient(right , #555, #333);
 
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 	color: white;
 
 	width: 100%;
 	min-height: 20px;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
-	user-select: none; 
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 	overflow: hidden;
 }
 
@@ -858,7 +857,7 @@ div {
 }
 
 .litedialog.alert {
-	font-size: 1.6em; 
+	font-size: 1.6em;
 }
 
 .litedialog.ui-draggable .panel-header{
@@ -880,9 +879,9 @@ div {
 	width: -moz-calc(100% - 6px);
 	width: -webkit-calc(100% - 6px);
 	width: calc(100% - 6px);
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
-	user-select: none; 
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 	text-align: right;
 }
 
@@ -914,7 +913,7 @@ div {
 }
 
 .litedialog .content p {
-	padding: 0.2em;	
+	padding: 0.2em;
 	margin: 0.2em;
 }
 
@@ -1344,7 +1343,7 @@ a:hover {
 }
 
 #menu-bar {
-	background-color: #3d3d3d; 
+	background-color: #3d3d3d;
 }
 
 .litemenubar ul {
@@ -1361,8 +1360,8 @@ a:hover {
 	padding-left: 10px;
 	padding-right: 10px;
 	user-select: none;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	cursor: pointer;
 }
 
@@ -1389,9 +1388,9 @@ a:hover {
 	padding: 0 0 0 4px;
 	margin: 2px;
 	padding-left: 2px;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
-	user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 	cursor: pointer;
 }
 
@@ -1435,7 +1434,7 @@ a:hover {
 
 .litemenu-title {
 	color: #DDE;
-	background-color: #111;	
+	background-color: #111;
 	margin: 0;
 	padding: 2px;
 	cursor: default;
@@ -1528,9 +1527,9 @@ button.litebutton.close-button {
 }
 
 .litetabs {
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .litetabs.vertical {
@@ -1549,9 +1548,9 @@ button.litebutton.close-button {
 	overflow: hidden;
     white-space: nowrap;
 
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .litetabs.vertical > ul.wtabcontainer {
@@ -1566,8 +1565,8 @@ button.litebutton.close-button {
 	color: #AAA;
 	text-align: center;
 	user-select: none;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	cursor: pointer;
 	transition: all 0.3s;
 }
@@ -1582,7 +1581,7 @@ button.litebutton.close-button {
 	display: inline-block;
 	min-width: 50px;
 	min-height: 20px;
-	height: calc( 100% - 2px ); 
+	height: calc( 100% - 2px );
 	margin-right: 2px;
 	margin-top: 2px;
 	vertical-align: top;
@@ -1625,7 +1624,7 @@ button.litebutton.close-button {
 }
 
 .litetabs li.wtab:hover:not(.selected) {
-	background-color: #555;	
+	background-color: #555;
 	color: #DDD;
 }
 
@@ -1639,7 +1638,7 @@ button.litebutton.close-button {
 	left: 0;
 	width: 100%;
 	text-align: center;
-    overflow: hidden;	
+    overflow: hidden;
 }
 
 .litetabs ul.wtabcontainer li.wtab .tabclose {
@@ -1664,7 +1663,7 @@ button.litebutton.close-button {
 
 .litetabs .wtabcontent {
 	position: relative;
-	background-color: #333;	
+	background-color: #333;
 	display: inline-block;
 }
 
@@ -1704,8 +1703,8 @@ li.ltreeitem {
 	cursor: pointer;
 	/*background: url("../imgs/tree_lines_16x16.png") no-repeat scroll 5px -8px transparent;*/
 	/*padding-left: 20px;*/
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -1804,11 +1803,11 @@ li.ltreeitem.hidden, li.ltreeitem.filtered {
     /* Hide the text. */
     text-indent: 100%;
     white-space: nowrap;
-    overflow: hidden;	
+    overflow: hidden;
 }
 
 .listbox:hover {
-	color: white;	
+	color: white;
 	background-color: rgba(100,100,100,0.5);
 }
 
@@ -1820,12 +1819,11 @@ li.ltreeitem.hidden, li.ltreeitem.filtered {
 
 /*
 .listbox.listopen::after
-{ 
+{
 	content:"-";
 }
-
 .listbox.listclosed::after
-{ 
+{
 	content:"+";
 }
 */
@@ -1857,22 +1855,22 @@ ul.litelist li.selected {
 	background-color: #48A;
 }
 
-ul.litelist li.selected { 
-	position: relative; 
-	background: #88b7d5; 
+ul.litelist li.selected {
+	position: relative;
+	background: #88b7d5;
 	border: 1px solid #c2e1f5;
 }
 
-ul.litelist li.selected:after, ul.litelist li.selected:before { 
-	left: 100%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; 
-} 
+ul.litelist li.selected:after, ul.litelist li.selected:before {
+	left: 100%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none;
+}
 
-ul.litelist li.selected:after { 
-	border-color: rgba(136, 183, 213, 0); border-left-color: #88b7d5; border-width: 10px; top: 50%; margin-top: -10px; 
-} 
+ul.litelist li.selected:after {
+	border-color: rgba(136, 183, 213, 0); border-left-color: #88b7d5; border-width: 10px; top: 50%; margin-top: -10px;
+}
 
-ul.litelist li.selected:before { 
-	border-color: rgba(194, 225, 245, 0); border-left-color: #c2e1f5; border-width: 11px; top: 50%; margin-top: -11px; 
+ul.litelist li.selected:before {
+	border-color: rgba(194, 225, 245, 0); border-left-color: #c2e1f5; border-width: 11px; top: 50%; margin-top: -11px;
 }
 
 ::-webkit-scrollbar {
@@ -1990,21 +1988,21 @@ input {
 	color: #55AAFF;
 	background-color: #222;
 	border: 0;
-	border-top: 1px solid #000; 
-	border-bottom: 1px solid #888; 
+	border-top: 1px solid #000;
+	border-bottom: 1px solid #888;
 	border-radius: 3px;
 
 	user-select: text;
-	-moz-user-select: text;  
-	-webkit-user-select: text;  
+	-moz-user-select: text;
+	-webkit-user-select: text;
 }
 
 textarea.textfield {
 	color: #55AAFF;
 	background-color: #222;
 	border: 0;
-	border-top: 1px solid #000; 
-	border-bottom: 1px solid #888; 
+	border-top: 1px solid #000;
+	border-bottom: 1px solid #888;
 	border-radius: 3px;
 }
 
@@ -2019,7 +2017,7 @@ textarea.textfield {
 }
 
 .tinybox.ok {
-	background-color: #33FF99;	
+	background-color: #33FF99;
 	opacity: 1;
 }
 
@@ -2090,7 +2088,7 @@ table.litetable  tr:nth-child(even)
 /********************/
 .liteslider {
 	display: inline-block;
-	position: relative; 
+	position: relative;
 	width: calc(100% - 50px);
 	height: 1.2em;
 	cursor: pointer;
@@ -2235,10 +2233,10 @@ table.litetable  tr:nth-child(even)
 
 .litecomplexlist { background-color: black; padding: 4px; overflow: auto; }
 .litecomplexlist .listitem { border-radius: 2px; margin: 2px; padding: 2px; background-color: #2A2A2A; cursor: pointer; line-height: 2em; }
-.litecomplexlist .listitem:hover { background-color: #363636; } 
-.litecomplexlist .listitem.selected { background-color: #354a5f; } 
+.litecomplexlist .listitem:hover { background-color: #363636; }
+.litecomplexlist .listitem.selected { background-color: #354a5f; }
 .litecomplexlist .listtitle { margin: 4px; margin-top: 10px; font-size: 1.2em; color: #AAA; }
-.litecomplexlist .listitem .title { color: #8e96a7; width: calc(100% - 60px); display: inline-block; padding-left: 10px; font-size: 1.2em; vertical-align: middle; } 
+.litecomplexlist .listitem .title { color: #8e96a7; width: calc(100% - 60px); display: inline-block; padding-left: 10px; font-size: 1.2em; vertical-align: middle; }
 .litecomplexlist .listitem .tick { cursor: pointer; text-align: center; width: 24px; height: 24px; display: inline-block; margin: 4px; color: #AFA; vertical-align: top; background-color: black; border-radius: 2px; }
 .litecomplexlist .listitem .tick span { transform: translate(0,0px); display: inline-block; }
 .litecomplexlist .listitem:not(.enabled) .tick { color: black; }

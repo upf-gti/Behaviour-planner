@@ -29,7 +29,7 @@ class Interface {
         }
 
         this.sidePanelExpanded = false;
-        
+
     }
 
     createTabs() {
@@ -40,9 +40,9 @@ class Interface {
 
         var that = this;
 
-        this._graph_tab = LiteGUI.main_tabs.addTab( "Graph", {id:"_graphtab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-graph.png", size: "full", content:"", 
+        this._graph_tab = LiteGUI.main_tabs.addTab( "Graph", {id:"_graphtab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-graph.png", size: "full", content:"",
 			callback: function(tab_id){
-                
+
                 if(that.graph_area) {
                     var tab = LiteGUI.main_tabs.getTab(tab_id);
                     tab.add( that.graph_area );
@@ -60,7 +60,7 @@ class Interface {
 			}
 		});
 
-        this._debugger_tab = LiteGUI.main_tabs.addTab( "Debugger", {id:"_debugertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-debug.png", size: "full", content:"", 
+        this._debugger_tab = LiteGUI.main_tabs.addTab( "Debugger", {id:"_debugertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-debug.png", size: "full", content:"",
 			callback: function(tab_id){
 
 				if(that.graph_area) {
@@ -77,7 +77,7 @@ class Interface {
 			}
 		});
 
-        this._player_tab = LiteGUI.main_tabs.addTab( "Player", {id:"_playertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-player.png", size: "full", content:"", 
+        this._player_tab = LiteGUI.main_tabs.addTab( "Player", {id:"_playertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-player.png", size: "full", content:"",
 			callback: function(tab_id){
                 if(that.iframearea && !that.iframe.contentWindow)
                     that._player_tab.add(that.iframearea)
@@ -92,7 +92,7 @@ class Interface {
 			}
 		});
 
-        this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"", 
+        this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"",
 			callback: function(tab_id){
 
                 var drive_panel = CORE["Drive"].panel_drive;
@@ -201,7 +201,7 @@ class Interface {
     }
 
     preInit() {
-        
+
         LiteGUI.init();
 
         this.createMenuBar();
@@ -231,7 +231,7 @@ class Interface {
         // var graph_area = this.graph_area = canvas_area.getSection(0);
         var graph_area = this.graph_area = canvas_area;
         graph_area.split("vertical", [null,"250px"], true);
-     
+
         var div = document.createElement("DIV");
 
         div.className+= " litetabs buttons right";
@@ -249,8 +249,8 @@ class Interface {
         div.append(play_btn);
         div.append(stream_btn);
         div.append(show_btn);
-        
-        
+
+
         var div_area = graph_area.add(div);
 
         graph_area.content.className+= " graph-content";
@@ -258,11 +258,11 @@ class Interface {
 
         /*IFRAME*/
         this.iframearea = new LiteGUI.Area({id :"", content_id:"iframe-area", autoresize: true, inmediateResize: true});
-     
+
         var div2 = document.createElement("DIV");
 
         div2.className+= " litetabs buttons right";
-        
+
         var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});
@@ -272,18 +272,18 @@ class Interface {
         var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.clear, callback: function () {
             that.iframearea.add(that.iframe)
         }});
-        
+
         div2.append(play_btn2);
-        
+
         div2.append(show_btn2);
         div2.append(reload_btn2);
-        this.iframearea.add(div2); 
+        this.iframearea.add(div2);
         this.iframe = document.createElement("iframe");
         this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
         this.iframe.id="iframe-character";
         this.iframearea.add(this.iframe)
         iframeWindow = this.iframearea
-        
+
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -331,7 +331,7 @@ class Interface {
             onResize(that.timeline_dialog.content)
             onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
         }
-        
+
         graph_area.hideSection(1);
         this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
 
@@ -405,7 +405,7 @@ class Interface {
         var tab = this._newGraphTab(g);
 
         this._newPlusTab();
-        
+
         GraphManager.graphSelected = g;
         this.graphTabs.selectTab(tab);
     }
@@ -680,15 +680,15 @@ class Interface {
                 LiteGUI.alert("File name length must be > 0", {title: "Invalid filename"})
                 return;
             }
-            
+
             // CHECK IF FILE EXISTS
             var _folder = folder_selected.replace(user_name, "");
             CORE["FileSystem"].getFiles(user_name, _folder).then(function(data) {
-    
-                
+
+
                 var jName = filename + ".json";
                 data = data.filter(e => e.unit === user_name && e.filename === jName);
-                
+
                 if(data.length)
                 {
                     LiteGUI.choice("Overwrite file?", ["Yes", "No"], function(choice_resp){
@@ -699,7 +699,7 @@ class Interface {
                 {
                     uploadFile(v);
                 }
-                
+
             });
         };
 
@@ -709,18 +709,18 @@ class Interface {
             var url =  URL.createObjectURL( tbh_data );
 
             curr_session.getFolders(user_name, (function(data) {
-    
+
                 function __getFolderFiles(unit, folder, callback) {
-    
+
                     var _folder = folder;
-    
+
                     if(!_folder)
                     _folder = "";
-    
+
                     CORE["FileSystem"].getFiles(unit, _folder).then(function(data) {
-    
+
                         data.forEach(function(e){
-    
+
                             if(e.unit !== unit)
                                 return;
                             files[e.filename] = e;
@@ -729,7 +729,7 @@ class Interface {
                         widget_fullpath.on_refresh();
                     });
                 }
-    
+
                 /*
                     recursive function to get each item parent
                 */
@@ -743,7 +743,7 @@ class Interface {
                         __getParent(parent_id);
                     }
                 }
-    
+
                 /*
                     recursive function to get all folders in unit
                     as a data tree
@@ -759,16 +759,16 @@ class Interface {
                             __showFolders(object[f], f);
                     }
                 }
-    
+
                 var selected = null;
                 var litetree = new LiteGUI.Tree({id: user_name});
                 LiteGUI.bind( litetree.root, "item_selected", function(item) {
                     selected = item.detail.data.id;
-    
+
                     path = "";
                     files = {};
                     file_selected = null;
-    
+
                     // get full path
                     __getParent(selected);
                     path += selected;
@@ -777,13 +777,13 @@ class Interface {
                     path = tk.join("/");
                     if(!path.length)
                         path = null;
-    
+
                     // fetch files in folder
                     folder_selected = user_name + (path ? "/" + path : "");
                     // console.log(folder_selected);
                     __getFolderFiles(user_name, path);
                 });
-    
+
                 __showFolders(data, user_name);
 
                 var id = "Save to Server";
@@ -810,18 +810,18 @@ class Interface {
 
                 var widgets = new LiteGUI.Inspector();
                 var widget_fullpath = new LiteGUI.Inspector();
-    
+
                 widget_fullpath.on_refresh = function(){
-    
+
                     widget_fullpath.clear();
                     widget_fullpath.addTitle("Fullpath");
                     widget_fullpath.addString(null, folder_selected + "/" + filename + ".json", {disabled: true});
                 }
 
                 widgets.on_refresh = function(){
-    
+
                     widgets.clear();
-    
+
                     widgets.addTitle("Folders");
                     widgets.root.appendChild(litetree.root);
                     widgets.addTitle( "Files");
@@ -832,25 +832,25 @@ class Interface {
                         fixed_widgets.on_refresh();
                         widget_fullpath.on_refresh();
                     }});
-    
+
                     var thb = widgets.addContainer("thb");
                     thb.style.width = "50%";
                     thb.style.height = "145px";
                     thb.style.display = "inline-block";
                     thb.style.marginTop = "5px";
                     thb.innerHTML = "<img height='100%' src='" + url + "'>";
-    
+
                     widgets.addSeparator();
                     widgets.widgets_per_row = 2;
                     widgets.addButton( null, "Save graph", {callback: function() {
-    
+
                        inner("Graph");
                        dialog.close();
 
                     } });
 
                     widgets.addButton( null, "Save Environment", {callback: function() {
-    
+
                         inner("Environment");
                         dialog.close();
 
@@ -858,7 +858,7 @@ class Interface {
                     widgets.widgets_per_row = 1;
                     widgets.addSeparator();
                 }
-    
+
                 var f_folder = null;
 
                 if(CORE["Interface"].lastLoadedFile)
@@ -873,16 +873,16 @@ class Interface {
                         folder_selected = f_folder.substr(0, f_folder.length - 1);
                     }
                 }
-                
+
                 __getFolderFiles(user_name, f_folder ? f_folder.replace(user_name + "/", "") : null);
-    
+
                 widgets.on_refresh();
                 widget_fullpath.on_refresh();
                 dialog.add(fixed_widgets);
                 dialog.add(widget_fullpath);
                 dialog.add(widgets);
                 dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
-    
+
             }));
         });
 
