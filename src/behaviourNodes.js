@@ -23,7 +23,6 @@
     this.phrases =  [];
 
     this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
-
     this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
 
     this.widgets_up = true;
@@ -152,6 +151,8 @@ ParseCompare.prototype.extractEntities = function(string, tags){
     }
     return info;
 }
+
+
 
 function wordInString(s, word){
     return new RegExp( '\\b' + word + '\\b', 'i').test(s);

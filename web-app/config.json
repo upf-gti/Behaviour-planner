@@ -6,7 +6,9 @@
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
         "../src/HBTfacade.js",
-        "../src/graphNodes.js",
+        "../src/behaviourGraph.js",
+        "../src/behaviourNodes.js",
+        "../src/behaviourPresenter.js",
         "../src/timeline_node.js",
         "../src/utils.js",
 
