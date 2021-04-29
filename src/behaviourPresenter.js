@@ -1,5 +1,5 @@
 
-/* ------------------------------ GRAPH EDITOR ---------------------------------------- */
+//-----------------------GRAPH EDITOR------------------------------------//
 function GraphEditor(data){
     if(this.constructor !== GraphEditor)
         throw("You must use new to create a GraphEditor");
@@ -194,6 +194,7 @@ GraphEditor.prototype.addNodeByType = function(type, properties, pos){
     }
 }
 
+//Unused
 function removeChild(node){
     var parent = hbt_editor.graph.getNodeById(node.parent);
     for(var i = 0; i< parent.children.length; i++){
@@ -208,6 +209,26 @@ function removeChild(node){
     node.parent = null;
 }
 
+/*LGraphCanvas.prototype.onDropItem = function(data)
+{
+	var type = data.dataTransfer.getData("type");
+		var name = data.dataTransfer.getData("name");
+        var dataType = data.dataTransfer.getData("data_type");
+
+        var info = data.dataTransfer.getData("info");
+		if(name == "")
+            name = data.dataTransfer.getData("obj");
+        if(dataType == "")
+            dataType = "agent";
+        var obj = {name:name, dataType: dataType};
+        if(info)
+            obj.info = info;
+
+//      var properties = data.dataTransfer.getData("obj");
+//      properties = JSON.parse(properties);
+        that.addNodeByType(type, obj , [data.canvasX,data.canvasY]);
+}*/
+
 /** 
  * LGraphCanvas overwrite onShowNodePanel to add onInspect
  */
@@ -218,10 +239,7 @@ LGraphCanvas.prototype.onShowNodePanel = function(n){
     }
 }
 
-/**
- * onInspect method for nodes
- */
-
+//-----------------------ONINSPECT METHOD FOR NODES------------------------------------//
 ParseCompare.prototype.onInspect = function(  inspector ){
     component = this;
     inspector.clear();
