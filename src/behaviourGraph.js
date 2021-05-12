@@ -153,3 +153,19 @@ HBTGraph.prototype.processEvent = function(data){
     }
     return false;
 }
+
+//BP Blackboard: HBTGraph context blackboard will be created with these attributes instead
+Blackboard.prototype._ctor = function(){
+    this.user = null;
+    this.agent = null;
+
+    this.corpus = null;
+    this.entities = null;
+}
+
+Blackboard.prototype.configure = function(o){
+    if(o.user) this.user = o.user;
+    if(o.agent) this.agent = o.agent;
+    if(o.corpus) this.corpus = o.corpus;
+    if(o.entities) this.entities = o.entities;
+}
