@@ -169,3 +169,13 @@ Blackboard.prototype.configure = function(o){
     if(o.corpus) this.corpus = o.corpus;
     if(o.entities) this.entities = o.entities;
 }
+
+Blackboard.prototype.apply = function(data){
+    //Hardcoded for user for now
+    if(data.user){
+        for(var key in data.user){
+            this.user.properties[key] = data.user[key];
+        }
+    }
+    
+}

@@ -10,6 +10,7 @@
         "../src/behaviourNodes.js",
         "../src/behaviourPresenter.js",
         "../src/timeline_node.js",
+        "../src/behaviourPlanner.js",
         "../src/utils.js",
 
         "js/libs/litefileserver.js",

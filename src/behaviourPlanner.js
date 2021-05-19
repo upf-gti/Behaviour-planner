@@ -2,6 +2,7 @@
  * Manages and updates behaviour graphs
  */
 
+/*
 class User{
 
 }
@@ -9,6 +10,7 @@ class User{
 class Agent{
 
 }
+*/
 
 class Environment{
     
@@ -76,7 +78,19 @@ class BehaviourPlanner{
     }
 
     configure(o){
+        if(o.user) this.user = o.user;
+        if(o.agent) this.agent = o.agent;
 
+        if(o.hbt_graph) this.setGraph(o.hbt_graph);
+    }
+
+    play(){
+        this.state = STATE.PLAYING;
+    }
+
+    stop(){
+        this.state = STATE.STOP;
+        this.context.last_event_node = null;
     }
 
     update(dt){
@@ -84,7 +98,7 @@ class BehaviourPlanner{
             this.accumulate_time += dt;
             if(this.accumulate_time >= this.execution_t){
                 //Evaluate agent on the graph
-                if(this.agent && this.graph){
+                if(this.agent && this.hbt_graph){
                     let context = this.context;
 
                     //Behaviours from event can be processed after event, no?
@@ -97,8 +111,6 @@ class BehaviourPlanner{
                     }
                 }
             }
-        }else{
-            this.context.last_event_node = null;
         }
     }
 
@@ -132,7 +144,6 @@ class BehaviourPlanner{
 
                     if(data.text){
                         data.type = "speech";
-                        this.chat.showMessage(data.text, "me"); //TODO this is at presenter level
                         var obj = { "speech": { text: data.text } }; //speaking
                     }else{
                         data.type = "anAnimation";
@@ -157,7 +168,6 @@ class BehaviourPlanner{
                         for(var i in bh){
                             var data = bh[i];
                             if(data.type == "speech"){
-                                this.chat.showMessage(data.text, "me");
                                 var obj = { "speech": { text: data.text } }; //speaking
                             }else{
                                 var obj = { type: data };
@@ -188,9 +198,6 @@ class BehaviourPlanner{
                     if(behaviour.data.speed){
                         obj.facialExpression.duration = behaviour.data.speed;
                     }
-                    if(LS){
-                        LS.Globals.processMsg(JSON.stringify(obj), true);
-                    }
 
                     //TODO properly process intents and timetables to generate behaviours in protocol format
                     var data = behaviour.data;
@@ -219,11 +226,24 @@ class BehaviourPlanner{
 
         if(type != "data") return null;
 
-        
+        //Always updates data inside blackboard
+        //Currently hardcoded to user
+        //TODO apply to any data
+        this.context.blackboard.apply(data);
+
+        //Create event and process it in Graph
+        this.onEvent(data);
     }
 
     onEvent(e){
-
+        if(this.state == STATE.PLAYING){
+            var node = this.hbt_graph.processEvent(e);
+            if(node){
+                var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, node);
+                if(this.onBehaviours) this.onBehaviours(behaviours);
+                this.processBehaviours(behaviours);
+            }
+        }
     }
 
     loadGraph(data){

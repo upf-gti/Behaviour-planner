@@ -17,6 +17,7 @@ var dt;
 var accumulate_time = 0;
 var execution_t = 1;
 var corpus;
+var LS = undefined;
 Object.assign(window, glMatrix);
 var tmp = {
 	vec : 	vec3.create(),
@@ -36,6 +37,8 @@ var iframeWindow = null;
 
 class App{
 	constructor(){
+        this.bp = null;
+
 	    this.state = STOP;
 	    this.properties = {};
 
@@ -104,7 +107,15 @@ class App{
     else{
         this.iframe = CORE.Interface.iframe;
     }
-      requestAnimationFrame(this.animate.bind(this));
+
+    this.bp = new BehaviourPlanner({
+        user: user,
+        agent: agent,
+    });
+    this.bp.onBehaviours = this.onBehaviours.bind(this);
+    this.bp.onActions = this.onActions.bind(this);
+
+    requestAnimationFrame(this.animate.bind(this));
   }
 
   postInit() {
@@ -126,10 +137,12 @@ class App{
   }
 
   changeState(){
-	  if(CORE.App.state == STOP){
-	      CORE.App.state = PLAYING;
+	  if(CORE.App.bp.state == STATE.STOP){
+          CORE.App.state = PLAYING;
+	      CORE.App.bp.play();
 	  }else{
-	      CORE.App.state = STOP;
+          CORE.App.state = STOP;
+	      CORE.App.bp.stop();
 	  }
   }
 
@@ -172,21 +185,26 @@ class App{
     that.update(dt);
   }
 
-  update(dt)
-  {
-      var LS = null;
-      if(iframeWindow){
-        var iframe = null;
-        if(iframeWindow.document)
-        {
-            var iframe = iframeWindow.document.querySelector("#iframe-character");
-            iframe = this.iframe;
+    update(dt){
+        if(iframeWindow){
+            var iframe = null;
+            if(iframeWindow.document){
+                var iframe = iframeWindow.document.querySelector("#iframe-character");
+                iframe = this.iframe;
+            }
+    
+            if(this.iframe && this.iframe.contentWindow) LS = this.iframe.contentWindow.LS;
         }
+        
+        //BP  
+        this.bp.update(dt);
 
-    if(this.iframe && this.iframe.contentWindow)
-        LS = this.iframe.contentWindow.LS;
-      }
+        
+        //TODO clear chat when stop is set, not in update
 
+        //OLD COMMENTED, NOW DONE IN BP.UPDATE AND CALLBACKS
+        {
+/*
     //AgentManager.agent_selected = this.currentContext.agent_selected
     if(this.state == PLAYING){
         accumulate_time+=dt;
@@ -358,7 +376,39 @@ class App{
         this.currentContext.last_event_node = null;
       this.chat.clearChat();
     }
+        */}
 }
+
+    onBehaviours(behaviours){
+        console.log(behaviours);
+    }
+
+    onActions(actions){
+        console.log(actions);
+
+        //Send messages through streamer
+        if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+            for(var m of actions){
+                this.streamer.sendMessage(m.type, m.data);
+                if(LS){
+                  //state = LS.Globals.SPEAKING;
+                  m.control = LS.Globals.SPEAKING;
+                  LS.Globals.processMsg(JSON.stringify(m.data), true);
+                }
+                if(m.type == "custom_action"){ //Placeholder stuff
+                    this.placeholderProcessRequest(m);
+                }
+                
+                if(m.type == "behaviours"){
+                    for(var b of m.data){
+                        if(b.type == "speech"){
+                            this.chat.showMessage(b.data.text, "me");
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 	onEvent(e){
 		var character_ = AgentManager.agent_selected;
@@ -372,9 +422,59 @@ class App{
 		}
 	}
 
+    onDataReceived(msg){
+	    var type = msg.type;
+	    var data = msg.data;
+	    switch(type)
+	    {
+	        case "info":
+	            //Server messages
+	            console.log(data);
+	            break;
+
+	        case "data":
+                //Process data in App
+	            if(data.user){
+	                this.currentContext.user.update(data.user);
+                    if(data.user.text && this.chat){
+	                    this.chat.showMessage(data.user.text);
+	                }
+
+                }
+                if(data.img)
+                {
+                    var img = new Image();
+                    img.src = data.img;
+                    if(!img.width)
+                        img.width = 200;
+                    if(!img.height)
+                        img.height = 100;
+                    var canvas = document.createElement("CANVAS");
+                    var ctx = canvas.getContext('2d')
+
+                    ctx.drawImage(img,0,0);
+                    this.chat.log_container.appendChild(img)
+                    data.user.imageTaken = true;
+                    this.currentContext.user.update(data.user);
+                    //this.placeholderData.faceMatching = true;
+                }
+                //TODO think about adding data of agent or for blackboard
+
+                //Create event and process it in Graph
+                //this.onEvent(data);
+
+                this.bp.onData(msg);
+
+	            break;
+	    }
+	}
+
     loadBehaviour(data){
         var hbt_graph = this.currentHBTGraph = currentHBTGraph = GraphManager.loadGraph(data);
         //this.currentContext = hbt_graph.graph.context;
+
+        //BP
+        this.bp.setGraph(hbt_graph);
     }
 
     loadEnvironment(data){
@@ -467,6 +567,14 @@ class App{
             }));
             that.currentContext.user = user;
         }
+
+        //BP
+        this.bp.configure({
+            user: this.currentContext.user,
+            agent: this.agent_selected,
+            hbt_graph: currentHBTGraph,
+        });
+
     }
 
 	loadCorpusData(data){
@@ -475,66 +583,8 @@ class App{
 		for(var i in data.data){
 			corpus.array.push(i);
 		}
-	}
-
-	onDataReceived(msg){
-	    var type = msg.type;
-	    var data = msg.data;
-	    switch(type)
-	    {
-	        case "info":
-	            //Server messages
-	            console.log(data);
-	            break;
-
-	        case "user-data":   //Old, to remove
-	            this.currentContext.user.update(data);
-	            var text = data.text;
-	            if(text)
-	            {
-	                var event = {
-	                type: EVENTS.textRecieved,
-	                data:{text: text}
-	            }
-	            this.onEvent(event);
-	                if(this.chat)
-	                    this.chat.showMessage(text);
-	            }
-	            break;
-
-	        case "data":
-	            //Process data in App
-	            if(data.user){
-	                this.currentContext.user.update(data.user);
-                    if(data.user.text && this.chat){
-	                    this.chat.showMessage(data.user.text);
-	                }
-
-                }
-                if(data.img)
-                {
-                    var img = new Image();
-                    img.src = data.img;
-                    if(!img.width)
-                        img.width = 200;
-                    if(!img.height)
-                        img.height = 100;
-                    var canvas = document.createElement("CANVAS");
-                    var ctx = canvas.getContext('2d')
-
-                    ctx.drawImage(img,0,0);
-                    this.chat.log_container.appendChild(img)
-                    data.user.imageTaken = true;
-                    this.currentContext.user.update(data.user);
-                    //this.placeholderData.faceMatching = true;
-                }
-                //TODO think about adding data of agent or for blackboard
-
-                //Create event and process it in Graph
-                this.onEvent(data);
-
-	            break;
-	    }
+        //BP
+        this.bp.corpus = corpus;
 	}
 
   toJSON( type, name) {
