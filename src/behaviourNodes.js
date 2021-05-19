@@ -1513,7 +1513,28 @@ JSONparse.prototype.onExecute = function(){
 
 LiteGraph.registerNodeType("basic/json_parse", JSONparse);
 
+HBTproperty.prototype.onNodeAdded = function(){
+	this.properties.property_type = this.property_type;
+	/*if(!this.graph.character_evaluated.hasOwnProperty(this.title))
+	{
+		if(this.graph.context.user.properties.hasOwnProperty(this.title))
+			this.property_type ="user"
+		else
+			this.property_type = "global"
+	}*/
+}
 
+//Change node to use blackboard instead of only using agent data and facade
+HBTproperty.prototype.onExecute = function(){
+    let type = this.properties.property_type;
+    let name = this.properties.property_name;
+
+    let value = this.graph.context.blackboard.getValue(type, name);
+	
+	this.setOutputData(0,value);
+	this.setOutputData(1,name);
+	this.setOutputData(2,type);
+}
 
 
 

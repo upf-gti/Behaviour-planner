@@ -17,7 +17,7 @@ class Environment{
     
 }
 
-var STATE = {
+var BP_STATE = {
     STOP: 0,
     PLAYING: 1,
 };
@@ -33,8 +33,7 @@ class BehaviourPlanner{
 
         this._hbt_graph = null;
 
-        this.state = STATE.STOP;
-        this.last = 0;
+        this.state = BP_STATE.STOP;
         this.accumulate_time = 0;
         this.execution_t = 1;
 
@@ -75,6 +74,7 @@ class BehaviourPlanner{
         this._agent = o;
 
         if(this.hbt_graph){
+            this.context.agent_evaluated = o;
             this.blackboard.agent = o;
         }
     }
@@ -91,6 +91,8 @@ class BehaviourPlanner{
 
         this._hbt_graph = o;
 
+        this.context.agent_evaluated = this.agent;
+    
         //LAST: Set attributes of graph blackboard
         this.blackboard.configure({
             user: this.user,
@@ -115,8 +117,7 @@ class BehaviourPlanner{
     init(){
         this.user = new User();
         this.agent = new Agent();
-        this.state = STATE.STOP;
-        this.last = 0;
+        this.state = BP_STATE.STOP;
         this.accumulate_time = 0;
         this.execution_t = 1;
     }
@@ -129,16 +130,16 @@ class BehaviourPlanner{
     }
 
     play(){
-        this.state = STATE.PLAYING;
+        this.state = BP_STATE.PLAYING;
     }
 
     stop(){
-        this.state = STATE.STOP;
+        this.state = BP_STATE.STOP;
         this.context.last_event_node = null;
     }
 
     update(dt){
-        if(this.state == STATE.PLAYING){
+        if(this.state == BP_STATE.PLAYING){
             this.accumulate_time += dt;
             if(this.accumulate_time >= this.execution_t){
                 //Evaluate agent on the graph
@@ -171,13 +172,11 @@ class BehaviourPlanner{
             var behaviour = behaviours[b];
 
             switch(behaviour.type){
-                case B_TYPE.setProperty: //TODO make it work with blackboard
+                case B_TYPE.setProperty:
                     var data = behaviour.data;
-                    if(!data.type || data.type == "agent"){ //TODO callback to refresh interface like in Agent.applyBehaviour (agent.js)
-                        this.agent.properties[data.name] = data.value;
-                    }else if(data.type == "user"){
-                        this.user.properties[data.name] = data.value;
-                    }
+                    let o = {};
+                    o[data.name] = data.value;
+                    this.blackboard.applyOn(o, data.type || "agent"); //TODO callback to refresh interface like in Agent.applyBehaviour (agent.js)
                     break;
 
                 case B_TYPE.intent:
@@ -270,16 +269,14 @@ class BehaviourPlanner{
         if(type != "data") return null;
 
         //Always updates data inside blackboard
-        //Currently hardcoded to user
-        //TODO apply to any data
-        this.context.blackboard.apply(data);
+        this.blackboard.apply(data); //Defined in behaviourGraph.js
 
         //Create event and process it in Graph
         this.onEvent(data);
     }
 
     onEvent(e){
-        if(this.state == STATE.PLAYING){
+        if(this.state == BP_STATE.PLAYING){
             var node = this.hbt_graph.processEvent(e);
             if(node){
                 var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, node);
@@ -289,27 +286,35 @@ class BehaviourPlanner{
         }
     }
 
-    loadGraph(data){
+    //o must be graph data (data.behaviour)
+    loadGraph(o){
+        let graph = new HBTGraph();
+        let context = new HBTContext();
+        graph.graph.context = context;
+        graph.graph.configure(o);
+
+        this.hbt_graph = graph;
+
+        return graph;
+    }
+
+    //An environment can have multiple graphs, but then only 1 is executed...
+    loadEnvironment(env){
 
     }
 
-    loadEnvironment(data){
+    loadCorpus(o){
+		o.array = [];
+		for(var i in o.data){
+			o.array.push(i);
+		}
+        this.corpus = o;
 
-    }
-
-    loadCorpusData(data){
-
+        return o;
     }
 
     toJSON(type, name){
 
     }
-
-    downloadJSON(type, name){
-
-    }
-
-    
-
 
 }

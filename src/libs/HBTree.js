@@ -339,41 +339,13 @@ function HBTproperty()
 	this._component = null;
 	this.serialize_widgets = true;
 }
-HBTproperty.prototype.onNodeAdded = function()
-{
-	this.properties.property_type = this.property_type;
-	/*if(!this.graph.character_evaluated.hasOwnProperty(this.title))
-	{
-		if(this.graph.context.user.properties.hasOwnProperty(this.title))
-			this.property_type ="user"
-		else
-			this.property_type = "global"
-	}*/
-}
 HBTproperty.prototype.onExecute = function()
 {	
 	//	Check if its Scene or Agent
-	//console.log(this.graph);
-	var value = "";
-	
-	var property_type = this.property_type.split("/");
-	switch(property_type[0])
-	{
-		case "agent":
-			value = currentHBTGraph.graph.context.facade.getEntityPropertyValue( this.title, currentHBTGraph.graph.character_evaluated); 	
-		break;
-		case "user":
-			value = currentHBTGraph.graph.context.facade.getEntityPropertyValue( this.title, currentHBTGraph.graph.context.user);			 
-		break;
-		case "gesture-property":
-			var gesture = GestureManager.gestures[property_type[1]];
-			value = currentHBTGraph.graph.context.facade.getEntityPropertyValue( this.title, gesture); 
-		break;
-	}
-	
+	if(!this.graph.context) return;
+	var value = this.graph.context.facade.getEntityPropertyValue( this.title, this.graph.character_evaluated); 
 	this.setOutputData(0,value);
 	this.setOutputData(1,this.title);
-	this.setOutputData(2,this.property_type);
 }
 HBTproperty.prototype.onPropertyChanged = function(name, value)
 {

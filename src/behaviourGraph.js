@@ -155,6 +155,7 @@ HBTGraph.prototype.processEvent = function(data){
 }
 
 //BP Blackboard: HBTGraph context blackboard will be created with these attributes instead
+//Data is always inside properties in each attribute
 Blackboard.prototype._ctor = function(){
     this.user = null;
     this.agent = null;
@@ -170,12 +171,139 @@ Blackboard.prototype.configure = function(o){
     if(o.entities) this.entities = o.entities;
 }
 
-Blackboard.prototype.apply = function(data){
-    //Hardcoded for user for now
-    if(data.user){
-        for(var key in data.user){
-            this.user.properties[key] = data.user[key];
-        }
+Blackboard.prototype.addAttribute = function(name){
+    if(this[name]){
+        console.log("Blackboard attribute already exists.");
+        return;
     }
-    
+
+    //Create object with empty properties
+    this[name] = {properties: {}};
 }
+
+Blackboard.prototype.applyOn = function(data, name){
+    if(!this[name]) this.addAttribute(name);
+
+    for(let key in data){
+        this[name].properties[key] = data[key];
+    }
+}
+
+Blackboard.prototype.apply = function(data){
+    for(let key in data){
+        this.applyOn(data[key], key);
+    }
+}
+
+Blackboard.prototype.getValue = function(type,  name){
+    return this[type] ? this[type].properties[name] : null;
+}
+
+//Implementation of Facade methods of HBTree
+
+/* 
+* Receives as a parmaeter a game/system entity, a scene node which is being evaluated
+* Returns a vec3 with the position
+*/
+Facade.prototype.getEntityPosition = function( entity )
+{
+	entity.transform.position;
+}
+
+//For the HBTProperty Node
+/*
+* Search in all the properties (scene and entity) one with the name passed as a parameter
+* Returns the value of the property (int, float or vec3) 
+*/
+Facade.prototype.getEntityPropertyValue = function( property_name, entity )
+{	
+	var my_comp = null;
+	var components = entity._components;
+	for(var i in components)
+	{
+		if(components[i].constructor.name == "HBTreeController")
+			my_comp = components[i];
+	}
+    if(!my_comp)
+    {
+        my_comp = {};
+        my_comp.local_properties = entity.properties;
+    }
+	return my_comp.local_properties[property_name];
+	//Search for the value of the property "property_name" in the system
+}
+
+//For the SimpleAnimate Node
+/*
+* Return the existing types of interest points
+*/
+Facade.prototype.getAnimation = function( path )
+{
+	if(typeof LS == "undefined")
+		return path;
+	var anim = LS.ResourcesManager.getResource( path );
+	if(anim)
+		return anim.filename;
+	else
+		return path;
+	//debugger;
+	//console.warn("entityInTarget() Must be implemented to use HBTree system");
+}
+
+//For the ActionAnimate Node
+/*
+* Return the time of an animation
+*/
+Facade.prototype.getAnimationDuration = function( path )
+{
+	var anim = LS.ResourcesManager.getResource( path );
+	if(anim)
+		return anim.takes.default.duration;
+	else
+		return false;
+}
+
+//For the EQSNearestInterestPoint Node
+/*
+* Return all the existing interest points
+*/
+Facade.prototype.getInterestPoints = function(  )
+{
+	console.warn("entityInTarget() Must be implemented to use HBTree system");
+}
+/*
+* @entity: the virtual entity evaluated. The type you are using as an entity 
+* @look_at_pos: vec3 with the target position to check if it's seen or not 
+* @limit_angle: a number in degrees (field of view)
+*/
+Facade.prototype.canSeeElement = function( entity, look_at_pos, limit_angle)
+{
+	console.warn("entityInTarget() Must be implemented to use HBTree system");
+}
+
+Facade.prototype.setEntityProperty = function( entity, property, value )
+{
+	var my_comp = null;
+	var components = entity._components;
+	for(var i in components)
+	{
+		if(components[i].constructor.name == "HBTreeController")
+			my_comp = components[i];
+	}
+    if(!my_comp)
+    {
+        my_comp = {};
+        my_comp.local_properties = entity.properties;
+    }
+	my_comp.local_properties[property] = value;
+	if(entity.inspector)
+		entity.inspector.refresh()
+	console.warn("entityInTarget() Must be implemented to use HBTree system");
+}
+
+
+//Not implemented:
+//Facade.prototype.getListOfAgents
+//Facade.prototype.entityInTarget
+//Facade.prototype.checkNextTarget
+//Facade.prototype.entityHasProperty

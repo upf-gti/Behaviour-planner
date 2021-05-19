@@ -70,6 +70,21 @@ var GraphManager = {
         
         return graph;
     },
+    addGraph(graph){
+        if(graph.constructor === HBTGraph){
+            let graph_name = graph.name || "default";
+            graph.name = graph_name;
+            graph.id = "graph-canvas-"+graph.name;
+
+            this.graphs[graph_name] = graph;
+            CORE.Interface.tabsRefresh();
+
+            let hbt_canvas = new HBTEditor(graph.id);
+            hbt_canvas.init(graph);
+            GraphManager.graph_canvas[graph.id] = hbt_canvas;
+            LGraphCanvas.active_canvas = this.currentCanvas = hbt_canvas;
+        }
+    },
     onGraphSelected(id)
     {
         GraphManager.currentCanvas = GraphManager.graph_canvas[id];

@@ -160,7 +160,7 @@ HBTEditor.prototype.addNodeByType = function(type, properties, pos)
                     dataType = this.graph.context.agent_evaluated.properties[title];
                     break;
                 case "user":
-                    dataType =  this.graph.context.user.properties[title];
+                    dataType =  this.graph.context.blackboard.user.properties[title];
                     break;
                 /**ADDED BY EVA**/
                 case "gesture-property":

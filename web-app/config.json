@@ -5,7 +5,6 @@
         "../src/libs/gl-matrix-min.js",
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
-        "../src/HBTfacade.js",
         "../src/behaviourGraph.js",
         "../src/behaviourNodes.js",
         "../src/behaviourPresenter.js",
