@@ -2,6 +2,7 @@
  * Manages and updates behaviour graphs
  */
 
+//TODO move definition here
 /*
 class User{
 
@@ -25,13 +26,12 @@ var STATE = {
 class BehaviourPlanner{
 
     constructor(o){
-        this.user = null;
-        this.agent = null;
+        this._user = null;
+        this._agent = null;
         this.corpus = null;
         this.entities = null;
 
-        this.hbt_graph = null;
-        this.context = null;
+        this._hbt_graph = null;
 
         this.state = STATE.STOP;
         this.last = 0;
@@ -49,6 +49,69 @@ class BehaviourPlanner{
         if(o) this.configure(o);
     }
 
+    set user(o){
+        if(o.constructor !== User){
+            console.log("Error while assigning User");
+            return;
+        }
+
+        this._user = o;
+
+        if(this.hbt_graph){
+            this.blackboard.user = o;
+        }
+    }
+
+    get user(){
+        return this._user;
+    }
+
+    set agent(o){
+        if(o.constructor !== Agent){
+            console.log("Error while assigning Agent");
+            return;
+        }
+
+        this._agent = o;
+
+        if(this.hbt_graph){
+            this.blackboard.agent = o;
+        }
+    }
+
+    get agent(){
+        return this._agent;
+    }
+
+    set hbt_graph(o){
+        if(o.constructor !== HBTGraph){
+            console.log("Graph must be HBTGraph");
+            return;
+        }
+
+        this._hbt_graph = o;
+
+        //LAST: Set attributes of graph blackboard
+        this.blackboard.configure({
+            user: this.user,
+            agent: this.agent,
+            corpus: this.corpus,
+            entities: this.entities,
+        });
+    }
+
+    get hbt_graph(){
+        return this._hbt_graph;
+    }
+
+    get context(){
+        return this._hbt_graph ? this._hbt_graph.graph.context : null;
+    }
+
+    get blackboard(){
+        return this._hbt_graph ? this._hbt_graph.graph.context.blackboard : null;
+    }
+
     init(){
         this.user = new User();
         this.agent = new Agent();
@@ -58,30 +121,11 @@ class BehaviourPlanner{
         this.execution_t = 1;
     }
 
-    //Must be HBTGraph
-    setGraph(graph){
-        if(graph.constructor !== HBTGraph){
-            console.log("Graph must be HBTGraph");
-            return;
-        }
-
-        this.hbt_graph = graph;
-        this.context = graph.graph.context;
-
-        //LAST: Set attributes of graph blackboard
-        this.context.blackboard.configure({
-            user: this.user,
-            agent: this.agent,
-            corpus: this.corpus,
-            entities: this.entities,
-        });
-    }
-
     configure(o){
         if(o.user) this.user = o.user;
         if(o.agent) this.agent = o.agent;
 
-        if(o.hbt_graph) this.setGraph(o.hbt_graph);
+        if(o.hbt_graph) this.hbt_graph = o.hbt_graph;
     }
 
     play(){
@@ -113,7 +157,6 @@ class BehaviourPlanner{
             }
         }
     }
-
 
     processBehaviours(behaviours){
         if(!behaviours || behaviours.length == 0) return;

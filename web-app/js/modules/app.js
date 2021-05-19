@@ -474,7 +474,7 @@ class App{
         //this.currentContext = hbt_graph.graph.context;
 
         //BP
-        this.bp.setGraph(hbt_graph);
+        this.bp.hbt_graph = hbt_graph;
     }
 
     loadEnvironment(data){
