@@ -654,4 +654,22 @@ class App{
     }
 }
 
+testRequest = function(m, key){
+    url = "http://ec2-79-125-68-20.eu-west-1.compute.amazonaws.com/RaoBotAPI/v1.0";
+    method = m || "/status";
+    fetch(url + method, {
+        method: "GET",
+        //mode: "no-cors", <- not compatible with custom headers
+        headers: {
+            apikey: key
+        },
+        body: null
+    })
+    .then(response => response.json())
+    .then(data => {console.log(data);})
+    .catch((error) => {console.error(error);});
+}
+//Will return an error because server does not currently implement OPTIONS call that is needed for CORS (cross-origin resource sharing)
+//testRequest("/status", <key>);
+
 CORE.registerModule( App );
