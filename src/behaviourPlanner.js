@@ -12,10 +12,233 @@ class Agent{
 
 }
 */
+/*
+class User{
+    constructor(o, pos){
+        this.uid =  "User-"+ Date.now();
+        //this.num_id is it used???
+        this.initProperties();
+        if(o){
+            this.configure(o);
+        }
 
-class Environment{
+        //Legacy in constructor pos
+        this.position = pos;
+
+        this.onUpdate = null;
+
+        //Presenter stuff
+//        this._inspector = null;
+//        UserManager.users[this.uid] = this;
+//		  UserManager.addPropertiesToLog(this.properties);
+//        this.createUserInspector();
+    }
+
+    initProperties(){
+        this.properties = {
+            name: this.uid,
+            is_in_front: false,
+      		is_speaking: false,
+            valence: 0,
+            arousal: 0,
+            look_at_pos: [0,0,0],
+            position: [0,0,0],
+            orientation: [0,0,0,1],
+            text: ""
+        }
+    }
+
+    configure(o){
+        if(o.uid){
+            this.uid = o.uid;
+            this.properties.name = o.uid;
+        }
+
+        if(o.num_id) this.num_id = o.num_id;
+
+        if(o.properties){
+            for(let k in o.properties){
+                this.properties[k] = o.properties[k];
+            }
+        }
+
+        //Presenter/App stuff
+        //UserManager.users[this.uid] = this;
+    	//UserManager.addPropertiesToLog(this.properties);
+        //this.createUserInspector();
+        //this._inspector.refresh();
+    }
+
+    get position(){
+        return this.properties.position || [0,0,0];
+    }
+
+    set position(p){
+        this.properties.position = p;
+    }
+
+    serialize(){
+        var o = {};
+        o.uid = this.uid;
+        o.num_id = this.num_id;
+        o.properties = this.properties;
+        return o;
+    }
+
+    deleteProperty(property_name){
+		delete this.properties[property_name];
+
+    }
+
+    setProperty(property_name, value){
+        this.properties[property_name] = value;
+        //this._inspector.refresh()
+    }
+
+    update(data){
+        for(var key in data){
+            this.setProperty(key, data[key]);
+        }
+    }
     
-}
+    createUserInspector(inspector)
+    {
+        var inspector = this._inspector = inspector || new LiteGUI.Inspector();
+        var that = this;
+        inspector.on_refresh = function()
+        {
+            var delete_html = '<img src="'+baseURL+'/latest/imgs/mini-icon-trash.png" alt="W3Schools.com">'
+            inspector.clear();
+            inspector.addSection("User properties");
+            if(!that)
+            {
+                inspector.addInfo("No user", null, {name_width:"80%"});
+            }
+            else
+            {
+                var properties = that.properties;
+               // properties.position = this.position;
+
+                inspector.widgets_per_row = 2;
+                for(let p in properties)
+                {
+                    let widget = null;
+                    if(properties[p] == null) continue;
+                    var pretitle = "<span title='Drag " + p + "' class='keyframe_icon'></span>";
+                    switch(properties[p].constructor.name)
+                    {
+                        case "Number" : {
+                            widget = inspector.addNumber( p, properties[p], { pretitle: pretitle, key: p, step:1, width:"calc(100% - 45px)", callback: function(v){ properties[this.options.key] = v } } );
+                            inspector.addButton(null, delete_html, { width:40, name_width:"0%",callback: e => {
+                                that.deleteProperty(p, properties[p].constructor.name );
+                                inspector.refresh();
+
+                            }});
+                            } break;
+                        case "String" :
+                        {
+                            if(properties[p] == "true" || properties[p] == "false" )
+                            {
+                                var value = true;
+                                if(properties[p] == "false")
+                                    value = false;
+                                widget = inspector.addCheckbox( p, value, { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
+                                inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
+                                    console.log(p);
+                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    inspector.refresh();
+                                }});
+                            }
+                            else{
+                                widget = inspector.addString( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){
+
+                                    //Updates name reference in menu
+                                    if(this.options.key == "name"){
+                                        //that.properties[this.options.key] = v;
+                                        UserManager.users[that.uid].properties.name = v;
+                                    }
+                                    properties[this.options.key] = v;
+
+                                }});
+                                inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
+                                    if(p == "name")
+                                        return;
+                                    console.log(p);
+                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    inspector.refresh();
+                                }});
+                            }
+
+
+                        }break;
+                        case "Boolean":
+                        {
+                            widget = inspector.addCheckbox( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
+                            inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
+                                console.log(p);
+                                that.deleteProperty(p, properties[p].constructor.name );
+                                inspector.refresh();
+                            }});
+                        } break;
+
+                        case "Array":
+                        case "Float32Array":
+                            if(p == "position")
+                                widget = inspector.addVector3(p, properties[p], {  pretitle: pretitle, key: p, width:"100%", callback: function(v){
+                                    properties[this.options.key] = v;
+                                    that.position = v;
+                                } });
+                            break;
+                        default:
+
+                    }
+
+
+                    if(!widget) continue;
+
+                    var icon = widget.querySelector(".keyframe_icon");
+                    if(icon){
+                        icon.addEventListener("dragstart", function(a)
+                        {
+                            a.dataTransfer.setData("type", "HBTProperty" );
+                            a.dataTransfer.setData("name", a.srcElement.parentElement.title );
+                            a.dataTransfer.setData("data_type", "user" );
+                        });
+                        icon.setAttribute("draggable", true);
+                    }
+
+                }
+
+                inspector.addSeparator();
+                inspector.widgets_per_row = 3;
+
+                var _k,_v;
+                inspector.addString(null, "",  { width:"50%", placeHolder:"param name",  callback: v => _k = v });
+                inspector.addString(null, "",  { width:"calc(50% - 45px)", placeHolder:"value",       callback: v => _v = v });
+                inspector.addButton(null, "+", { width:40, callback: e => {
+                    if(!_k || !_v)
+                        return;
+                    try{
+                        _v = JSON.parse('{ "v":'+_v+'}').v;
+                    }catch(e){
+                        //if fails it was a string, so leave it as the string it was.
+                    }
+                    properties[_k] = _v;
+
+                    inspector.refresh();
+                }});
+
+
+            }
+
+        }
+        //var container = document.getElementById("agent-content")
+        //container.appendChild(inspector.root);
+        inspector.refresh();
+       return inspector;
+
+    }
+}*/
 
 var BP_STATE = {
     STOP: 0,
@@ -90,6 +313,11 @@ class BehaviourPlanner{
         }
 
         this._hbt_graph = o;
+
+        //Be sure that graph has context (it should be already set)
+        if(!this._hbt_graph.graph.context){
+            this._hbt_graph.graph.context = new HBTContext();
+        }
 
         this.context.agent_evaluated = this.agent;
     
@@ -298,7 +526,7 @@ class BehaviourPlanner{
         return graph;
     }
 
-    //An environment can have multiple graphs, but then only 1 is executed...
+    //An environment can have multiple graphs and agents, but then only 1 is executed and used...
     loadEnvironment(env){
 
     }

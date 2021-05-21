@@ -67,7 +67,7 @@ class User{
         this.properties = {
             name: this.uid,
             is_in_front: false,
-      			is_speaking: false,
+      		is_speaking: false,
             valence:0,
             arousal:0,
             look_at_pos: [0,0,0],
