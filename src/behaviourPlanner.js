@@ -374,15 +374,27 @@ class BehaviourPlanner{
                 if(this.agent && this.hbt_graph){
                     let context = this.context;
 
-                    //Behaviours from event can be processed after event, no?
-
                     if(context.last_event_node == null || context.last_event_node == undefined){
                         var behaviours = this.hbt_graph.runBehaviour(this.agent, context, this.accumulate_time);
+                        this.accumulate_time = 0; //runBehaviour expects time between calls
 
                         if(this.onBehaviours) this.onBehaviours(behaviours);
                         this.processBehaviours(behaviours);
                     }
                 }
+            }
+        }
+    }
+
+    onEvent(e){
+        if(this.state == BP_STATE.PLAYING){
+            var node = this.hbt_graph.processEvent(e);
+            if(node){
+                var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, node);
+                this.accumulate_time = 0; //runBehaviour expects time between calls
+
+                if(this.onBehaviours) this.onBehaviours(behaviours);
+                this.processBehaviours(behaviours);
             }
         }
     }
@@ -501,17 +513,6 @@ class BehaviourPlanner{
 
         //Create event and process it in Graph
         this.onEvent(data);
-    }
-
-    onEvent(e){
-        if(this.state == BP_STATE.PLAYING){
-            var node = this.hbt_graph.processEvent(e);
-            if(node){
-                var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, node);
-                if(this.onBehaviours) this.onBehaviours(behaviours);
-                this.processBehaviours(behaviours);
-            }
-        }
     }
 
     //o must be graph data (data.behaviour)

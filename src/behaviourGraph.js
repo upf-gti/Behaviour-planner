@@ -195,7 +195,7 @@ Blackboard.prototype.apply = function(data){
     }
 }
 
-Blackboard.prototype.getValue = function(type,  name){
+Blackboard.prototype.getValue = function(type, name){
     return this[type] ? this[type].properties[name] : null;
 }
 
