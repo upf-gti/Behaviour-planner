@@ -53,21 +53,6 @@ class User{
         o.properties = this.properties;
         return o;
     }
-
-    deleteProperty(property_name){
-		delete this.properties[property_name];
-
-    }
-
-    setProperty(property_name, value){
-        this.properties[property_name] = value;
-    }
-
-    update(data){
-        for(var key in data){
-            this.setProperty(key, data[key]);
-        }
-    }
 }
 
 class Agent{
@@ -129,16 +114,6 @@ class Agent{
         o.properties = this.properties;
 
         return o;
-    }
-    applyBehaviour(behaviour){
-        if(behaviour.type == B_TYPE.setProperty){
-            var name = behaviour.data.name;
-            var value = behaviour.data.value;
-            this.properties[name] = value;
-        }
-    }
-    deleteProperty(property_name){
-		delete this.properties[property_name];
     }
 }
 
