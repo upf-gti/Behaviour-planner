@@ -1,8 +1,6 @@
 var GestureManager = {
     name:"GestureManager",
     properties_log: {},
-    DURATION: ["Short-term", "Long-term"],
-    PRIORITY: ["append","overwrite", "mix", "skip"],
     gestures: new Proxy({}, {
             set: (target, property, value, receiver) => {
                 target[property] = value;
@@ -10,16 +8,13 @@ var GestureManager = {
                 if(property == "length")
                     return true;
 
-                //AgentManager.createGUIParams( value );
-
                 return true;
             }
         }),
 
     init(){
     },
-    createGestureInspector(inspector)
-    {
+    createGestureInspector(inspector){
         var that = this;
         var inspector = this.inspector = inspector || new LiteGUI.Inspector();
 
@@ -48,7 +43,7 @@ var GestureManager = {
             for(var i in that.gestures)
             {
                 var gesture = that.gestures[i];
-                var widget = gesture.createGUIParams(inspector)
+                var widget = GestureManager.createGUIParams(inspector, gesture)
                 var edit_btn = inspector.addButton(null,  CORE.Interface.icons.edit, { width:40, callback: that.openEditGesture.bind(that,gesture)});
                 edit_btn.className+= "btn btn-icon btn-inspect"
                 var delete_btn = inspector.addButton(null,  CORE.Interface.icons.trash, {  width:40, name_width:"0%",callback: that.deleteGesture.bind(that,gesture.name) });
@@ -70,16 +65,15 @@ var GestureManager = {
         this.gestures[gesture.name] = gesture;
         console.log(gesture)
     },
-    openNewGesture()
-    {
+    openNewGesture(){
         var gestureManager = this;
         var showIntensity = false;
         var showController = false;
         var showSpeed = false;
         var gesture = {
             name : "",
-            duration : GestureManager.DURATION[0],
-	        priority : GestureManager.PRIORITY[0],
+            duration : Gesture.DURATION[0],
+	        priority : Gesture.PRIORITY[0],
 	        interface : "",
             keywords : "",
             properties : {}
@@ -97,8 +91,8 @@ var GestureManager = {
             widgets.addString("Name", gesture.name, {callback: function(v){gesture.name = v;}});
             widgets.addString("Interface name", gesture.interface, {callback: function(v){gesture.interface = v;}});
             widgets.addString("Keywords", gesture.keywords, {callback: function(v){gesture.keywords = v;}});
-            widgets.addCombo("Duration", gesture.duration, { values: GestureManager.DURATION, callback: function(v){gesture.duration = v;}});
-            widgets.addCombo("Priority", gesture.priority, { values: GestureManager.PRIORITY, callback: function(v){gesture.priority = v;}});
+            widgets.addCombo("Duration", gesture.duration, { values: Gesture.DURATION, callback: function(v){gesture.duration = v;}});
+            widgets.addCombo("Priority", gesture.priority, { values: Gesture.PRIORITY, callback: function(v){gesture.priority = v;}});
             widgets.addCheckbox("Intensity  property", showIntensity, {name_width:150,callback: function(v){
                 if(!v)
                     delete gesture.properties.intensity;
@@ -162,16 +156,15 @@ var GestureManager = {
         dialog.adjustSize();
 
     },
-    openEditGesture(data)
-    {
+    openEditGesture(data){
         var that = this;
         var showIntensity = false;
         var showController = false;
         var showSpeed = false;
         var gesture = {
             name : "",
-            duration : GestureManager.DURATION[0],
-	        priority : GestureManager.PRIORITY[0],
+            duration : Gesture.DURATION[0],
+	        priority : Gesture.PRIORITY[0],
 	        interface : "",
             keywords : "",
             properties : {}
@@ -201,8 +194,8 @@ var GestureManager = {
             widgets.addString("Keywords", gesture.keywords, {callback: function(v){gesture.keywords = v;}});
            // widgets.root.classList.add("draggable-item");
 
-            widgets.addCombo("Duration", gesture.duration, {pretitle:pretitle, values: GestureManager.DURATION, callback: function(v){gesture.duration = v;}});
-            widgets.addCombo("Priority", gesture.priority, { pretitle:pretitle, values: GestureManager.PRIORITY, callback: function(v){gesture.priority = v;}});
+            widgets.addCombo("Duration", gesture.duration, {pretitle:pretitle, values: Gesture.DURATION, callback: function(v){gesture.duration = v;}});
+            widgets.addCombo("Priority", gesture.priority, { pretitle:pretitle, values: Gesture.PRIORITY, callback: function(v){gesture.priority = v;}});
             widgets.addCheckbox("Intensity  property", showIntensity, {name_width:150,callback: function(v){
                 if(!v)
                     delete gesture.properties.intensity;
@@ -283,8 +276,7 @@ var GestureManager = {
 
     },
 
-    deleteGesture(gestureName)
-    {
+    deleteGesture(gestureName){
         var that = this;
         var data = this.gestures[gestureName];
         if(data)
@@ -292,76 +284,31 @@ var GestureManager = {
             that.inspector.refresh();
     },
 
-    editGesture(gesture)
-    {
+    editGesture(gesture){
         var data = this.gestures[gesture.name];
         if(data)
             data = gesture;
     },
-    serialize()
-    {
+    serialize(){
         var gestures = {};
         for(var i in this.gestures)
         {
             gestures[i] = this.gestures[i];
         }
         return gestures;
-    }
-}
-//CORE.registerModule( GestureManager );
-
-class Gesture{
-
-    /* A parameter is	 if we want to load an agent */
-    constructor( o , pos){
-
-        if(o)
-        {
-            this.configure(o, this)
-            return;
-        }
-
-        this.name = "";
-        this.duration = GestureManager.DURATION[0];
-	    this.priority = GestureManager.PRIORITY[0];
-	    this.interface = "";
-        this.keywords = "";
-        this.properties = {};
-
-
-		//AgentManager.addPropertiesToLog(this.properties);
-    }
-
-    configure( o, agent )
-    {
-        this.name = o.name;
-        this.duration = o.duration;
-        this.priority = o.priority;
-        this.interface = o.interface;
-        this.keywords = o.keywords;
-        if(o.properties)
-            this.properties = o.properties
-
-
-        //AgentManager.addPropertiesToLog(agent.properties);
-
-        //agent.inspector.refresh();
-    }
-    createGUIParams(inspector)
-    {
-            var that = this;
-
+    },
+    createGUIParams(inspector, gesture){
             //inspector.clear();
-            var pretitle = "<span title='Drag " + this.name + "' class='keyframe_icon'></span>";
+            var pretitle = "<span title='Drag " + gesture.name + "' class='keyframe_icon'></span>";
            // inspector.widgets_per_row = 3;
 
-            var str = inspector.addInfo( this.name, null, { disabled:true,pretitle: pretitle});
+            var str = inspector.addInfo( gesture.name, null, { disabled:true,pretitle: pretitle});
             str.className+=" gesture-str";
             str.classList.add("draggable-item");
             str.addEventListener("dragstart", function(a){
 
                 a.dataTransfer.setData("type", "GestureNode" );
-                a.dataTransfer.setData("name", that.name );
+                a.dataTransfer.setData("name", gesture.name );
                 a.dataTransfer.setData("data_type", "gesture");
 
             });
@@ -374,7 +321,5 @@ class Gesture{
 
        // area.litearea.add(inspector);
     }
-
 }
-GestureManager.DURATION = ["Short-term", "Long-term"];
-GestureManager.PRIORITY = ["append","overwrite", "mix", "skip"];
+//CORE.registerModule( GestureManager );

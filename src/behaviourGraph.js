@@ -156,10 +156,10 @@ HBTGraph.prototype.processEvent = function(data){
 
 //BP Blackboard: HBTGraph context blackboard will be created with these attributes instead
 //Data is always inside properties in each attribute
+//Attribute may have an onUpdate(object) callback
 Blackboard.prototype._ctor = function(){
     this.user = null;
     this.agent = null;
-
     this.corpus = null;
     this.entities = null;
 }
@@ -171,21 +171,25 @@ Blackboard.prototype.configure = function(o){
     if(o.entities) this.entities = o.entities;
 }
 
-Blackboard.prototype.addAttribute = function(name){
-    if(this[name]){
+Blackboard.prototype.addAttribute = function(attr, o){
+    if(this[attr]){
         console.log("Blackboard attribute already exists.");
         return;
     }
 
     //Create object with empty properties
-    this[name] = {properties: {}};
+    this[attr] = o || {properties: {}};
 }
 
-Blackboard.prototype.applyOn = function(data, name){
-    if(!this[name]) this.addAttribute(name);
+Blackboard.prototype.applyOn = function(data, attr){
+    if(!this[attr]) this.addAttribute(attr);
 
     for(let key in data){
-        this[name].properties[key] = data[key];
+        this[attr].properties[key] = data[key];
+    }
+
+    if(this[attr].onUpdate){
+        this[attr].onUpdate(this[attr]);
     }
 }
 
@@ -195,8 +199,8 @@ Blackboard.prototype.apply = function(data){
     }
 }
 
-Blackboard.prototype.getValue = function(type, name){
-    return this[type] ? this[type].properties[name] : null;
+Blackboard.prototype.getValue = function(attr, name){
+    return this[attr] ? this[attr].properties[name] : null;
 }
 
 //Implementation of Facade methods of HBTree

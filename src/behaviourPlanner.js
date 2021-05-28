@@ -44,17 +44,12 @@ class User{
     }
 
     //For HBT where is expected to be outside properties:
-    get position(){
-        return this.properties.position;
-    }
-    set position(p){
-        this.properties.position = p;
-    }
+    get position(){return this.properties.position;}
+    set position(p){this.properties.position = p;}
 
     serialize(){
         var o = {};
         o.uid = this.uid;
-        o.num_id = this.num_id;
         o.properties = this.properties;
         return o;
     }
@@ -66,7 +61,6 @@ class User{
 
     setProperty(property_name, value){
         this.properties[property_name] = value;
-        //this._inspector.refresh()
     }
 
     update(data){
@@ -125,22 +119,13 @@ class Agent{
     }
 
     //For HBT where is expected to be outside properties
-    get position(){
-        return this.properties.position;
-    }
-    set position(p){
-        this.properties.position = p;
-    }
-    get bt_info(){
-        return this.properties.bt_info;
-    }
+    get position(){return this.properties.position;}
+    set position(p){this.properties.position = p;}
+    get bt_info(){return this.properties.bt_info;}
 
     serialize(){
         var o = {};
         o.uid = this.uid;
-        o.num_id = this.num_id;
-        o.btree = this.btree;
-		o.hbtgraph = this.hbtgraph;
         o.properties = this.properties;
 
         return o;
@@ -150,14 +135,72 @@ class Agent{
             var name = behaviour.data.name;
             var value = behaviour.data.value;
             this.properties[name] = value;
-            if(this._inspector)
-                this._inspector.refresh();
         }
     }
     deleteProperty(property_name){
 		delete this.properties[property_name];
     }
 }
+
+class Gesture{
+    constructor(o){
+        this.uid =  "Gesture-" + Date.now();
+
+        this.initProperties();
+        if(o){
+            this.configure(o);
+        }
+
+        this.name = "";
+        this.duration = GestureManager.DURATION[0];
+	    this.priority = GestureManager.PRIORITY[0];
+	    this.interface = "";
+        this.keywords = "";
+        this.properties = {};
+
+        this.onUpdate = null;
+    }
+
+    initProperties(){
+        this.properties = {
+            name: "",
+            duration: Gesture.DURATION[0],
+            priority: Gesture.PRIORITY[0],
+            keywords: ""
+        };
+    }
+
+    configure(o){
+        if(o.uid){
+            this.uid = o.uid;
+            this.properties.name = o.uid;
+        }
+
+        if(o.properties){
+            for(let k in o.properties){
+                this.properties[k] = o.properties[k];
+            }
+        }
+
+        this.name = o.name;
+        this.duration = o.duration;
+        this.priority = o.priority;
+        this.interface = o.interface;
+        this.keywords = o.keywords;
+        if(o.properties)
+            this.properties = o.properties
+    }
+
+    //Legacy, all references should be done directly in properties
+    get name(){return this.properties.name;}
+    set name(v){this.properties.name = v;}
+    get duration(){return this.properties.duration;}
+    set duration(v){this.properties.duration = v;}
+    get keywords(){return this.properties.keywords;}
+    set keywords(v){this.properties.keywords = v;}
+}
+Gesture.DURATION = ["Short-term", "Long-term"];
+Gesture.PRIORITY = ["append","overwrite", "mix", "skip"];
 
 var BP_STATE = {
     STOP: 0,
