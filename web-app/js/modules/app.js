@@ -52,63 +52,67 @@ class App{
 			this.iframe =   CORE.Interface.iframe;
 	}
 
-  init(){
-    let agent = new Agent(null, [0,0,0]);
-    let user = new User(null, [0,0,100]);
-    this.bp = new BehaviourPlanner({
-        user: user,
-        agent: agent,
-    });
-    this.bp.onBehaviours = this.onBehaviours.bind(this);
-    this.bp.onActions = this.onActions.bind(this);
-    let hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH);
-    this.bp.hbt_graph = hbt_graph;
+    init(){
+        let agent = new Agent(null, [0,0,0]);
+        let user = new User(null, [0,0,100]);
+        this.bp = new BehaviourPlanner({
+            user: user,
+            agent: agent,
+        });
+        this.bp.onBehaviours = this.onBehaviours.bind(this);
+        this.bp.onActions = this.onActions.bind(this);
+        let hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH);
+        this.bp.hbt_graph = hbt_graph;
 
-    this.env_tree.children.push({id:agent.uid, type: "agent"});
+        this.env_tree.children.push({id:agent.uid, type: "agent"});
 
-    AgentManager.agent_selected = agent;
-    agent.is_selected=true;
+        UserManager.users[user.uid] = user;
+        UserManager.addPropertiesToLog(user.properties);
 
-    this.env_tree.children.push({id:user.uid, type: "user"});
+        AgentManager.agents[agent.uid] = agent;
+        AgentManager.addPropertiesToLog(agent.properties);
+        AgentManager.agent_selected = agent;
 
-    this.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
-    this.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
+        this.env_tree.children.push({id:user.uid, type: "user"});
 
-    //TODO change all references of context.user to context.blackboard.user
+        this.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
+        this.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
 
-    last = now = performance.now();
+        //TODO change all references of context.user to context.blackboard.user
 
-    if(iframeWindow && iframeWindow.document){
-			var iframe = iframeWindow.document.querySelector("#iframe-character");
+        last = now = performance.now();
+
+        if(iframeWindow && iframeWindow.document){
+            var iframe = iframeWindow.document.querySelector("#iframe-character");
             if(this.iframe)
-			    iframe = this.iframe;
+                iframe = this.iframe;
             else
                 this.iframe = iframe
-    }
-    else{
-        this.iframe = CORE.Interface.iframe;
+        }
+        else{
+            this.iframe = CORE.Interface.iframe;
+        }
+
+        requestAnimationFrame(this.animate.bind(this));
     }
 
-    requestAnimationFrame(this.animate.bind(this));
-  }
-
-  postInit() {
-    CORE["Interface"].showLoginDialog();
-  }
+    postInit() {
+        CORE["Interface"].showLoginDialog();
+    }
 
 	onWSconnected(){
 		this.streamer.createRoom(this.env_tree.token);
 	}
 
-  getUserById(id){
-    for(var i in this.users){
-        var user = this.users[i];
-        if(user.uid.toLowerCase() == id.toLowerCase()){
-            return user;
+    getUserById(id){
+        for(var i in this.users){
+            var user = this.users[i];
+            if(user.uid.toLowerCase() == id.toLowerCase()){
+                return user;
+            }
         }
+        return false;
     }
-    return false;
-  }
 
     changeState(){
         if(CORE.App.bp.state == BP_STATE.STOP){
@@ -121,44 +125,39 @@ class App{
         }
     }
 
-  onPlayClicked(){
+    onPlayClicked(){
+        var play_buttons = document.getElementsByClassName("play-btn");
+        var stream_button = document.getElementById("stream-btn");
+        var icons = CORE["Interface"].icons;
 
-    var play_buttons = document.getElementsByClassName("play-btn");
-    var stream_button = document.getElementById("stream-btn");
-    var icons = CORE["Interface"].icons;
+        this.changeState();
+        if(this.state == PLAYING){
+            for(var i=0;i< play_buttons.length;i++)
+                play_buttons[i].innerHTML= icons.stop;
 
-    this.changeState();
-    if(this.state == PLAYING)
-    {
-        for(var i=0;i< play_buttons.length;i++)
-            play_buttons[i].innerHTML= icons.stop;
-
-      if(stream_button.lastElementChild.classList.contains("active"))
-      {
-          stream_button.lastElementChild.classList.remove("active");
-          stream_button.lastElementChild.classList.add("play");
-      }
+            if(stream_button.lastElementChild.classList.contains("active")){
+                stream_button.lastElementChild.classList.remove("active");
+                stream_button.lastElementChild.classList.add("play");
+            }
+        }else{
+            for(var i=0;i< play_buttons.length;i++)
+                play_buttons[i].innerHTML= icons.play;
+            if(stream_button.lastElementChild.classList.contains("play"))
+            {
+                stream_button.lastElementChild.classList.remove("play");
+                stream_button.lastElementChild.classList.add("active");
+            }
+        }
     }
-    else
-    {
-        for(var i=0;i< play_buttons.length;i++)
-            play_buttons[i].innerHTML= icons.play;
-      if(stream_button.lastElementChild.classList.contains("play"))
-      {
-          stream_button.lastElementChild.classList.remove("play");
-          stream_button.lastElementChild.classList.add("active");
-      }
-    }
-  }
 
-  animate(){
-    var that = this;
-    requestAnimationFrame(that.animate.bind(that));
-		last = now;
-    now = performance.now();
-    dt = (now - last) * 0.001;
-    that.update(dt);
-  }
+    animate(){
+        var that = this;
+        requestAnimationFrame(that.animate.bind(that));
+        last = now;
+        now = performance.now();
+        dt = (now - last) * 0.001;
+        that.update(dt);
+    }
 
     update(dt){
         if(iframeWindow){
@@ -313,6 +312,10 @@ class App{
         if(agent){
             agent.is_selected = true;
             this.bp.agent = agent;
+
+            AgentManager.agents[agent.uid] = agent;
+            AgentManager.addPropertiesToLog(agent.properties);
+            AgentManager.agent_selected = agent;
         }
 
         //User
@@ -322,6 +325,9 @@ class App{
             this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
             
             this.bp.user = user;
+
+            UserManager.users[user.uid] = user;
+            UserManager.addPropertiesToLog(user.properties);
 
             this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
                 detail: {

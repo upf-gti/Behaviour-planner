@@ -2,21 +2,9 @@
  * Manages and updates behaviour graphs
  */
 
-//TODO move definition here
-/*
-class User{
-
-}
-
-class Agent{
-
-}
-*/
-/*
 class User{
     constructor(o, pos){
         this.uid =  "User-"+ Date.now();
-        //this.num_id is it used???
         this.initProperties();
         if(o){
             this.configure(o);
@@ -26,12 +14,6 @@ class User{
         this.position = pos;
 
         this.onUpdate = null;
-
-        //Presenter stuff
-//        this._inspector = null;
-//        UserManager.users[this.uid] = this;
-//		  UserManager.addPropertiesToLog(this.properties);
-//        this.createUserInspector();
     }
 
     initProperties(){
@@ -54,25 +36,17 @@ class User{
             this.properties.name = o.uid;
         }
 
-        if(o.num_id) this.num_id = o.num_id;
-
         if(o.properties){
             for(let k in o.properties){
                 this.properties[k] = o.properties[k];
             }
         }
-
-        //Presenter/App stuff
-        //UserManager.users[this.uid] = this;
-    	//UserManager.addPropertiesToLog(this.properties);
-        //this.createUserInspector();
-        //this._inspector.refresh();
     }
 
+    //For HBT where is expected to be outside properties:
     get position(){
-        return this.properties.position || [0,0,0];
+        return this.properties.position;
     }
-
     set position(p){
         this.properties.position = p;
     }
@@ -100,145 +74,90 @@ class User{
             this.setProperty(key, data[key]);
         }
     }
-    
-    createUserInspector(inspector)
-    {
-        var inspector = this._inspector = inspector || new LiteGUI.Inspector();
-        var that = this;
-        inspector.on_refresh = function()
-        {
-            var delete_html = '<img src="'+baseURL+'/latest/imgs/mini-icon-trash.png" alt="W3Schools.com">'
-            inspector.clear();
-            inspector.addSection("User properties");
-            if(!that)
-            {
-                inspector.addInfo("No user", null, {name_width:"80%"});
-            }
-            else
-            {
-                var properties = that.properties;
-               // properties.position = this.position;
+}
 
-                inspector.widgets_per_row = 2;
-                for(let p in properties)
-                {
-                    let widget = null;
-                    if(properties[p] == null) continue;
-                    var pretitle = "<span title='Drag " + p + "' class='keyframe_icon'></span>";
-                    switch(properties[p].constructor.name)
-                    {
-                        case "Number" : {
-                            widget = inspector.addNumber( p, properties[p], { pretitle: pretitle, key: p, step:1, width:"calc(100% - 45px)", callback: function(v){ properties[this.options.key] = v } } );
-                            inspector.addButton(null, delete_html, { width:40, name_width:"0%",callback: e => {
-                                that.deleteProperty(p, properties[p].constructor.name );
-                                inspector.refresh();
+class Agent{
+    constructor(o ,pos){
+        this.uid =  "Agent-" + Date.now();
 
-                            }});
-                            } break;
-                        case "String" :
-                        {
-                            if(properties[p] == "true" || properties[p] == "false" )
-                            {
-                                var value = true;
-                                if(properties[p] == "false")
-                                    value = false;
-                                widget = inspector.addCheckbox( p, value, { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
-                                inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
-                                    console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
-                                    inspector.refresh();
-                                }});
-                            }
-                            else{
-                                widget = inspector.addString( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){
-
-                                    //Updates name reference in menu
-                                    if(this.options.key == "name"){
-                                        //that.properties[this.options.key] = v;
-                                        UserManager.users[that.uid].properties.name = v;
-                                    }
-                                    properties[this.options.key] = v;
-
-                                }});
-                                inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
-                                    if(p == "name")
-                                        return;
-                                    console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
-                                    inspector.refresh();
-                                }});
-                            }
-
-
-                        }break;
-                        case "Boolean":
-                        {
-                            widget = inspector.addCheckbox( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
-                            inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
-                                console.log(p);
-                                that.deleteProperty(p, properties[p].constructor.name );
-                                inspector.refresh();
-                            }});
-                        } break;
-
-                        case "Array":
-                        case "Float32Array":
-                            if(p == "position")
-                                widget = inspector.addVector3(p, properties[p], {  pretitle: pretitle, key: p, width:"100%", callback: function(v){
-                                    properties[this.options.key] = v;
-                                    that.position = v;
-                                } });
-                            break;
-                        default:
-
-                    }
-
-
-                    if(!widget) continue;
-
-                    var icon = widget.querySelector(".keyframe_icon");
-                    if(icon){
-                        icon.addEventListener("dragstart", function(a)
-                        {
-                            a.dataTransfer.setData("type", "HBTProperty" );
-                            a.dataTransfer.setData("name", a.srcElement.parentElement.title );
-                            a.dataTransfer.setData("data_type", "user" );
-                        });
-                        icon.setAttribute("draggable", true);
-                    }
-
-                }
-
-                inspector.addSeparator();
-                inspector.widgets_per_row = 3;
-
-                var _k,_v;
-                inspector.addString(null, "",  { width:"50%", placeHolder:"param name",  callback: v => _k = v });
-                inspector.addString(null, "",  { width:"calc(50% - 45px)", placeHolder:"value",       callback: v => _v = v });
-                inspector.addButton(null, "+", { width:40, callback: e => {
-                    if(!_k || !_v)
-                        return;
-                    try{
-                        _v = JSON.parse('{ "v":'+_v+'}').v;
-                    }catch(e){
-                        //if fails it was a string, so leave it as the string it was.
-                    }
-                    properties[_k] = _v;
-
-                    inspector.refresh();
-                }});
-
-
-            }
-
+        this.initProperties();
+        if(o){
+            this.configure(o);
         }
-        //var container = document.getElementById("agent-content")
-        //container.appendChild(inspector.root);
-        inspector.refresh();
-       return inspector;
 
+        //Legacy in constructor pos
+        this.position = pos;
+
+        this.onUpdate = null;
+
+        //this.hbtgraph is not used in HBTree
     }
-}*/
+
+    initProperties(){
+        this.properties = {
+            name: this.uid,
+            valence:0,
+            arousal:0,
+            age: 35,
+
+            target: null,
+            look_at_pos: [0,0,10000],
+            position: [0,0,0],
+            orientation: [0,0,0,1],
+            state: "waiting",
+
+            //Internal for hbt
+            bt_info: {running_data: {}},
+        };
+    }
+
+    configure(o){
+        if(o.uid){
+            this.uid = o.uid;
+            this.properties.name = o.uid;
+        }
+
+        if(o.properties){
+            for(let k in o.properties){
+                this.properties[k] = o.properties[k];
+            }
+        }
+    }
+
+    //For HBT where is expected to be outside properties
+    get position(){
+        return this.properties.position;
+    }
+    set position(p){
+        this.properties.position = p;
+    }
+    get bt_info(){
+        return this.properties.bt_info;
+    }
+
+    serialize(){
+        var o = {};
+        o.uid = this.uid;
+        o.num_id = this.num_id;
+        o.btree = this.btree;
+		o.hbtgraph = this.hbtgraph;
+        o.properties = this.properties;
+
+        return o;
+    }
+    applyBehaviour(behaviour){
+        if(behaviour.type == B_TYPE.setProperty){
+            var name = behaviour.data.name;
+            var value = behaviour.data.value;
+            this.properties[name] = value;
+            if(this._inspector)
+                this._inspector.refresh();
+        }
+    }
+    deleteProperty(property_name){
+		delete this.properties[property_name];
+    }
+}
 
 var BP_STATE = {
     STOP: 0,

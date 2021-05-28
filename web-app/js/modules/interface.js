@@ -1438,7 +1438,7 @@ class Interface {
 
                 /*var gest_btn = inspector.addButton(null, "Add Gesture Manager", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 gest_btn.getElementsByTagName("button")[0].className = "btn btn-str";*/
-                inspector = agent.createAgentInspector(inspector);
+                inspector = AgentManager.createAgentInspector(inspector, agent);
                 var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 graph_btn.getElementsByTagName("button")[0].className = "btn btn-str";
 
@@ -1452,7 +1452,7 @@ class Interface {
                 /*inspect_area.clear();
                 if(inspec_area.childNodes.length>0)
                     inspec_area.removeChild(inspec_area.childNodes[0])*/
-                inspector = user.createUserInspector(inspector);
+                inspector = UserManager.createUserInspector(inspector, user);
                 //inspec_area.append(inspector.root)
                 break;
             case "gesture":
