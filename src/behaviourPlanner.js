@@ -188,8 +188,8 @@ class BehaviourPlanner{
     constructor(o){
         this._user = null;
         this._agent = null;
-        this.corpus = null;
-        this.entities = null;
+        this._corpus = null;
+        this._entities = null;
 
         this._hbt_graph = null;
 
@@ -221,9 +221,7 @@ class BehaviourPlanner{
         }
     }
 
-    get user(){
-        return this._user;
-    }
+    get user(){return this._user;}
 
     set agent(o){
         if(o.constructor !== Agent){
@@ -239,9 +237,9 @@ class BehaviourPlanner{
         }
     }
 
-    get agent(){
-        return this._agent;
-    }
+    get agent(){return this._agent;}
+    set corpus(o){this._corpus = o;}
+    get corpus(){return this._corpus || null;}
 
     set hbt_graph(o){
         if(o.constructor !== HBTGraph){
@@ -267,17 +265,9 @@ class BehaviourPlanner{
         });
     }
 
-    get hbt_graph(){
-        return this._hbt_graph;
-    }
-
-    get context(){
-        return this._hbt_graph ? this._hbt_graph.graph.context : null;
-    }
-
-    get blackboard(){
-        return this._hbt_graph ? this._hbt_graph.graph.context.blackboard : null;
-    }
+    get hbt_graph(){return this._hbt_graph;}
+    get context(){return this._hbt_graph ? this._hbt_graph.graph.context : null;}
+    get blackboard(){return this._hbt_graph ? this._hbt_graph.graph.context.blackboard : null;}
 
     init(){
         this.user = new User();
