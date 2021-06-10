@@ -1461,7 +1461,59 @@ SpeechClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 /*	if( text_info.width < (w - 24) )*/
 		ctx.fillText( this.id, 24,h * 0.7 );
 }
+SpeechClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
+		if(i=="text"){
+			panel.addTextarea(i, property,{callback: function(v)
+			{
+				this.properties[i] = v;
+			}.bind(this, i)});
+		}
+		else
+		{
+			switch(property.constructor)
+			{
 
+				case String:
+					panel.addString(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this, i)});
+					break;
+				case Number:
+					if(i=="amount")
+					{
+						panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					else{
+						panel.addNumber(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this,i)});
+					}
+					break;
+				case Boolean:
+					panel.addCheckbox(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+				case Array:
+					panel.addArray(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+						break;
+			}
+		}
+	}
+}
 
 function BaseClip()
 {
@@ -1533,16 +1585,35 @@ BaseClip.prototype.getCC = function(name, time, default_value )
 //AudioClip to playback audios ******************************
 function AudioClip()
 {
+	/** 
+	 * 
+	 * 
+	this.id = "speech-"+ Math.ceil(getTime());
+	this.start = 0
+	this.duration = 5;
+	this._width = 0;
+	this.properties = {text : ""}
+	this.aduioId = null;
+	this.color = "black";
+  	this.clip_color = "#94e9d9";
+	*/
+
+
 	this._src = "";
+	this.id = "audio-"+ Math.ceil(getTime());
 	this.start = 0;
 	this.duration = 1;
 	this.volume = 0.5;
 	this.offset_time = 0;
+	this.properties = {url:"", test_string:""}
 	this.position = new Float32Array(2);
 	this.scale = new Float32Array([1,1]);
-
+	this.clip_color = "#7c0022";
+	this.color = "white";
 	this._audio = new Audio();
 }
+AudioClip.id = ANIM.AUDIO;
+AudioClip.clip_color = "#7c0022";
 
 Object.defineProperty( AudioClip.prototype, "src", {
 	set: function(v){
@@ -1589,6 +1660,12 @@ AudioClip.prototype.preload = function( time, is_visible )
 AudioClip.prototype.drawTimeline = function( ctx, project, w,h, selected )
 {
 	//draw waveform...
+	if(this.id == "")
+		this.id = this.text;
+	var text_info = ctx.measureText( this.id );
+	ctx.fillStyle = this.color;
+	/*	if( text_info.width < (w - 24) )*/
+	ctx.fillText( this.id, 24,h * 0.7 );
 }
 
 AudioClip.prototype.onLeave = function( project, player )
@@ -1603,18 +1680,26 @@ AudioClip.prototype.isLoading = function()
 
 AudioClip.prototype.toJSON = function()
 {
-	return {
-		src: this.src,
-		offset: this.offset_time,
-		volume: this.volume
+	var json = {
+		id: this.id,
+		start: this.start,
+		duration: this.duration,
 	}
+	for(var i in this.properties)
+	{
+		json[i] = this.properties[i];
+	}
+	return json;
 }
 
 AudioClip.prototype.fromJSON = function(json)
 {
-	this.src = json.src;
-	this.offset_time = json.offset;
-	this.volume = json.volume;
+	this.id = json.id;
+	this.start = json.start;
+	this.duration = json.duration;
+	this.properties.url = json.url;
+	if(json.audioId)
+		this.audioId = json.audioId;
 }
 
 
