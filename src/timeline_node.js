@@ -2,7 +2,7 @@
 
 //ANIMATE by Javi Agenjo (@tamat) 2018 and modifyed by Eva Valls (2021)
 //************************************
-//This file contains the code necessary to store and play animations (Intent Node, Project, Tracks and Clips definitions)
+//This file contains the code necessary to store and play animations (Project, Tracks and Clips definitions)
 //All the editor features are in ANIMED.js
 
 (function(global){
@@ -11,8 +11,6 @@ var ANIM = global.ANIM = {};
 
 var DEG2RAD = 0.0174532925;
 var RAD2DEG = 57.295779578552306;
-
-
 
 ANIM.REF_CLIP = 100;
 
@@ -77,180 +75,6 @@ ANIM.registerClipType = function(ctor)
 	ANIM[ name ] = ctor;
 }
 
-//Intent node with timeline
-function TimelineIntent(o)
-{
-  var w = 150;
-  var h =45;
-
-  this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
-
-  this.properties = { precision: 1 };
-	this.size = [w,h];
-  this.shape = 2;
-  this.horizontal = true;
-  this.serialize_widgets = true;
-  this.widgets_up = true;
-
-	this.color="#97A003";
-	this.background = "#85d603";
-
-  this.name = "Intent timeline";
-
-	this.behaviour = new Behaviour();
-	//timing
-	this.mode = ANIM.PAUSED;
-	this.current_time = 0;
-	this.duration = 160;
-	this.framerate = 30;
-	this.type = ANIM.CANVAS2D;
-	this.allow_seeking = true;
-
-	//canvas
-	//this.size = [1280,720]; //project res
-
-	//tracks: similar to layers
-	this.tracks = []; //all tracks
-	this.markers = []; //time markers
-
-	if(!this.tracks.length)
-	{
-		for(var i in ANIM.track_types)
-		{
-				this.add( new ANIM.Track(i) );
-		}
-	}
-
-	TimelineIntent.instance = this;
-}
-
-//name to show
-TimelineIntent.title = "Timeline Intent";
-TimelineIntent.prototype.onConfigure = function(o){
-	if(o.tracks)
-	{
-		this.tracks = [];
-		for(var i in o.tracks)
-		{
-			var trackData = o.tracks[i];
-			var track = new ANIM.Track(trackData.name);
-			track.fromJSON(trackData);
-			this.add(track);
-		}
-	}
-
-	if(o.markers)
-		this.markers = o.markers;
-	this.duration = o.duration;
-	this.current_time = o.current_time;
-}
-TimelineIntent.prototype.onSerialize = function(o){
-
-	o.tracks = [];
-	for(var i = 0; i < this.tracks.length; ++i)
-		o.tracks.push( this.tracks[i].toJSON() );
-	o.markers = this.markers;
-	o.duration = this.duration;
-	o.current_time = this.current_time;
-}
-//function to call when the node is executed
-TimelineIntent.prototype.tick = function(agent, dt, info)
-{
-	if(this.facade == null)
-		this.facade = this.graph.context.facade;
-  var behaviours = [];
-	var bml = {};
-  for(var i in this.tracks)
-  {
-    var track = this.tracks[i];
-	if(!bml[track.name]&&track.clips.length){
-		bml[track.name] = [];
-	}
-	for(var j in track.clips)
-	{
-		
-		var data = track.clips[j].toJSON();
-		data.type = track.clips[j].constructor.type;
-		bml[track.name].push(data);
-	}
-    /*for(var j in track.clips)
-    {
-      var behaviour = new Behaviour();
-      behaviour.type = B_TYPE.intent_timeline || 16;
-	    behaviour.STATUS = STATUS.success;
-      behaviour.setData(track.clips[j].toJSON());
-      behaviours.push(behaviour);
-      this.graph.evaluation_behaviours.push(behaviour);
-    }*/
-  }
-	for(var i in bml)
-	{
-		var data = {};
-		if(i.includes("Shift"))
-		{
-			data.type = i;
-			data.data = bml[i]
-		}
-		else{
-			data = bml[i];
-		}
-		var behaviour = new Behaviour();
-		behaviour.type = B_TYPE.timeline_intent || B_TYPE.intent;
-		behaviour.STATUS = STATUS.success;
-		behaviour.setData(data);
-		behaviours.push(behaviour);
-		this.graph.evaluation_behaviours.push(behaviour);
-	}
-  agent.evaluation_trace.push(this.id);
-
-  return {STATUS:STATUS.success, data:behaviours};
-
-}
-TimelineIntent.prototype.onDblClick = function()
-{
-		ANIMED.project = this;
-		ANIMED.project.name = name;
-
-		ANIMED.clearUndo();
-		ANIMED.setTime(this.current_time)
-    ANIMED.showTimeline(true);
-
-}
-TimelineIntent.prototype.add = function(track)
-{
-	if(track.constructor !== ANIM.Track)
-		throw("only tracks allowed to be added to project");
-	this.tracks.push( track );
-	track._project = this;
-	return track;
-}
-
-TimelineIntent.prototype.getTrack = function( id )
-{
-	if(id.constructor === String)
-	{
-		for(var i = 0; i < this.tracks.length; ++i )
-			if( this.tracks[i].name == id )
-				return this.tracks[i];
-		return null;
-	}
-	return this.tracks[ Number(id) ];
-}
-
-TimelineIntent.prototype.clear = function( skip_default_tracks )
-{
-	this.current_time = 0;
-
-	this.globals = {};
-	this.tracks.length = 0;
-	this.markers.length = 0;
-
-}
-TimelineIntent.prototype.showClipPanel = function()
-{
-
-}
-LiteGraph.registerNodeType("btree/TimelineIntent", TimelineIntent );
 // PROJECT ****************************************************
 //a project contains tracks, a track contains clips, and a clip could contain frames
 function Project()
