@@ -13,10 +13,11 @@ var B_TYPE = {
 	conditional:9,
 	gestureNode:10,
 	facialExpression:11,
-  ParseCompare:15,
-  intent: 16,
-  request: 17,
-  timeline_intent:18
+    ParseCompare:15,
+    intent: 16,
+    request: 17,
+    timeline_intent:18,
+    http_request:19
 }
 
 //-----------------------LITEGRAPH SUBGRAPH INPUT FOR HBT------------------------------------//

@@ -1204,7 +1204,7 @@ CustomRequest.prototype.onGetInputs = function(){
     for(var p in parameters){
         var added = false;
         for(var i of this.inputs){
-            if(i.name == p.name) added = true;
+            if(i.name == p) added = true;
         }
         if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
     }
@@ -1221,6 +1221,138 @@ CustomRequest.prototype.addParameter = function(name, value){
 }
 
 LiteGraph.registerNodeType("events/CustomRequest", CustomRequest);
+
+/**
+ * HttpRequest
+ * Returns a B_TYPE.http_request with specified type and parameters
+ */
+function HttpRequest() 
+{
+    this.shape = 2;
+    this.color = "#2c3394";
+    this.bgcolor = "#796edb";
+    this.boxcolor = "#999";
+    var w = 210;
+    var h = 55;
+
+    this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+
+    //Properties
+    this.properties = {
+        method: "", 
+        headers: {}, 
+        parameters: {}
+    };
+
+    var that = this;
+    this.methods = [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "DELETE",
+        "CONNECT",
+        "OPTIONS",
+        "TRACE",
+        "PATCH",
+    ];
+    this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; },  {values: this.methods});
+    // this.widget = this.addWidget("combo","gesture", this.properties.gesture, this.onGestureChanged.bind(this),  {values: this.gesture_list});
+    this.size = [w, h];
+
+    this._node = null;
+    this._component = null;
+    this.serialize_widgets = true;
+
+    this.behaviour = new Behaviour();
+    this.behaviour.type = B_TYPE.http_request;
+}
+
+//Update values from inputs, if any
+HttpRequest.prototype.onExecute = function()
+{
+    var parameters = this.properties.parameters;
+    for(var i in this.inputs){
+        var input = this.inputs[i];
+        if(input.type == "path")
+        continue;
+        
+        var value = this.getInputData(i);
+        if(value !== undefined){
+
+            // TODO: set value to headers in case it's a header
+
+            if(value.constructor === Object) value = JSON.stringify(value);
+            else if(value.constructor !== String) value = value.toString();
+            parameters[input.name] = value;
+        }
+    }
+}
+
+HttpRequest.prototype.tick = function(agent, dt, info)
+{
+    var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
+    // if(info && info.tags){
+    //     for(var p in parameters){
+    //         var value = parameters[p];
+    //         if(value.constructor === String && value[0] == "#"){ //Try to match a tag from info
+    //             if(info.tags[value]){
+    //                 parameters[p] = info.tags[value];
+    //             }
+    //         }
+    //     }
+    // }
+
+    this.behaviour.setData(this.properties);
+    this.behaviour.STATUS = STATUS.success;
+    this.graph.evaluation_behaviours.push(this.behaviour);
+    return this.behaviour;
+}
+
+HttpRequest.prototype.onGetInputs = function(){
+    var inputs = [];
+    var parameters = this.properties.parameters;
+
+    console.log(this.inputs);
+
+    for(var p in parameters){
+        var added = false;
+        for(var i of this.inputs){
+            if(i.name == p) added = true;
+        }
+        if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
+    }
+
+    for(var p in this.properties.headers){
+        var added = false;
+        for(var i of this.inputs){
+            if(i.name == p) added = true;
+        }
+        if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
+    }
+
+    return inputs;
+}
+
+HttpRequest.prototype.addParameter = function(name, value){
+    var parameters = this.properties.parameters;
+    if(!name || name.constructor !== String) return false;
+    if(parameters[name]) return false; //Name already used
+
+    parameters[name] = value || "";
+    return true;
+}
+
+HttpRequest.prototype.addHeader = function(name, value){
+    var headers = this.properties.headers;
+    if(!name || name.constructor !== String) return false;
+    if(headers[name]) return false; //Name already used
+
+    headers[name] = value || "";
+    return true;
+}
+
+LiteGraph.registerNodeType("events/HttpRequest", HttpRequest);
 
 //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
 Selector.prototype.tick = function(agent, dt, info){
