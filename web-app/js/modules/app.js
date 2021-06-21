@@ -78,8 +78,6 @@ class App{
         this.interface.tree.insertItem({id:agent.properties.name, type: "agent"},"Environment");
         this.interface.tree.insertItem({id:user.properties.name, type: "user"},"Environment");
 
-        //TODO change all references of context.user to context.blackboard.user
-
         last = now = performance.now();
 
         if(iframeWindow && iframeWindow.document){
@@ -87,7 +85,7 @@ class App{
             if(this.iframe)
                 iframe = this.iframe;
             else
-                this.iframe = iframe
+                this.iframe = iframe;
         }
         else{
             this.iframe = CORE.Interface.iframe;
@@ -374,90 +372,76 @@ class App{
 		corpus = this.bp.loadCorpus(data);
 	}
 
-  toJSON( type, name) {
+    //TODO Take information from BP?
+    toJSON(type, name){
+        var data = null;
+        switch(type){
+            case "download-env":
+                var obj = {env: {agents:[], graphs: []}};
+                var env = this.env_tree;
+                if(env.token) obj.env.token = env.token;
 
-    var data = null;
-    switch(type)
-    {
-    	case "download-env":
-        	var obj = {env: {agents:[], graphs: []}}
-          var env = this.env_tree;
-          if(env.token)
-            obj.env.token = env.token;
-          for(var i in env.children)
-          {
-              var item = env.children[i];
-              if(item.type == "agent")
-              {
-                  var agent = AgentManager.getAgentById(item.id);
-                  agent = agent.serialize();
-                  obj.env.agents.push(agent);
-              }
-              else if(item.type == "user")
-              {
-                  var user = UserManager.getUserById(item.id);
-                  user = user.serialize();
-                  obj.env.user = user;
-              }
-              else if(item.type == "gesture")
-              {
-                  var gest = GestureManager.serialize();
-                  obj.env.gestures = gest;
-              }
-          }
-          for(var i in GraphManager.graphs)
-          {
-              var graph = GraphManager.graphs[i];
+                for(var i in env.children){
+                    var item = env.children[i];
+                    if(item.type == "agent"){
+                        var agent = AgentManager.getAgentById(item.id);
+                        agent = agent.serialize();
+                        obj.env.agents.push(agent);
+                    }else if(item.type == "user"){
+                        var user = UserManager.getUserById(item.id);
+                        user = user.serialize();
+                        obj.env.user = user;
+                    }else if(item.type == "gesture"){
+                        var gest = GestureManager.serialize();
+                        obj.env.gestures = gest;
+                    }
+                }
+                for(var i in GraphManager.graphs){
+                    var graph = GraphManager.graphs[i];
+                    if(graph.constructor == HBTGraph) data = GraphManager.exportBehaviour(graph.graph);
+                    else if(graph.constructor == LGraph) data = GraphManager.exportBasicGraph(graph);
 
-              if(graph.type == GraphManager.HBTGRAPH) data = GraphManager.exportBehaviour(graph.graph);
-              else if(graph.type == GraphManager.BASICGRAPH) data = GraphManager.exportBasicGraph(graph.graph);
+                    obj.env.graphs.push(data);
+                }
+                data = obj;
+                break;
 
-              obj.env.graphs.push(data);
-          }
-          data = obj;
-        break;
-      case "download-graph":
-          var graph = GraphManager.graphSelected;
-          if(!graph)
-              return;
-          if(graph.type == GraphManager.HBTGRAPH)
-              data = GraphManager.exportBehaviour(graph.graph);
-          else if(graph.type == GraphManager.BASICGRAPH)
-              data = GraphManager.exportBasicGraph(graph.graph);
-        break;
+            case "download-graph":
+                var graph = GraphManager.graphSelected;
+                if(!graph) return;
+                if(graph.constructor == HBTGraph) data = GraphManager.exportBehaviour(graph.graph);
+                else if(graph.constructor == LGraph) data = GraphManager.exportBasicGraph(graph);
+                break;
+        }
+        return data;
     }
-  	return data;
-  }
 
-  downloadJSON( type, name) {
+    downloadJSON(type, name){
+        if(!name) return;
 
-	  if(!name)
-	      return;
+        var data = this.toJSON(type, name);
 
-	  var data = this.toJSON(type, name);
+        if(!data){
+            console.error("no data to export in json");
+            return;
+        }
 
-	  if(!data) {
-	      console.error("no data to export in json");
-	      return;
-	  }
-
-	  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-	  var downloadAnchorNode = document.createElement('a');
-	  var filename = name || "graph_data";
-	  downloadAnchorNode.setAttribute("href",     dataStr);
-	  downloadAnchorNode.setAttribute("download", filename + ".json");
-	  document.body.appendChild(downloadAnchorNode); // required for firefox
-	  downloadAnchorNode.click();
-	  downloadAnchorNode.remove();
-  }
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        var downloadAnchorNode = document.createElement('a');
+        var filename = name || "graph_data";
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", filename + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
 
     placeholderData = {
         phoneNumber: "5552020",
         code: "1234",
         documentID: "00000000A",
         faceMatching: false,
-
-    }
+    };
 
     placeholderProcessRequest(msg){
         var msg_data = msg.data;
@@ -484,11 +468,10 @@ class App{
             case "InfoCert_faceMatching":
                 placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
                 break;
-
         }
 
         this.onDataReceived(placeholderResponse);
     }
 }
 
-CORE.registerModule( App );
+CORE.registerModule(App);

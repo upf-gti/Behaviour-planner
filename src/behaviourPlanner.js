@@ -454,11 +454,6 @@ class BehaviourPlanner{
         return graph;
     }
 
-    //An environment can have multiple graphs and agents, but then only 1 is executed and used...
-    loadEnvironment(env){
-
-    }
-
     loadCorpus(o){
 		o.array = [];
 		for(var i in o.data){

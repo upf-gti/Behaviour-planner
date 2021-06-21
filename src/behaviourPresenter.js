@@ -782,6 +782,8 @@ HttpRequest.prototype.onInspect = function(inspector)
     }
 }
 
+//TODO ParseEvent not updated to new events!
+/*
 ParseEvent.prototype.onInspect = function(  inspector ){
     component = this;
     inspector.clear();
@@ -834,13 +836,13 @@ ParseEvent.prototype.onInspect = function(  inspector ){
     }
 
     inspector.append(inputContext);
-    /*  var outputContext = CORE.Interface.addInputTags("Output contexts", this.output_contexts, {placeholder: "Add output context...", callback: function(v){
-        component.output_contexts.push(v);
-    }, callback_delete: function(v){
-        var i = component.output_contexts.indexOf(v);
-        component.output_contexts = component.output_contexts.splice(i);
-    }});
-    inspector.append(outputContext*/
+//      var outputContext = CORE.Interface.addInputTags("Output contexts", this.output_contexts, {placeholder: "Add output context...", callback: function(v){
+//        component.output_contexts.push(v);
+//    }, callback_delete: function(v){
+//        var i = component.output_contexts.indexOf(v);
+//        component.output_contexts = component.output_contexts.splice(i);
+//    }});
+//    inspector.append(outputContext
     var phrases_insp = inspector.addSection("Training phrases");
     //inspector.addTitle("Training phrases");
     inspector.widgets_per_row = 2;
@@ -849,7 +851,7 @@ ParseEvent.prototype.onInspect = function(  inspector ){
     container.setAttribute("class", "responsive-content")
 
     for(var i in training_phrases){
-        /*HIGHLIGHT TAGS*/
+        //HIGHLIGHT TAGS
         var div = document.createElement("DIV");
         div.className ="backdrop";
         div.style.width = "calc(100% - 48px)";
@@ -906,8 +908,8 @@ ParseEvent.prototype.onInspect = function(  inspector ){
     //(phrase, EntitiesManager.getEntities())
     //phrase.addEventListener("keypress", autocomplete.bind(phrase, EntitiesManager.getEntities(), null))
     phrase.addEventListener("keypress", function(e){
-        /*if(e.key=="Alt"||e.key=="AltGraph" || e.key=="Control"|| e.key=="CapsLock" || e.key=="Backspace")
-          return;*/
+//        if(e.key=="Alt"||e.key=="AltGraph" || e.key=="Control"|| e.key=="CapsLock" || e.key=="Backspace")
+//          return;
         newPhrase =   phrase.value;
         if(e.key == "#"){
             autocomplete(phrase, EntitiesManager.getEntities(), tags, {})
@@ -937,3 +939,4 @@ ParseEvent.prototype.processPhrase = function(phraseElement, tags, inspector){
     component.phrases.push({text: newPhrase, tags: tags, toCompare: toCompare});
     component.onInspect(inspector);
 }
+*/
