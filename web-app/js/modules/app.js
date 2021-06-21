@@ -175,7 +175,28 @@ class App{
 }
 
     onBehaviours(behaviours){
-        //console.log(behaviours);
+
+        behaviours.forEach(b => {
+            switch(b.type)
+            {
+                case B_TYPE.http_request:
+
+                    var params = b.data;
+                    params.success = function(response, req){
+                        console.log("request completed", response);
+                    }
+
+                    params.error = function(err){
+                        console.log("request error", err);
+                    }
+                    
+                    // Do http request here
+                    LiteGUI.request(params);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     onActions(actions){

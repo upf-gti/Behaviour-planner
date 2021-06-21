@@ -451,7 +451,17 @@ var LiteGUI = {
 
 		//regular case, use AJAX call
         var xhr = new XMLHttpRequest();
-        xhr.open( request.data ? 'POST' : 'GET', request.url, true);
+		var method = request.data ? 'POST' : 'GET';
+
+		if(request.method && request.method.length)
+			method = request.method;
+
+		var asyncRequest = true;
+
+		if(request.async !== undefined)
+		asyncRequest = request.async;
+
+        xhr.open( method, request.url, asyncRequest);
         if(dataType)
             xhr.responseType = dataType;
         if (request.mimeType)
