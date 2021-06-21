@@ -654,10 +654,10 @@ class App{
     }
 }
 
-testRequest = function(m, key){
-    url = "http://ec2-79-125-68-20.eu-west-1.compute.amazonaws.com/RaoBotAPI/v1.0";
-    method = m || "/status";
-    fetch(url + method, {
+testRequest = function(m, key = "my-key", method, callback = null){
+    url = "https://productsevo.infocert.it/RaoBotAPI/v1.0"//"http://ec2-79-125-68-20.eu-west-1.compute.amazonaws.com/RaoBotAPI/v1.0";
+    request = m || "/status";
+    /*fetch(url + method, {
         method: "GET",
         //mode: "no-cors", <- not compatible with custom headers
         headers: {
@@ -667,9 +667,191 @@ testRequest = function(m, key){
     })
     .then(response => response.json())
     .then(data => {console.log(data);})
-    .catch((error) => {console.error(error);});
+    .catch((error) => {console.error(error);});*/
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        if(callback)
+            callback(xmlHttp.responseText);
+        else
+            console.log(xmlHttp.responseText)
+    }
+    xmlHttp.open(method, url+request, true); // true for asynchronous 
+    xmlHttp.setRequestHeader("apikey", key)
+    var data = null;
+    if(method=="POST"){
+        switch(request)
+        {
+            case "/aidocreader":
+                data = {
+                    "api-version": "v1.0",
+                    "request-id": "AX0001",
+                    "front": {
+                      "image-id": "0001",
+                      "description": "cid-42488231-front.jpg",
+                      "doc-types": [
+                        "ITA",
+                        "DRIVER LICENSE"
+                      ],
+                      "content": "iVBORw0KGgo...AANSUhEUgAA==",
+                      "comparison-text": {
+                        "<label-name>": "ROSSI"
+                      }
+                    },
+                    "back": {
+                      "image-id": "0002",
+                      "description": "cid-42488231-front.jpg",
+                      "doc-types": [
+                        "ITA",
+                        "DRIVER LICENSE"
+                      ],
+                      "content": "iVBORw0KGgo...AANSUhEUgAA==",
+                      "comparison-text": {
+                        "<label-name>": "ROSSI"
+                      }
+                    },
+                    "options": "string"
+                  }
+                break;
+            case "/facematching":
+                data = {
+                    "api-version": "v1.0",
+                    "request-id": "AX0001",
+                    "front": {
+                      "image-id": "0001",
+                      "description": "cid-42488231-front.jpg",
+                      "doc-types": [
+                        "ITA",
+                        "DRIVER LICENSE"
+                      ],
+                      "content": "iVBORw0KGgo...AANSUhEUgAA==",
+                      "comparison-text": {
+                        "<label-name>": "ROSSI"
+                      }
+                    },
+                    "back": {
+                      "image-id": "0002",
+                      "description": "cid-42488231-front.jpg",
+                      "doc-types": [
+                        "ITA",
+                        "DRIVER LICENSE"
+                      ],
+                      "content": "iVBORw0KGgo...AANSUhEUgAA==",
+                      "comparison-text": {
+                        "<label-name>": "ROSSI"
+                      }
+                    },
+                    "options": "string"
+                }
+                break;
+            case "/sendotp":
+                data = {
+                    "api-version": "v1.0",
+                    "request-id": "AX0001",
+                    "sms-text": "This is the One Time Password generated: #OTP",
+                    "mobile-number": "+34676325485"
+                    };
+                break;
+            case "/sendsms":
+                data = {
+                    "api-version": "v1.0",
+                    "request-id": "AX0001",
+                    "sms-text": "This is the message to the user mobile phone",
+                    "mobile-number": "+34676325485"
+                }
+                break;
+        }
+       
+        data = JSON.stringify(data)//convertJsonToFormData(data);
+        xmlHttp.setRequestHeader("accept", "application/json");
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        xmlHttp.send(data);
+    }
+    else if(method=="GET")
+    {
+        
+        xmlHttp.send(null);
+    }
 }
 //Will return an error because server does not currently implement OPTIONS call that is needed for CORS (cross-origin resource sharing)
 //testRequest("/status", <key>);
+function convertJsonToFormData(data) {
+    const formData = new FormData()
+    const entries = Object.entries(data) // returns array of object property as [key, value]
+    // https://medium.com/front-end-weekly/3-things-you-didnt-know-about-the-foreach-loop-in-js-ff02cec465b1
 
+    for (let i = 0; i < entries.length; i++) {
+      // don't try to be smart by replacing it with entries.each, it has drawbacks
+      const arKey = entries[i][0]
+      let arVal = entries[i][1]
+      if (typeof arVal === 'boolean') {
+        arVal = arVal === true ? 1 : 0
+      }
+      if (Array.isArray(arVal)) {
+        console.log('displaying arKey')
+        console.log(arKey)
+        console.log('displaying arval')
+        console.log(arVal)
+
+        if (this.isFile(arVal[0])) {
+          for (let z = 0; z < arVal.length; z++) {
+            formData.append(`${arKey}[]`, arVal[z])
+          }
+
+          continue // we don't need to append current element now, as its elements already appended
+        } else if (arVal[0] instanceof Object) {
+          for (let j = 0; j < arVal.length; j++) {
+            if (arVal[j] instanceof Object) {
+              // if first element is not file, we know its not files array
+              for (const prop in arVal[j]) {
+                if (Object.prototype.hasOwnProperty.call(arVal[j], prop)) {
+                  // do stuff
+                  if (!isNaN(Date.parse(arVal[j][prop]))) {
+                    // console.log('Valid Date \n')
+                    // (new Date(fromDate)).toUTCString()
+                    formData.append(
+                      `${arKey}[${j}][${prop}]`,
+                      new Date(arVal[j][prop])
+                    )
+                  } else {
+                    formData.append(`${arKey}[${j}][${prop}]`, arVal[j][prop])
+                  }
+                }
+              }
+            }
+          }
+          continue // we don't need to append current element now, as its elements already appended
+        } else {
+          arVal = JSON.stringify(arVal)
+        }
+      }
+      else if (arVal instanceof Object) {
+        for (var j in arVal) {
+          if (arVal[j] instanceof Object) {
+            // if first element is not file, we know its not files array
+            for (const prop in arVal[j]) {
+              if (Object.prototype.hasOwnProperty.call(arVal[j], prop)) {
+                // do stuff
+                if (!isNaN(Date.parse(arVal[j][prop]))) {
+                  // console.log('Valid Date \n')
+                  // (new Date(fromDate)).toUTCString()
+                  formData.append(
+                    `${arKey}[${j}][${prop}]`,
+                    new Date(arVal[j][prop])
+                  )
+                } else {
+                  formData.append(`${arKey}[${j}][${prop}]`, arVal[j][prop])
+                }
+              }
+            }
+          }
+        }
+    }
+      if (arVal === null) {
+        continue
+      }
+      formData.append(arKey, arVal)
+    }
+    return formData
+  }
 CORE.registerModule( App );
