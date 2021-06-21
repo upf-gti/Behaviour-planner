@@ -91,6 +91,20 @@ class App{
             this.iframe = CORE.Interface.iframe;
         }
 
+        document.body.addEventListener("keydown", function(e){
+            
+            if(e.keyCode == 79 && e.ctrlKey){
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                if(CORE["Interface"])
+                {
+                    CORE["Interface"].showLoadFromServerDialog();
+                }
+            }
+        });
+
         requestAnimationFrame(this.animate.bind(this));
     }
 
