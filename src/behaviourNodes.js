@@ -1389,9 +1389,13 @@ function HttpRequest()
 
     //Properties
     this.properties = {
-        method: "", 
-        headers: {}, 
-        parameters: {}
+        method: "GET", 
+        url: "",
+        dataType: "",
+        mimeType: "",
+        nocache: true,
+        async: true,
+        data: ""
     };
 
     var that = this;
@@ -1407,7 +1411,6 @@ function HttpRequest()
         "PATCH",
     ];
     this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; },  {values: this.methods});
-    // this.widget = this.addWidget("combo","gesture", this.properties.gesture, this.onGestureChanged.bind(this),  {values: this.gesture_list});
     this.size = [w, h];
 
     this._node = null;
@@ -1421,7 +1424,6 @@ function HttpRequest()
 //Update values from inputs, if any
 HttpRequest.prototype.onExecute = function()
 {
-    var parameters = this.properties.parameters;
     for(var i in this.inputs){
         var input = this.inputs[i];
         if(input.type == "path")
@@ -1430,18 +1432,16 @@ HttpRequest.prototype.onExecute = function()
         var value = this.getInputData(i);
         if(value !== undefined){
 
-            // TODO: set value to headers in case it's a header
-
             if(value.constructor === Object) value = JSON.stringify(value);
             else if(value.constructor !== String) value = value.toString();
-            parameters[input.name] = value;
+            this.properties[input.name] = value;
         }
     }
 }
 
 HttpRequest.prototype.tick = function(agent, dt, info)
 {
-    var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
+    // var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
     // if(info && info.tags){
     //     for(var p in parameters){
     //         var value = parameters[p];
@@ -1461,19 +1461,8 @@ HttpRequest.prototype.tick = function(agent, dt, info)
 
 HttpRequest.prototype.onGetInputs = function(){
     var inputs = [];
-    var parameters = this.properties.parameters;
 
-    console.log(this.inputs);
-
-    for(var p in parameters){
-        var added = false;
-        for(var i of this.inputs){
-            if(i.name == p) added = true;
-        }
-        if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
-    }
-
-    for(var p in this.properties.headers){
+    for(var p in this.properties){
         var added = false;
         for(var i of this.inputs){
             if(i.name == p) added = true;
@@ -1484,21 +1473,12 @@ HttpRequest.prototype.onGetInputs = function(){
     return inputs;
 }
 
-HttpRequest.prototype.addParameter = function(name, value){
-    var parameters = this.properties.parameters;
+HttpRequest.prototype.addProperty = function(name, value)
+{
     if(!name || name.constructor !== String) return false;
-    if(parameters[name]) return false; //Name already used
+    if(this.properties[name]) return false; //Name already used
 
-    parameters[name] = value || "";
-    return true;
-}
-
-HttpRequest.prototype.addHeader = function(name, value){
-    var headers = this.properties.headers;
-    if(!name || name.constructor !== String) return false;
-    if(headers[name]) return false; //Name already used
-
-    headers[name] = value || "";
+    this.properties[name] = value || "";
     return true;
 }
 

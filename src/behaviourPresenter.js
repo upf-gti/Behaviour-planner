@@ -709,53 +709,24 @@ CustomRequest.prototype.onInspect = function(inspector){
     }});
 }
 
-HttpRequest.prototype.onInspect = function(inspector){
+HttpRequest.prototype.onInspect = function(inspector)
+{
     var that = this;
   
     inspector.clear();
   
     inspector.addTitle("HttpRequest");
   
-    var methods = [
-        "GET",
-        "HEAD",
-        "POST",
-        "PUT",
-        "DELETE",
-        "CONNECT",
-        "OPTIONS",
-        "TRACE",
-        "PATCH",
-    ];
-
     inspector.widgets_per_row = 1;
-    inspector.addCombo("Method", this.properties.type, {values: methods, width: "100%", content_width: "70%", callback: function(value){
-        that.properties.type = value;
+    inspector.addCombo("Method", this.properties.method, {values: this.methods, callback: function(value){
+        that.properties.method = value;
         that._methodWidget.value = value;
     }});
-  
+    inspector.addSeparator();
+
     inspector.widgets_per_row = 3;
-  
-    inspector.addSection("HttpRequest Headers");
-    var headers = this.properties.headers;
-  
-    //Header
-    inspector.addInfo("Name", "", {width: "40%", disabled: true});
-    inspector.addInfo("Value (Optional)", "", {width: "40%", disabled: true});
-    inspector.addNull();
-  
-    //Existing headers
-    for(var p in headers){
-        inspector.addString("", p, {width: "40%", content_width: "100%", disabled: true});
-        inspector.addString("", headers[p], {width: "40%", content_width: "100%", callback: function(value){
-            headers[p] = value;
-        }});
-        inspector.addButton(null, "Remove", {width: "20%", callback: function(){
-            delete headers[p];
-            that.onInspect(inspector);
-        }});
-    }
-  
+    inspector.addSection("New parameter");
+
     //New one
     var newName, newValue;
     inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
@@ -765,45 +736,50 @@ HttpRequest.prototype.onInspect = function(inspector){
         newValue = value;
     }});
     inspector.addButton(null, "Add", {width: "20%", callback: function(){
-        if(that.addHeader(newName, newValue)){
+        if(that.addProperty(newName, newValue)){
             that.onInspect(inspector);
         }
     }});
 
-    inspector.addSection("HttpRequest Parameters");
-
-    var parameters = this.properties.parameters;
-  
+    inspector.addSection("Parameters");
+      
     //Header
     inspector.addInfo("Name", "", {width: "40%", disabled: true});
     inspector.addInfo("Value (Optional)", "", {width: "40%", disabled: true});
     inspector.addNull();
-  
+
     //Existing parameters
-    for(var p in parameters){
-        inspector.addString("", p, {width: "40%", content_width: "100%", disabled: true});
-        inspector.addString("", parameters[p], {width: "40%", content_width: "100%", callback: function(value){
-            parameters[p] = value;
-        }});
+    for(let p in this.properties){
+        inspector.addInfo("", p, {width: "40%", content_width: "100%"});
+
+        var func = null;
+        var value = this.properties[p];
+
+        switch(value.constructor)
+        {
+            case Number:
+                var precision = variable.type == "float" ? 2 : 0;
+                func = inspector.addNumber(null, value, {precision: precision, width: "40%", content_width: "100%", callback: function(v){
+                    that.properties[p] = v;
+                }});
+                break;
+            case String:
+                func = inspector.addString(null, value, {width: "40%", content_width: "100%", callback: function(v){
+                    that.properties[p] = v;
+                }});
+                break;
+            case Boolean:
+                func = inspector.addCheckbox(null, value, {width: "40%", content_width: "100%", callback: function(v){
+                    that.properties[p] = v;
+                }});
+                break;
+        }
+
         inspector.addButton(null, "Remove", {width: "20%", callback: function(){
-            delete parameters[p];
+            delete that.properties[p];
             that.onInspect(inspector);
         }});
     }
-  
-    //New one
-    var newName, newValue;
-    inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
-        newName = value;
-    }});
-    inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
-        newValue = value;
-    }});
-    inspector.addButton(null, "Add", {width: "20%", callback: function(){
-        if(that.addParameter(newName, newValue)){
-            that.onInspect(inspector);
-        }
-    }});
 }
 
 //TODO ParseEvent not updated to new events!
