@@ -193,7 +193,7 @@ class App{
             {
                 case B_TYPE.http_request:
 
-                    var params = b.data;
+                    var params = Object.assign({}, b.data);
                     params.success = function(response, req){
                         console.log("request completed", response);
                     }
@@ -203,7 +203,7 @@ class App{
                     }
                     
                     // Do http request here
-                    LiteGUI.request(params);
+                    UTILS.request(params);
                     break;
                 default:
                     break;

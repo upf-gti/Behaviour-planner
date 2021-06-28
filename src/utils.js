@@ -1,5 +1,118 @@
 var UTILS = {
 
+	/**
+	* MODIFIED FROM LITEGUI.JS
+	* Request file from url (it could be a binary, text, etc.). If you want a simplied version use
+	* @method request
+	* @param {Object} request object with all the parameters like data (for sending forms), dataType, success, error
+	* @param {Function} on_complete
+	**/
+	request: function(request)
+	{
+		var dataType = request.dataType || "text";
+		if(dataType == "json") //parse it locally
+			dataType = "text";
+		else if(dataType == "xml") //parse it locally
+			dataType = "text";
+		else if (dataType == "binary")
+		{
+			//request.mimeType = "text/plain; charset=x-user-defined";
+			dataType = "arraybuffer";
+			request.mimeType = "application/octet-stream";
+		}
+
+		//regular case, use AJAX call
+        var xhr = new XMLHttpRequest();
+		var method = request.data ? 'POST' : 'GET';
+
+		if(request.method && request.method.length)
+			method = request.method;
+
+		var asyncRequest = true;
+
+		if(request.async !== undefined)
+			asyncRequest = request.async;
+
+        xhr.open( method, request.url, asyncRequest);
+        if(dataType)
+            xhr.responseType = dataType;
+        if (request.mimeType)
+            xhr.overrideMimeType( request.mimeType );
+
+		// Set other headers
+		for(var h in request)
+		{
+			// search for headers
+			if(h.length > 0 && h[0] != "#")
+			continue;
+
+			var cleanHeaderName = h.substr(1);
+			xhr.setRequestHeader(cleanHeaderName, request[h]);
+		}
+
+		// if( request.nocache )
+		// 	xhr.setRequestHeader('Cache-Control', 'no-cache');
+
+        xhr.onload = function(load)
+		{
+			var response = this.response;
+			if(this.status != 200)
+			{
+				var err = "Error " + this.status;
+				if(request.error)
+					request.error(err);
+				LEvent.trigger(xhr,"fail", this.status);
+				return;
+			}
+
+			if(request.dataType == "json") //chrome doesnt support json format
+			{
+				try
+				{
+					response = JSON.parse(response);
+				}
+				catch (err)
+				{
+					if(request.error)
+						request.error(err);
+					else
+						throw err;
+				}
+			}
+			else if(request.dataType == "xml")
+			{
+				try
+				{
+					var xmlparser = new DOMParser();
+					response = xmlparser.parseFromString(response,"text/xml");
+				}
+				catch (err)
+				{
+					if(request.error)
+						request.error(err);
+					else
+						throw err;
+				}
+			}
+			if(request.success)
+				request.success.call(this, response, this);
+		};
+        xhr.onerror = function(err) {
+			if(request.error)
+				request.error(err);
+		}
+
+		var data = new FormData();
+		if( request.data )
+		{
+			for(var i in request.data)
+				data.append(i,request.data[i]);
+		}
+
+        xhr.send( data );
+		return xhr;
+	},
+
     arrayToString: function(array)
     {
         var str = "";

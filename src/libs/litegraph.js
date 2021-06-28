@@ -334,7 +334,7 @@
             }
             if (!node.size) {
                 node.size = node.computeSize();
-				//call onresize?
+                node.setDirtyCanvas(true, true);
             }
             if (!node.pos) {
                 node.pos = LiteGraph.DEFAULT_POSITION.concat();

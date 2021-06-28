@@ -1380,22 +1380,26 @@ function HttpRequest()
 {
     this.shape = 2;
     this.color = "#2c3394";
-    this.bgcolor = "#796edb";
+    this.bgcolor = "#6969aa";
     this.boxcolor = "#999";
     var w = 210;
-    var h = 55;
+    var h = 75;
 
     this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+    this.addInput("data","");
 
     //Properties
     this.properties = {
-        method: "GET", 
-        url: "",
-        dataType: "",
-        mimeType: "",
-        nocache: true,
-        async: true,
-        data: ""
+        "method": "GET", 
+        "url": "",
+        "dataType": "text",
+        "mimeType": "",
+        "async": true,
+        "data": "",
+
+        // headers begin with "#"
+        "#Cache-Control": "no-cache",
+        "#apikey": ""
     };
 
     var that = this;
@@ -1410,8 +1414,19 @@ function HttpRequest()
         "TRACE",
         "PATCH",
     ];
+
+    this.dataTypes = [
+        "",
+        "text",
+        "json",
+        "arraybuffer",
+        "document",
+        "blob",
+        "ms-stream"
+    ];
+
     this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; },  {values: this.methods});
-    this.size = [w, h];
+    this._dataTypeWidget = this.addWidget("combo", "Data type", this.properties.dataType, function(v){ that.properties.dataType = v; },  {values: this.dataTypes});
 
     this._node = null;
     this._component = null;
@@ -1426,33 +1441,24 @@ HttpRequest.prototype.onExecute = function()
 {
     for(var i in this.inputs){
         var input = this.inputs[i];
-        if(input.type == "path")
-        continue;
+        // if(input.type == "path")
+        // continue;
         
         var value = this.getInputData(i);
-        if(value !== undefined){
 
-            if(value.constructor === Object) value = JSON.stringify(value);
-            else if(value.constructor !== String) value = value.toString();
-            this.properties[input.name] = value;
-        }
+        if(!value)
+        continue;
+
+        if(value.constructor === Object) 
+            value = JSON.stringify(value);
+        else if(value.constructor !== String) 
+            value = value.toString();
+        this.properties[input.name] = value;
     }
 }
 
 HttpRequest.prototype.tick = function(agent, dt, info)
 {
-    // var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
-    // if(info && info.tags){
-    //     for(var p in parameters){
-    //         var value = parameters[p];
-    //         if(value.constructor === String && value[0] == "#"){ //Try to match a tag from info
-    //             if(info.tags[value]){
-    //                 parameters[p] = info.tags[value];
-    //             }
-    //         }
-    //     }
-    // }
-
     this.behaviour.setData(this.properties);
     this.behaviour.STATUS = STATUS.success;
     this.graph.evaluation_behaviours.push(this.behaviour);
@@ -1479,6 +1485,26 @@ HttpRequest.prototype.addProperty = function(name, value)
     if(this.properties[name]) return false; //Name already used
 
     this.properties[name] = value || "";
+
+    // process special cases
+    this.propagate(name, this.properties[name]);
+
+    return true;
+}
+
+HttpRequest.prototype.propagate = function(name, value)
+{
+    var special_cases = ["#apikey"];
+
+    if(special_cases.indexOf(name) < 0)
+    return;
+
+    var nodes = this.graph.findNodesByClass(HttpRequest);
+
+    for(var i = 0; i < nodes.length; ++i) {
+        nodes[i].properties[name] = value;
+    }
+
     return true;
 }
 

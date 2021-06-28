@@ -715,67 +715,96 @@ HttpRequest.prototype.onInspect = function(inspector)
   
     inspector.clear();
   
-    inspector.addTitle("HttpRequest");
-  
-    inspector.widgets_per_row = 1;
-    inspector.addCombo("Method", this.properties.method, {values: this.methods, callback: function(value){
-        that.properties.method = value;
-        that._methodWidget.value = value;
-    }});
-    inspector.addSeparator();
+    inspector.addSection("HttpRequest");
 
-    inspector.widgets_per_row = 3;
-    inspector.addSection("New parameter");
+    inspector.widgets_per_row = 2;
+    inspector.addTitle("Add request property");
 
     //New one
     var newName, newValue;
-    inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    inspector.addString(null, "", {placeHolder: "Name", callback: function(value){
         newName = value;
     }});
-    inspector.addString("", "", {width: "40%", content_width: "100%", callback: function(value){
+    inspector.addString(null, "", {placeHolder: "Value", callback: function(value){
         newValue = value;
     }});
-    inspector.addButton(null, "Add", {width: "20%", callback: function(){
+    inspector.addButton(null, "As header", {callback: function(){
+        newName = "#" + newName;
+        if(that.addProperty(newName, newValue)){
+            that.onInspect(inspector);
+        }
+    }});
+    inspector.addButton(null, "As param", {callback: function(){
         if(that.addProperty(newName, newValue)){
             that.onInspect(inspector);
         }
     }});
 
+    inspector.addSeparator();
+    inspector.addSection("Headers");
+
+    // Existing headers
+    for(let p in this.properties){
+
+        // discard, it's NOT a header
+        if(p.length > 0 && p[0] != "#")
+        continue;
+
+        var cleanHeaderName = p.substr(1);
+
+        inspector.addInfo("", cleanHeaderName, {width: "30%", content_width: "100%"});
+
+        inspector.addString(null, this.properties[p], {width: "60%", content_width: "100%", callback: function(v){
+            that.propagate(p, v);
+            that.properties[p] = v;
+        }});
+
+        inspector.addButton(null, "x", {width: "10%", micro: true, callback: function(){
+            that.propagate(p, null);
+            delete that.properties[p];
+            that.onInspect(inspector);
+        }});
+    }
+
     inspector.addSection("Parameters");
       
-    //Header
-    inspector.addInfo("Name", "", {width: "40%", disabled: true});
-    inspector.addInfo("Value (Optional)", "", {width: "40%", disabled: true});
-    inspector.addNull();
-
-    //Existing parameters
+    // Existing parameters 
     for(let p in this.properties){
-        inspector.addInfo("", p, {width: "40%", content_width: "100%"});
+
+        // discard, it's a header
+        if(p.length > 0 && p[0] == "#")
+        continue;
+
+        if(p == "method" || p == "dataType")
+        continue;
 
         var func = null;
         var value = this.properties[p];
+
+        var isBool = (value.constructor == Boolean);
+        inspector.addInfo("", p, {width: isBool ? "40%" : "30%", content_width: "100%"});
 
         switch(value.constructor)
         {
             case Number:
                 var precision = variable.type == "float" ? 2 : 0;
-                func = inspector.addNumber(null, value, {precision: precision, width: "40%", content_width: "100%", callback: function(v){
+                func = inspector.addNumber(null, value, {precision: precision, width: "60%", content_width: "100%", callback: function(v){
                     that.properties[p] = v;
                 }});
                 break;
             case String:
-                func = inspector.addString(null, value, {width: "40%", content_width: "100%", callback: function(v){
+                func = inspector.addString(null, value, {width: "60%", content_width: "100%", callback: function(v){
                     that.properties[p] = v;
                 }});
                 break;
             case Boolean:
-                func = inspector.addCheckbox(null, value, {width: "40%", content_width: "100%", callback: function(v){
+                func = inspector.addCheckbox(null, value, {width: "50%", content_width: "100%", callback: function(v){
                     that.properties[p] = v;
                 }});
                 break;
         }
 
-        inspector.addButton(null, "Remove", {width: "20%", callback: function(){
+        inspector.addButton(null, "x", {width: "10%", micro: true, callback: function(){
             delete that.properties[p];
             that.onInspect(inspector);
         }});
