@@ -1467,9 +1467,9 @@ SpeechClip.prototype.showInfo = function(panel)
 	{
 		var property = this.properties[i];
 		if(i=="text"){
-			panel.addTextarea(i, property,{callback: function(v)
+			panel.addTextarea(i, property,{callback: function(v, value)
 			{
-				this.properties[i] = v;
+				this.properties[i] = value;
 			}.bind(this, i)});
 		}
 		else
