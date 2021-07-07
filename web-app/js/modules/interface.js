@@ -181,7 +181,7 @@ class Interface {
             // Other
             LiteGUI.menubar.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
             // LiteGUI.menubar.add("Actions");
-
+            LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
             if(!CORE.modules["FileSystem"].session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
@@ -1254,7 +1254,23 @@ class Interface {
             }
         );
     }
-
+    /* --------------------------------------------------EDIT ENTITIES---------------------------------------------------------- */
+    showEditEntitiesDialog()
+    {
+        var dialog = new LiteGUI.Dialog({ title:"Add words to enity", width: 350, closable:true });
+        var inspector = new LiteGUI.Inspector();
+        var tag = "";
+        var words = "";
+        inspector.addString("Entity", tag, {placeHolder:"FirstName", callback: function(v){ tag = v; }});
+        inspector.addString("Words", words, {placeHolder:"Tom,Emily,John,...", callback: function(v){ words = v; }});
+        inspector.addButton(null,"Add",{callback: function(){
+                EntitiesManager.addWordsToWorld(tag,words)
+                dialog.close();
+            }})
+        dialog.adjustSize();
+        dialog.add(inspector);
+        dialog.makeModal();
+    }
     /* ----------------------------------------------------------------------------------------------------------------------- */
 
     showContent(data)

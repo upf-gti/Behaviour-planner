@@ -55,6 +55,8 @@ var EntitiesManager = {
     },
     getEntities()
     {
+        if(this.entities.length == 0)
+            initData()
         return this.entities;
     },
     getAllEntitiesInfo()
@@ -66,8 +68,21 @@ var EntitiesManager = {
         if(text.length >= 7 && text.length <= 9 )
             return text
         return false
-    }
+    },
+    addWordsToWorld(tag, words){
+        words = words.replace(", ",",").split(",");
+        var map = {};
+        for(var i=0; i<words.length; i++)
+        {
+            map[words[i]] = tag;
+        }
+        this.entities.push("#"+tag)
+        nlp.extend((Doc, world) =>{
+            // add new words to the lexicon
+            world.addWords(map)
+        })
 
+    }
 }
 function loadJSON(callback) {
     var xobj = new XMLHttpRequest();

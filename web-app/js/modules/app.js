@@ -272,7 +272,10 @@ class App{
                     this.bp.blackboard.user.update(data.user); //TODO bp.onData should be enought to handle this
                     //this.placeholderData.faceMatching = true;
                 }
-
+                if(data.agent){
+                    if(data.user.text)
+                        this.bp.blackboard.agent.update(data.agent);
+                }
                 //Apply data and evaluate events in BP
                 this.bp.onData(msg);
 
