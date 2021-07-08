@@ -1415,7 +1415,7 @@ function SpeechClip()
 
 	this._width = 0;
 
-	this.properties = {text : ""}
+	this.properties = {inherited_text:false, text : ""}
 	this.aduioId = null;
 	this.color = "black";
 
@@ -1467,10 +1467,33 @@ SpeechClip.prototype.showInfo = function(panel)
 	{
 		var property = this.properties[i];
 		if(i=="text"){
-			panel.addTextarea(i, property,{callback: function(v, value)
+			if(this.properties['inherited_text']==false)
 			{
-				this.properties[i] = value;
-			}.bind(this, i)});
+				var textarea = panel.addTextarea(i, property,{title:"Custom text", callback: function(v, value)
+					{
+						this.properties[i] = value;
+				}.bind(this, i)});
+				textarea.id = "custom-textarea";
+				continue;
+			}
+		}
+		if(i=="inherited_text")
+		{
+			var that = this;
+			panel.addCheckbox(i, property, {title:"Text from the parent node", id:"inher", callback: function(v)
+			{
+				that.properties["inherited_text"] = v;
+				var text_area = null
+				for(var i in this.parentElement.children )
+					if(this.parentElement.children[i].id == "custom-textarea")
+						text_area = this.parentElement.children[i]
+				
+				if(v)
+					text_area.style.visibility = "hidden";
+				else
+					text_area.style.visibility = "visible";
+			}});
+			continue;
 		}
 		else
 		{
@@ -1491,7 +1514,8 @@ SpeechClip.prototype.showInfo = function(panel)
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
-					else{
+					else
+					{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
 							this.properties[i] = v;
@@ -1499,7 +1523,7 @@ SpeechClip.prototype.showInfo = function(panel)
 					}
 					break;
 				case Boolean:
-					panel.addCheckbox(i, property, {callback: function(i,v)
+					panel.addCheckbox(i, property, {callback: function(i,v, panel)
 					{
 						this.properties[i] = v;
 					}.bind(this,i)});

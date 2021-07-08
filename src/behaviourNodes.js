@@ -931,7 +931,11 @@ TimelineIntent.prototype.tick = function(agent, dt, info){
         if(!bml[track.name]&&track.clips.length){
             bml[track.name] = [];
         }
-        for(var j in track.clips){ 
+        for(var j in track.clips){
+            if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
+            {
+                track.clips[j].properties.text = info.text || "Check out the development";
+            }
             var data = track.clips[j].toJSON();
             data.type = track.clips[j].constructor.type;
             bml[track.name].push(data);
