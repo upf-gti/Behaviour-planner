@@ -1448,6 +1448,8 @@ SpeechClip.prototype.fromJSON = function( json )
 	this.start = json.start;
 	this.duration = json.duration;
 	this.properties.text = json.text;
+	if(this.properties.inherited_text)
+		this.properties.inherited_text = json.inherited_text;
 	if(json.audioId)
 		this.audioId = json.audioId;
 }
