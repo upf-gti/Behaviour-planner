@@ -71,6 +71,8 @@ var EntitiesManager = {
         return false
     },
     addWordsToWorld(tag, words){
+        if(this.entities.length == 0)
+            this.initData()
         this.customEntities[tag] = words;
         words = words.replace(", ",",").split(",");
         var map = {};
