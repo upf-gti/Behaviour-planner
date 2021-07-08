@@ -383,6 +383,12 @@ class App{
             }
             GestureManager.createGestureInspector();
         }
+        //Entities
+        if(env.entities){
+            for(var tag in env.entities){
+                EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
+            }
+        }
     }
 
 	loadCorpusData(data){
@@ -412,6 +418,9 @@ class App{
                         var gest = GestureManager.serialize();
                         obj.env.gestures = gest;
                     }
+                }
+                if(EntitiesManager.customEntities!={}){
+                    obj.env.entities = EntitiesManager.customEntities;
                 }
                 for(var i in GraphManager.graphs){
                     var graph = GraphManager.graphs[i];

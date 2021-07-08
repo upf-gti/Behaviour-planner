@@ -86,8 +86,8 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 }
             }
 
-            var info = {tags: values}
-
+            var info = {tags: values, text: info.text}
+            
             //this.description = this.properties.property_to_compare + ' property passes the threshold';
             var children = this.getOutputNodes(0);
             //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time

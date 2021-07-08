@@ -3,6 +3,7 @@ var EntitiesManager = {
     name : "EntitiesManager",
 	properties_log : {},
     entities: [],
+    customEntities : {},
     preInit(){
 
 
@@ -70,13 +71,16 @@ var EntitiesManager = {
         return false
     },
     addWordsToWorld(tag, words){
+        this.customEntities[tag] = words;
         words = words.replace(", ",",").split(",");
         var map = {};
         for(var i=0; i<words.length; i++)
         {
             map[words[i]] = tag;
         }
-        this.entities.push("#"+tag)
+        if(this.entities.indexOf("#"+tag)<0)
+            this.entities.push("#"+tag)
+       
         nlp.extend((Doc, world) =>{
             // add new words to the lexicon
             world.addWords(map)
