@@ -12,7 +12,7 @@ class Interface {
         this.icons= {
             clear: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M112.1225,13.8675c-2.70094,0 -5.34812,0.91375 -7.31,2.9025l-91.4825,92.45c-4.03125,4.07156 -4.03125,10.75 0,14.835l32.895,33.2175c0.65844,0.65844 1.54531,0.9675 2.4725,0.9675h92.3425c1.34375,0.20156 2.6875,-0.41656 3.42656,-1.55875c0.73906,-1.14219 0.73906,-2.62031 0,-3.7625c-0.73906,-1.14219 -2.08281,-1.76031 -3.42656,-1.55875h-54.9325l76.0025,-76.755c4.03125,-4.07156 4.03125,-10.76344 0,-14.835l-42.57,-43c-1.96187,-1.98875 -4.71656,-2.9025 -7.4175,-2.9025zM61.92,70.09l49.235,46.1175l-34.7225,35.1525h-26.3375l-31.82,-32.25c-1.35719,-1.38406 -1.35719,-3.57437 0,-4.945z"></path></svg>', //last slash removed to avoid problems comparing in addButtons
             play: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M34.4,18.06v135.86656l115.48188,-67.92656z"></path></svg>',
-            stop: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><g fill="#aaaaaa"><path d="M126.13333,34.4h-80.26667c-6.33533,0 -11.46667,5.13133 -11.46667,11.46667v80.26667c0,6.33533 5.13133,11.46667 11.46667,11.46667h80.26667c6.33533,0 11.46667,-5.13133 11.46667,-11.46667v-80.26667c0,-6.33533 -5.13133,-11.46667 -11.46667,-11.46667z"></path></svg>',//'<span class="material-icons"> stop</span>',
+            stop: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M126.13333,34.4h-80.26667c-6.33533,0 -11.46667,5.13133 -11.46667,11.46667v80.26667c0,6.33533 5.13133,11.46667 11.46667,11.46667h80.26667c6.33533,0 11.46667,-5.13133 11.46667,-11.46667v-80.26667c0,-6.33533 -5.13133,-11.46667 -11.46667,-11.46667z"></path></svg>',//'<span class="material-icons"> stop</span>',
             stream: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 50 50"><path d="M 41.8125 6.96875 C 41.738281 6.976563 41.667969 6.984375 41.59375 7 C 40.855469 7.101563 40.234375 7.609375 39.984375 8.3125 C 39.734375 9.015625 39.898438 9.796875 40.40625 10.34375 C 43.878906 14.230469 46 19.347656 46 25 C 46 30.644531 43.894531 35.792969 40.40625 39.6875 C 39.851563 40.203125 39.636719 40.992188 39.851563 41.71875 C 40.066406 42.445313 40.671875 42.988281 41.417969 43.121094 C 42.164063 43.253906 42.921875 42.953125 43.375 42.34375 C 47.496094 37.742188 50 31.648438 50 25 C 50 18.351563 47.507813 12.28125 43.40625 7.6875 C 43.011719 7.214844 42.425781 6.953125 41.8125 6.96875 Z M 7.9375 7 C 7.417969 7.042969 6.933594 7.292969 6.59375 7.6875 C 2.492188 12.285156 0 18.371094 0 25 C 0 31.664063 2.503906 37.746094 6.625 42.34375 C 7.078125 42.953125 7.835938 43.253906 8.582031 43.121094 C 9.328125 42.988281 9.933594 42.445313 10.148438 41.71875 C 10.363281 40.992188 10.148438 40.203125 9.59375 39.6875 C 6.105469 35.796875 4 30.664063 4 25 C 4 19.371094 6.121094 14.234375 9.59375 10.34375 C 10.152344 9.734375 10.277344 8.84375 9.910156 8.105469 C 9.546875 7.363281 8.761719 6.925781 7.9375 7 Z M 34.65625 14.34375 C 34.582031 14.351563 34.511719 14.359375 34.4375 14.375 C 33.699219 14.476563 33.078125 14.984375 32.828125 15.6875 C 32.578125 16.390625 32.742188 17.171875 33.25 17.71875 C 34.964844 19.65625 36 22.183594 36 25 C 36 27.796875 34.960938 30.335938 33.25 32.28125 C 32.707031 32.804688 32.503906 33.589844 32.730469 34.3125 C 32.953125 35.03125 33.5625 35.566406 34.304688 35.691406 C 35.050781 35.816406 35.800781 35.515625 36.25 34.90625 C 38.578125 32.261719 40 28.789063 40 25 C 40 21.191406 38.589844 17.703125 36.25 15.0625 C 35.855469 14.589844 35.269531 14.328125 34.65625 14.34375 Z M 15.0625 14.40625 C 14.542969 14.449219 14.058594 14.699219 13.71875 15.09375 C 11.402344 17.734375 10 21.222656 10 25 C 10 28.847656 11.457031 32.378906 13.84375 35.03125 C 14.585938 35.851563 15.851563 35.914063 16.671875 35.171875 C 17.492188 34.429688 17.554688 33.164063 16.8125 32.34375 C 15.0625 30.398438 14 27.847656 14 25 C 14 22.210938 15.015625 19.691406 16.71875 17.75 C 17.277344 17.140625 17.402344 16.25 17.035156 15.511719 C 16.671875 14.769531 15.886719 14.332031 15.0625 14.40625 Z M 25 20 C 22.242188 20 20 22.242188 20 25 C 20 27.757813 22.242188 30 25 30 C 27.757813 30 30 27.757813 30 25 C 30 22.242188 27.757813 20 25 20 Z"></path></svg>',
             trash:'<span class="material-icons"> delete</span>',// '<img src="'+baseURL+'/latest/imgs/mini-icon-trash.png" alt="W3Schools.com">';
             edit: '<span class="material-icons"> edit</span>',
@@ -25,7 +25,8 @@ class Interface {
             expand: '<span class="material-icons">navigate_next</span>',
             tree: '<span class="material-icons">account_tree</span>',
             chat: '<span class="material-icons">chat</span>',
-            pause: '<span class="material-icons">pause</span>'
+            pause: '<span class="material-icons">pause</span>',
+            refresh: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px"viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M86,17.2c-17.01998,0 -32.66383,6.21171 -44.67969,16.48333c-1.64003,1.30561 -2.43687,3.40213 -2.07805,5.46745c0.35882,2.06532 1.81609,3.77022 3.80038,4.44616c1.98429,0.67594 4.17929,0.21517 5.72428,-1.20164c10.02307,-8.56811 22.99492,-13.72865 37.23307,-13.72865c29.79361,0 54.18567,22.57745 57.05339,51.6h-16.92005l22.93333,34.4l22.93333,-34.4h-17.49114c-2.93142,-35.25049 -32.51591,-63.06667 -68.50886,-63.06667zM22.93333,57.33333l-22.93333,34.4h17.49115c2.93142,35.25049 32.51591,63.06667 68.50885,63.06667c17.01998,0 32.66383,-6.21171 44.67969,-16.48333c1.64004,-1.30561 2.43688,-3.40213 2.07807,-5.46746c-0.35882,-2.06533 -1.81609,-3.77024 -3.80039,-4.44617c-1.9843,-0.67594 -4.1793,-0.21516 -5.72429,1.20165c-10.02308,8.56811 -22.99493,13.72864 -37.23308,13.72864c-29.79361,0 -54.18567,-22.57744 -57.05339,-51.6h16.92005z"></path></svg>'
         }
 
         this.sidePanelExpanded = false;
@@ -156,17 +157,20 @@ class Interface {
     }
 
     createMenuBar() {
-
+        //var panel = new LiteGUI.Panel({height:"100"});
         //create menubar
-		LiteGUI.createMenubar(null,{sort_entries: false});
+		LiteGUI.createMenubar(null,{sort_entries: false, height:"29px"});
 
         var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
-
+        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon center play-btn",innerHTML: this.icons.play, callback: function(){
+            CORE.App.onPlayClicked();
+        }});
         LiteGUI.menubar.refresh = (function()
         {
+            
             // Clean first
             LiteGUI.menubar.clear();
-
+            
             LiteGUI.menubar.add("Project/New/Empty"); //clear all
             LiteGUI.menubar.add("Project/New/Template", {callback: this.importFromURL.bind(this, example_url)});
             // Server options
@@ -182,6 +186,8 @@ class Interface {
             LiteGUI.menubar.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
             // LiteGUI.menubar.add("Actions");
             LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
+            LiteGUI.menubar.add("Edit/Scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)
+            
             if(!CORE.modules["FileSystem"].session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
@@ -195,21 +201,23 @@ class Interface {
                     }));
                 }});
             }
+            LiteGUI.menubar.root.firstElementChild.appendChild(play_btn)
         }).bind(this);
-
+    
         LiteGUI.menubar.refresh();
+
     }
 
     preInit() {
 
         LiteGUI.init();
 
-        this.createMenuBar();
+       this.createMenuBar();
 
         var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
         mainarea.split("horizontal",[null,300], true);
         this.mainarea = mainarea;
-
+       // mainarea.add(panel)
         LiteGUI.add( mainarea );
 
         LiteGUI.bind( mainarea, "split_moved", function(e){
@@ -235,19 +243,19 @@ class Interface {
         var div = document.createElement("DIV");
 
         div.className+= " litetabs buttons right";
-        var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
-        stream_btn.style.display="none";
+        /*var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
+        stream_btn.style.display="none";*/
         var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: GraphManager.clearCurrentGraph});
-        var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
+        /*var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
-        }});
+        }});*/
         var show_btn = this.addButton("", {title: "Show scene", id: "show-btn", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
             iframeWindow = window.open("iframe.html", "otherWindow");
         }});
 
         div.append(clear_btn);
-        div.append(play_btn);
-        div.append(stream_btn);
+        //div.append(play_btn);
+        //div.append(stream_btn);
         div.append(show_btn);
 
 
@@ -263,20 +271,21 @@ class Interface {
 
         div2.className+= " litetabs buttons right";
 
-        var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
+       /* var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
+        }});*/
+        var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.refresh, callback: function () {
+            that.iframearea.add(that.iframe)
         }});
         var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
             iframeWindow = window.open("iframe.html", "otherWindow");
         }});
-        var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.clear, callback: function () {
-            that.iframearea.add(that.iframe)
-        }});
+       
 
-        div2.append(play_btn2);
-
-        div2.append(show_btn2);
+       // div2.append(play_btn2);
         div2.append(reload_btn2);
+        div2.append(show_btn2);
+ 
         this.iframearea.add(div2);
         this.iframe = document.createElement("iframe");
         this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
@@ -1270,6 +1279,13 @@ class Interface {
         dialog.adjustSize();
         dialog.add(inspector);
         dialog.makeModal();
+    }
+    showEditIframeDialog()
+    {
+        LiteGUI.prompt(
+            "Iframe URL",
+            function(v){this.iframe.src = v}.bind(this)
+        );
     }
     /* ----------------------------------------------------------------------------------------------------------------------- */
 
