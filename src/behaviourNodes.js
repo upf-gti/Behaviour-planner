@@ -1389,10 +1389,7 @@ function HttpRequest()
     this.bgcolor = "#6969aa";
     this.boxcolor = "#999";
     var w = 210;
-    var h = 75;
-
-    this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
-    this.addInput("data","");
+    var h = 100;
 
     //Properties
     this.properties = {
@@ -1431,9 +1428,15 @@ function HttpRequest()
         "ms-stream"
     ];
 
-    this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; },  {values: this.methods});
-    this._dataTypeWidget = this.addWidget("combo", "Data type", this.properties.dataType, function(v){ that.properties.dataType = v; },  {values: this.dataTypes});
+    this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+    this.addInput("data","", {pos:[1,20], dir:LiteGraph.LEFT});
+    this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
 
+    this.size = [w,h];
+
+    this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; }, { values: this.methods });
+    this._dataTypeWidget = this.addWidget("combo", "Data type", this.properties.dataType, function(v){ that.properties.dataType = v; },  {values: this.dataTypes});
+    
     this._node = null;
     this._component = null;
     this.serialize_widgets = true;
@@ -1468,7 +1471,32 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     this.behaviour.setData(this.properties);
     this.behaviour.STATUS = STATUS.success;
     this.graph.evaluation_behaviours.push(this.behaviour);
+
+    this.send( Object.assign({}, this.behaviour.data) );
     return this.behaviour;
+}
+
+HttpRequest.prototype.send = function(params) {
+
+    var that = this;
+
+    params.success = function(response, req){
+        // console.log("request completed", response);
+        
+        for(var output in that.outputs){
+            // if not connected, do nothing
+            if(!output.links)
+            continue;
+            that.setOutputData(output, response);
+        }
+    }
+
+    params.error = function(err){
+        console.log("request error", err);
+    }
+    
+    // Do http request here
+    UTILS.request(params);
 }
 
 HttpRequest.prototype.onGetInputs = function(){
@@ -1483,6 +1511,22 @@ HttpRequest.prototype.onGetInputs = function(){
     }
 
     return inputs;
+}
+
+HttpRequest.prototype.onGetOutputs = function(){
+    
+    var node_outputs = ["response"];
+    var outputs = [];
+
+    for(var i = 0; i < node_outputs.length; ++i){
+        var added = false;
+        for(var output of this.outputs){
+            if(output.name == node_outputs[i]) added = true;
+        }
+        if(!added) outputs.push([node_outputs[i], "", {dir:LiteGraph.LEFT}]);
+    }
+
+    return outputs;
 }
 
 HttpRequest.prototype.addProperty = function(name, value)
@@ -1500,7 +1544,7 @@ HttpRequest.prototype.addProperty = function(name, value)
 
 HttpRequest.prototype.propagate = function(name, value)
 {
-    var special_cases = ["#apikey"];
+    var special_cases = ["#apikey", "url"];
 
     if(special_cases.indexOf(name) < 0)
     return;

@@ -188,27 +188,27 @@ class App{
 
     onBehaviours(behaviours){
 
-        behaviours.forEach(b => {
-            switch(b.type)
-            {
-                case B_TYPE.http_request:
+        // behaviours.forEach(b => {
+        //     switch(b.type)
+        //     {
+        //         case B_TYPE.http_request:
 
-                    var params = Object.assign({}, b.data);
-                    params.success = function(response, req){
-                        console.log("request completed", response);
-                    }
+        //             var params = Object.assign({}, b.data);
+        //             params.success = function(response, req){
+        //                 console.log("request completed", response);
+        //             }
 
-                    params.error = function(err){
-                        console.log("request error", err);
-                    }
+        //             params.error = function(err){
+        //                 console.log("request error", err);
+        //             }
                     
-                    // Do http request here
-                    UTILS.request(params);
-                    break;
-                default:
-                    break;
-            }
-        });
+        //             // Do http request here
+        //             UTILS.request(params);
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // });
     }
 
     onActions(actions){

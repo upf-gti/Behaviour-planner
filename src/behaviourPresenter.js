@@ -789,16 +789,19 @@ HttpRequest.prototype.onInspect = function(inspector)
             case Number:
                 var precision = variable.type == "float" ? 2 : 0;
                 func = inspector.addNumber(null, value, {precision: precision, width: "60%", content_width: "100%", callback: function(v){
+                    that.propagate(p, v);
                     that.properties[p] = v;
                 }});
                 break;
             case String:
                 func = inspector.addString(null, value, {width: "60%", content_width: "100%", callback: function(v){
+                    that.propagate(p, v);
                     that.properties[p] = v;
                 }});
                 break;
             case Boolean:
                 func = inspector.addCheckbox(null, value, {width: "50%", content_width: "100%", callback: function(v){
+                    that.propagate(p, v);
                     that.properties[p] = v;
                 }});
                 break;
