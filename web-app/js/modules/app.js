@@ -145,20 +145,26 @@ class App{
         this.changeState();
         if(this.state == PLAYING){
             for(var i=0;i< play_buttons.length;i++)
+            {
                 play_buttons[i].innerHTML= icons.stop;
+                play_buttons[i].classList.add("playing")
+            }
 
-            if(stream_button.lastElementChild.classList.contains("active")){
+           /* if(stream_button.lastElementChild.classList.contains("active")){
                 stream_button.lastElementChild.classList.remove("active");
                 stream_button.lastElementChild.classList.add("play");
-            }
+            }*/
         }else{
             for(var i=0;i< play_buttons.length;i++)
+            {
                 play_buttons[i].innerHTML= icons.play;
-            if(stream_button.lastElementChild.classList.contains("play"))
+                play_buttons[i].classList.remove("playing")
+            }
+           /* if(stream_button.lastElementChild.classList.contains("play"))
             {
                 stream_button.lastElementChild.classList.remove("play");
                 stream_button.lastElementChild.classList.add("active");
-            }
+            }*/
         }
     }
 
