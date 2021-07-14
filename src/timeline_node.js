@@ -1637,12 +1637,15 @@ function AudioClip()
 	this.clip_color = "#7c0022";
 	this.color = "white";
 	this._audio = new Audio();
+	this._audio.onloadedmetadata = function(v){this.duration = this._audio.duration}.bind(this)
 }
+AudioClip.type = "lg"
 AudioClip.id = ANIM.AUDIO;
 AudioClip.clip_color = "#7c0022";
 
 Object.defineProperty( AudioClip.prototype, "src", {
 	set: function(v){
+		
 		this._src = v;
 		this._audio.src = v;
 	},
@@ -1654,28 +1657,6 @@ Object.defineProperty( AudioClip.prototype, "src", {
 AudioClip.id = ANIM.AUDIO;
 ANIM.registerClipType( AudioClip );
 
-AudioClip.prototype.drawCanvas = function( ctx, local_time, track, project )
-{
-	if( ctx.constructor !== CanvasRenderingContext2D )
-		return;
-	if(!this.src)
-		return;
-
-	if( project.mode == ANIM.PAUSED )
-		this._audio.pause();
-	else
-		this._audio.play();
-
-	var volume = this.volume;
-	var cc_volume = this.getCC("volume",local_time);
-	if(cc_volume != null)
-		volume *= cc_volume;
-	volume = project.volume * (project.mode == ANIM.PAUSED ? 0 : (volume * this.fade));
-	this._audio.volume = Math.clamp( volume, 0, 1);
-	var diff = Math.abs( local_time - this._audio.currentTime + this.offset_time );
-	if( project.mode == ANIM.PAUSED || diff > 0.1 )
-		this._audio.currentTime = local_time + this.offset_time;
-}
 
 AudioClip.prototype.preload = function( time, is_visible )
 {
@@ -1728,8 +1709,68 @@ AudioClip.prototype.fromJSON = function(json)
 		this.audioId = json.audioId;
 }
 
+AudioClip.prototype.showInfo = function(panel)
+{
+	for(var i in this.properties)
+	{
+		var property = this.properties[i];
 
-
+		switch(property.constructor)
+		{
+			
+			case String:
+				if(i == "url")
+				{
+					panel.addString(i, property, {callback: function(i,v)
+						{
+							this._audio.src = v;
+							if(this._src != v)
+								this._audio.load();
+							this.properties[i] = v;
+							this._src = v;
+							
+						}.bind(this, i)});
+				}
+				else{
+					panel.addString(i, property, {callback: function(i,v)
+						{
+							this.properties[i] = v;
+						}.bind(this, i)});
+				}
+				
+				break;
+			case Number:
+				if(i=="amount")
+				{
+					panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+				}
+				else
+				{
+					panel.addNumber(i, property, {callback: function(i,v)
+					{
+						this.properties[i] = v;
+					}.bind(this,i)});
+				}
+				break;
+			case Boolean:
+				panel.addCheckbox(i, property, {callback: function(i,v, panel)
+				{
+					this.properties[i] = v;
+				}.bind(this,i)});
+					break;
+			case Array:
+				panel.addArray(i, property, {callback: function(i,v)
+				{
+					this.properties[i] = v;
+				}.bind(this,i)});
+					break;
+		}
+	}
+	
+}
 
 //helpers **************************
 
