@@ -9,7 +9,11 @@ var UTILS = {
 	**/
 	request: function(request)
 	{
-		var dataType = request.dataType || "text";
+		var parameters = request.parameters || {};
+		var headers = request.headers || {};
+		var data = request.data || null;
+
+		var dataType = parameters.dataType || "text";
 		if(dataType == "json") //parse it locally
 			dataType = "text";
 		else if(dataType == "xml") //parse it locally
@@ -18,40 +22,31 @@ var UTILS = {
 		{
 			//request.mimeType = "text/plain; charset=x-user-defined";
 			dataType = "arraybuffer";
-			request.mimeType = "application/octet-stream";
+			parameters.mimeType = "application/octet-stream";
 		}
 
 		//regular case, use AJAX call
         var xhr = new XMLHttpRequest();
-		var method = request.data ? 'POST' : 'GET';
+		var method = data ? 'POST' : 'GET';
 
-		if(request.method && request.method.length)
-			method = request.method;
+		if(parameters.method && parameters.method.length)
+			method = parameters.method;
 
 		var asyncRequest = true;
 
-		if(request.async !== undefined)
-			asyncRequest = request.async;
+		if(parameters.async !== undefined)
+			asyncRequest = parameters.async;
 
-        xhr.open( method, request.url, asyncRequest);
+        xhr.open( method, parameters.url, asyncRequest);
         if(dataType)
             xhr.responseType = dataType;
-        if (request.mimeType)
-            xhr.overrideMimeType( request.mimeType );
+        if (parameters.mimeType)
+            xhr.overrideMimeType( parameters.mimeType );
 
-		// Set other headers
-		for(var h in request)
+		for(var h in headers)
 		{
-			// search for headers
-			if(h.length > 0 && h[0] != "#")
-			continue;
-
-			var cleanHeaderName = h.substr(1);
-			xhr.setRequestHeader(cleanHeaderName, request[h]);
+			xhr.setRequestHeader(h, headers[h]);
 		}
-
-		// if( request.nocache )
-		// 	xhr.setRequestHeader('Cache-Control', 'no-cache');
 
         xhr.onload = function(load)
 		{
@@ -65,7 +60,7 @@ var UTILS = {
 				return;
 			}
 
-			if(request.dataType == "json") //chrome doesnt support json format
+			if(parameters.dataType == "json") //chrome doesnt support json format
 			{
 				try
 				{
@@ -79,7 +74,7 @@ var UTILS = {
 						throw err;
 				}
 			}
-			else if(request.dataType == "xml")
+			else if(parameters.dataType == "xml")
 			{
 				try
 				{
@@ -102,14 +97,14 @@ var UTILS = {
 				request.error(err);
 		}
 
-		var data = new FormData();
-		if( request.data )
+		var formData = new FormData();
+		if( data )
 		{
-			for(var i in request.data)
-				data.append(i,request.data[i]);
+			for(var i in data)
+				formData.append(i, data[i]);
 		}
 
-        xhr.send( data );
+        xhr.send( formData );
 		return xhr;
 	},
 

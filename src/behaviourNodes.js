@@ -1389,7 +1389,7 @@ function HttpRequest()
     this.bgcolor = "#6969aa";
     this.boxcolor = "#999";
     var w = 210;
-    var h = 100;
+    var h = 80;
 
     //Properties
     this.properties = {
@@ -1397,13 +1397,15 @@ function HttpRequest()
         "url": "",
         "dataType": "text",
         "mimeType": "",
-        "async": true,
-        "data": "",
-
-        // headers begin with "#"
-        "#Cache-Control": "no-cache",
-        "#apikey": ""
+        "async": true
     };
+
+    this.headers = {
+        "Cache-Control": "no-cache",
+        "apikey": ""
+    };
+
+    this.data = {};
 
     var that = this;
     this.methods = [
@@ -1428,11 +1430,10 @@ function HttpRequest()
         "ms-stream"
     ];
 
-    this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
-    this.addInput("data","", {pos:[1,20], dir:LiteGraph.LEFT});
-    this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
-
     this.size = [w,h];
+
+    this.addInput("","path",{pos: [w*0.5, -LiteGraph.NODE_TITLE_HEIGHT], dir: LiteGraph.UP});
+    this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
 
     this._methodWidget = this.addWidget("combo", "Method", this.properties.method, function(v){ that.properties.method = v; }, { values: this.methods });
     this._dataTypeWidget = this.addWidget("combo", "Data type", this.properties.dataType, function(v){ that.properties.dataType = v; },  {values: this.dataTypes});
@@ -1440,6 +1441,7 @@ function HttpRequest()
     this._node = null;
     this._component = null;
     this.serialize_widgets = true;
+    this.widgets_up = true;
 
     this.behaviour = new Behaviour();
     this.behaviour.type = B_TYPE.http_request;
@@ -1468,11 +1470,37 @@ HttpRequest.prototype.onExecute = function()
 
 HttpRequest.prototype.tick = function(agent, dt, info)
 {
-    this.behaviour.setData(this.properties);
+    // info:
+    // tags: {#PhoneNumber: "6456516516"}
+    // text: "cosas y/o 645651655"
+    
+    // Clone so changes on values if there is any tag doesn't change original one
+    var parameters = Object.assign({}, this.properties.parameters); 
+    if(info) {
+        for(var p in parameters) {
+            var value = parameters[p];
+            // Try to match a tag from info
+            if(info.tags && value.constructor === String && value[0] == "#"){ 
+                if(info.tags[value]){
+                    parameters[p] = info.tags[value];
+                }
+            }else if(info[p]!=undefined){
+                parameters[p] = info[p];
+            }
+        }
+    }
+
+    var requestParams = {
+        "parameters": this.properties,
+        "headers": this.headers,
+        "data": this.data
+    };
+
+    this.behaviour.setData(requestParams);
     this.behaviour.STATUS = STATUS.success;
     this.graph.evaluation_behaviours.push(this.behaviour);
 
-    this.send( Object.assign({}, this.behaviour.data) );
+    this.send( Object.assign({}, requestParams) );
     return this.behaviour;
 }
 
@@ -1556,6 +1584,31 @@ HttpRequest.prototype.propagate = function(name, value)
     }
 
     return true;
+}
+
+HttpRequest.RAO_Templates = {
+
+    "/facematching": {
+        "api-version": "v1.0",
+        "request-id": "AX0001",
+        "images": [
+            {
+            "image-id": "0001",
+            "description": "cid-42488231-front.jpg",
+            "identity-id": "user01",
+            "content": "iVBORw0KGgo...AANSUhEUgAA=="
+            }
+        ],
+        "options": {
+            "<option-name>": "True"
+        }
+    },
+    "/sendsms": {
+        "api-version": "v1.0",
+        "request-id": "AX0001",
+        "sms-text": "This is the message to the user mobile phone",
+        "mobile-number": "3933300112233"
+    }
 }
 
 LiteGraph.registerNodeType("events/HttpRequest", HttpRequest);

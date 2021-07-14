@@ -744,22 +744,16 @@ HttpRequest.prototype.onInspect = function(inspector)
     inspector.addSection("Headers");
 
     // Existing headers
-    for(let p in this.properties){
+    for(let p in this.headers){
 
-        // discard, it's NOT a header
-        if(p.length > 0 && p[0] != "#")
-        continue;
-
-        var cleanHeaderName = p.substr(1);
-
-        inspector.addInfo("", cleanHeaderName, {width: "30%", content_width: "100%"});
+        inspector.addInfo("", p, {width: "30%", content_width: "100%"});
 
         inspector.addString(null, this.properties[p], {width: "60%", content_width: "100%", callback: function(v){
             that.propagate(p, v);
             that.properties[p] = v;
         }});
 
-        inspector.addButton(null, "x", {width: "10%", micro: true, callback: function(){
+        inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
             that.propagate(p, null);
             delete that.properties[p];
             that.onInspect(inspector);
@@ -770,10 +764,6 @@ HttpRequest.prototype.onInspect = function(inspector)
       
     // Existing parameters 
     for(let p in this.properties){
-
-        // discard, it's a header
-        if(p.length > 0 && p[0] == "#")
-        continue;
 
         if(p == "method" || p == "dataType")
         continue;
@@ -807,11 +797,137 @@ HttpRequest.prototype.onInspect = function(inspector)
                 break;
         }
 
-        inspector.addButton(null, "x", {width: "10%", micro: true, callback: function(){
+        inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
             delete that.properties[p];
             that.onInspect(inspector);
         }});
     }
+
+    inspector.addSection("Request Data");
+
+    // Load template 
+    {
+        inspector.widgets_per_row = 1;
+        var templateBtn = inspector.addButton(null, "From template", {callback: function(value, e){
+    
+            e.preventDefault();
+
+            var options = [
+                {title: "Templates", disabled: true}, null
+            ];
+
+            for(let t in HttpRequest.RAO_Templates) {
+                options.push({
+                    title: t,
+                    callback: function(){
+                        var template = HttpRequest.RAO_Templates[t];
+                        that.data = Object.assign({}, template);
+                        that.onInspect(inspector);
+                    }
+                });
+            }
+
+            new LiteGraph.ContextMenu(options, {event: e});
+
+        }});
+        inspector.addSeparator();
+    }
+
+    // Show data
+    {
+        this.onInspectObject(inspector);
+    }
+    
+}
+
+HttpRequest.prototype.onInspectObject = function(inspector, object)
+{
+    var that = this;
+    var o = object || this.data;
+
+    for(let key in o) {
+
+        var value = o[key];
+        var func = this.onInspectProperty(inspector, key, value);
+
+        if(func){
+            inspector.widgets_per_row = 2;
+            inspector.addString(null, key, {width: "40%"});
+            var domEl = func(null, value, {width: "60%", callback: function(v){
+                o[key] = v;
+            }});
+            inspector.widgets_per_row = 1;
+        }
+    }
+}
+
+HttpRequest.prototype.onInspectProperty = function(inspector, key, value, is_array_member)
+{
+    var that = this;
+    switch(value.constructor)
+    {
+        case String:
+            func = inspector.addString.bind(inspector);
+            break;
+        case Number:
+            func = inspector.addNumber.bind(inspector);
+            break;
+        case Boolean:
+            func = inspector.addCheckbox.bind(inspector);
+            break;
+        case Object:
+            if(!is_array_member){
+                var objectTitle = inspector.addTitle(key);
+                objectTitle.addEventListener("contextmenu", function(e){
+
+                    e.preventDefault();
+        
+                    new LiteGraph.ContextMenu( [
+                        {title: key, disabled: true}, null,
+                        {title: "Add key", callback: function(){
+                            value["new_key"] = "";
+                            that.onInspect(inspector);
+                        }}
+                    ], { event: e});
+                });
+            }
+            this.onInspectObject(inspector, value);
+            return null;
+            break;
+        case Array:
+            var arrayTitle = inspector.addTitle(key);
+
+            arrayTitle.addEventListener("contextmenu", function(e){
+
+                e.preventDefault();
+    
+                new LiteGraph.ContextMenu( [
+                    {title: key, disabled: true}, null,
+                    {title: "Add item", callback: function(){
+                        value.push(value[0]);
+                        that.onInspect(inspector);
+                    }},
+                    {title: "Add key", callback: function(){
+                        for(var i = 0; i < value.length; ++i){
+                           value[i]["new_key"] = "";
+                        }
+                        that.onInspect(inspector);
+                    }}
+                ], { event: e});
+            });
+
+            for(var i = 0; i < value.length; ++i){
+                if(i != 0)
+                    inspector.addSeparator();
+                if(value[i].constructor == Array)
+                    continue;
+                this.onInspectProperty(inspector, key, value[i], true);
+            }
+            return null;
+            break;
+    }
+
+    return func;
 }
 
 //TODO ParseEvent not updated to new events!
