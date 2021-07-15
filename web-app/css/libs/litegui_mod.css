@@ -12,7 +12,7 @@ html {
 .inspector {
 	/* margin-top: 10px; */
 	/*margin-bottom: 20px;*/
-	color: #CCC;
+	color: var(--font-color);
 	/*
 	user-select: none;
 	-moz-user-select: none;
@@ -79,7 +79,7 @@ display: none;
 	display: inline-block;
 	position: relative;
 	z-index: auto;
-	background-color: #404040;
+	background-color: var(--secondary-color);
 
 	-moz-box-sizing: border-box;	
 	-webkit-box-sizing: border-box;	
@@ -89,7 +89,7 @@ display: none;
 	padding-left: 8px;
 
 	padding-bottom: 7px;
-	  color: #CCC;
+	  color: var(--font-color-secondary);
 	  font-size: 1.2em;
 	  user-select: none;
 	-moz-user-select: none;
@@ -99,13 +99,13 @@ display: none;
 
 .inspector .wsectioncontent {
 	padding: 4px 4px;
-	background-color: #393939;
+	background-color: var(--bg-color);
 }
 
 .inspector .wtitle {
 	margin-top: 6px;
 	background-color: #444;
-	color: #888;
+	color: var(--font-color-secondary);
 }
 
 .inspector .wtitle:first-child {
@@ -127,7 +127,7 @@ display: none;
 	white-space: nowrap;
 	height: 1.8em;
   /* text-align: center; */
-	background: #484848  !important;
+	/*background: #484848  !important;*/
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
@@ -817,7 +817,7 @@ button.wcombobutton.selected {
 
 html, body {
 	height: 100%;
-	background-color: #111;
+	background-color: var(--bg-color);
 }
 
 div {
@@ -879,7 +879,7 @@ div {
 }
 
 .litepanel, .litedialog {
-	background-color: #484848;
+	background-color: var(--primary-color);
 	box-sizing: border-box;
 	overflow:hidden;
 	color: #888;
@@ -888,10 +888,10 @@ div {
 .litepanel .panel-header, .litedialog .panel-header {
 	font-size: 1.35em;
 	padding: 0.2em 0 0 0.2em;
-	background-color: #3d3d3d;
-    background-image: linear-gradient(right , #555, #333);
+	background-color: var(--secondary-color);
+  /*  background-image: linear-gradient(right , #555, #333);
     background-image: -moz-linear-gradient(right , #555, #333);
-    background-image: -webkit-linear-gradient(right , #555, #333);
+    background-image: -webkit-linear-gradient(right , #555, #333);*/
 
 	-moz-box-sizing: border-box;	
 	-webkit-box-sizing: border-box;	
@@ -988,7 +988,7 @@ div {
 	position: absolute;
 	top:0;
 	left:0;
-	background-color: rgba(0,0,0,0.8);
+	background-color: var(--opaque-color);/* rgba(0,0,0,0.8);*/
 	width: 100%;
 	height: 100%;
 	z-index: 100;
@@ -1415,7 +1415,7 @@ a:hover {
 }	
 
 #mainmenubar {
-	background-color: #3d3d3d; 
+	background-color: var(--heading-color); 
 	/*border-bottom: 1px solid #afafaf;*/
 }
 
@@ -1426,7 +1426,7 @@ a:hover {
 
 .litemenubar li {
 	font-size: 15px;
-	color: #999;
+	color: var(--font-secondary-color);
 	display: inline-block;
 	min-width: 50px;
 	padding-left: 10px;
@@ -1449,7 +1449,7 @@ a:hover {
 	background-color: #444;
 	box-shadow: 0 0 3px black;
 	padding: 4px;
-	border-bottom: 2px solid #AAF;
+	border-bottom: 2px solid var(--highlight);
 	z-index: 10;
 }
 
@@ -1474,7 +1474,7 @@ a:hover {
 }
 
 .litemenu-entry.checked .icon {
-	background-color: #AAF;
+	background-color: va(--highlight);
 	margin-right: 4px; 
 	margin-top: 5px; 
 }
@@ -1502,7 +1502,7 @@ a:hover {
 }
 
 .litemenu-entry.has_submenu {
-	border-right: 2px solid cyan;
+	border-right: 2px solid var(--highlight);
 }
 
 .litemenu-title {
@@ -1523,7 +1523,7 @@ a:hover {
 	top: 100px;
 	left: 100px;
 	min-width: 100px;
-	color: #AAF;
+	color: var(--highlight);
 	padding: 0;
 	box-shadow: 0 0 10px black !important;
 	background-color: #2E2E2E !important;
@@ -1549,7 +1549,7 @@ a:hover {
 button.litebutton {
     color: #DDD;
     display: inline-block;
-    background-color: #565656 !important;
+    background-color: var(--secondary-color) !important;
     margin: 2px;
     padding: 2px;
     vertical-align: top;
@@ -1603,7 +1603,7 @@ button.litebutton.close-button {
 }
 
 .wtabcontainer {
-	background: #222;
+	background: var(--heading-color);
 }
 
 .litetabs ul.wtabcontainer {
@@ -1613,7 +1613,7 @@ button.litebutton.close-button {
 	padding-left: 2px;
 	/*margin-top: 4px;*/
 	list-style-type: none;
-	border-bottom: 2px solid #666;
+	border-bottom: 2px solid var(--highlight);
 
 	overflow: hidden;
     white-space: nowrap;
@@ -1680,8 +1680,8 @@ button.litebutton.close-button {
 }
 
 .litetabs li.wtab.selected {
-	color: #EEE !important;
-	background-color: #777;
+	color: var(--highlight) !important;
+	background-color: var(--primary-color);
 	/*border: 1px solid #888;*/
 	border-bottom: 0;
 	/*box-shadow: 0 -2px 2px rgba(0,0,0,0.5);*/
@@ -1694,7 +1694,7 @@ button.litebutton.close-button {
 }
 
 .litetabs li.wtab:hover:not(.selected) {
-	background-color: #555;	
+	background-color: var(--secondary-color);	
 	color: #DDD;
 }
 
@@ -1726,17 +1726,16 @@ button.litebutton.close-button {
 }
 
 .litetabs ul.wtabcontainer li.wtab .tabclose:hover {
-	color: white;
-	background-color: #333;
+	color: var(--font-color);
+	background-color: var(--alternative-color);
 	opacity: 1;
 }
 
 .litetabs .wtabcontent {
 	position: relative;
-	background-color: #222;	
+	background-color: var(--bg-color);
 	display: inline-block;
 }
-
 .litetabs.horizontal > .wtabcontent {
 	padding-left: 2px;
 	padding-right: 2px;
@@ -1790,15 +1789,15 @@ li.ltreeitem {
 }
 
 li.ltreeitem:hover div.ltreeitemtitle .incontent{
-	color: #EC6;
+	color: var(--highlight);
 	font-weight: bold;
 }
 
 
-li.ltreeitem:nth-child(even)
+/*li.ltreeitem:nth-child(even)
 {
 	background-color: rgba(0,0,0,0.1);
-}
+}*/
 
 
 /*
@@ -1813,27 +1812,29 @@ li.ltreeitem.root_item {
 }
 
 li.ltreeitem div.ltreeitemtitle {
-	color: #AAA;
+	color: var(--font-color);
 	min-width: 100px;
 	white-space: nowrap;
 }
 
-/* li.ltreeitem div.ltreeitemtitle .incontent:hover {
-	color: #EC6;
-	font-weight: bold;
-} */
+
+ li.ltreeitem div.ltreeitemtitle .incontent:hover {
+	color: var(--highlight);
+
+} 
 
 li.ltreeitem.selected  div.ltreeitemtitle .incontent {
-	color: #EC6;
+	color: var(--highlight);
+	font-weight: bold;
 }
 
 li.ltreeitem.semiselected div.ltreeitemtitle .incontent {
-	color: #A96;
+	color: var(--highlight);
 }
 
 
 li.ltreeitem div.ltreeitemtitle.dragover .incontent {
-	background-color: #EC6;
+	background-color: var(--highlight);
 	color: black;
 	padding: 3px;
 	border-radius: 2px;
@@ -2066,8 +2067,8 @@ ul.file-list li.file-item span.info {
 }
 
 input {
-	color: #55AAFF;
-	background-color: #222;
+	color: var(--font-color);
+	background-color: var(--bg-color);
 	border: 0;
 	border-top: 1px solid #000; 
 	border-bottom: 1px solid #888; 
@@ -2079,8 +2080,8 @@ input {
 }
 
 textarea.textfield {
-	color: #55AAFF;
-	background-color: #222;
+	color: var(--font-color);
+	background-color: var(--bg-color);
 	border: 0;
 	border-top: 1px solid #000; 
 	border-bottom: 1px solid #888; 

@@ -1,6 +1,3 @@
-body{
-    background-color: #343434!important;
-}
 /*Checkbox*/
 .inspector .wcontent .checkbox {
     margin-left: 2px!important;
@@ -11,36 +8,16 @@ body{
     padding:0!important;
 }
 .litetabs{
-     background-color: #222;/* #343434; */
+     background-color: var(--heading-color);/* #343434; */
     box-sizing: border-box;
 
 }
 .litetabs.buttons{
-    background-color: #222 !important;
-    border-bottom: 2px solid #10c4b2;
+    background-color: var(--heading-color) !important;
+    border-bottom: 2px solid var(--highlight);
     width: 20%;
     min-width: 30px;
     height: 26px;
-}
-
-.litetabs li.wtab:hover:not(.selected) {
-    /*background-color: #10c4b2 !important;
-    color: #DDD!important;*/
-    color: #10c4b2 !important;
-    background-color: #10c4b245;
-}
-.litetabs li.wtab.selected {
-    color: #10c4b2 !important;
-    background-color: #10c4b245;
-
-}
-.litetabs ul.wtabcontainer{
-    border-bottom: 2px solid #10c4b2!important;
-}
-.litetabs ul.wtabcontainer li.wtab .tabclose:hover {
-    color: #10c4b2;
-    background-color: #2a5b56;
-    opacity: 1;
 }
 
 /*Buttons*/
@@ -50,7 +27,7 @@ button.fit-content{
 button.btn{
     margin: 0em;
     border-width: 0px;
-    border-radius: 2px;
+    
     border-color: transparent!important;
 }
 button.btn:active {
@@ -70,7 +47,7 @@ button.btn-str{
 }
 button.btn-str:hover{
     color: #ffffff!important;
-    background-color:  #10c4b2!important;/* #10c4b245!important;*/
+    background-color:  var(--highlight)!important;/* #10c4b245!important;*/
 }
 
 /*------------Icon button*/
@@ -79,7 +56,8 @@ button.btn-str:hover{
 }
 button.btn-icon {
     /*bottom:1px;*/
-    color: #aaa!important;
+    color: var(--font-color-secondary)!important;
+    fill: var(--font-color-secondary)!important;
     background-color: transparent!important;
     height: 100%;
 
@@ -89,10 +67,11 @@ button.btn:focus{
 }
 button.btn-icon:hover {
     outline: transparent;
-    fill: #aaa!important;
-    background-color: #10c4b2!important;
+    background-color: var(--highlight)!important;
     color: #ced0d4!important;
+    fill: #ced0d4!important;
 }
+
 button.btn-icon.btn-expand:hover{
     background-color: transparent!important;
 }
@@ -117,16 +96,14 @@ button.btn-icon.btn-expand:hover{
 }
 .icon{
     width:20px!important;
-    fill: #aaa;/*!important;*/
+    fill: var(--primary-color);/*!important;*/
 
 }
 .icon:hover{
 
-    fill: #ced0d4!important;
+    fill: var(--bg-color)!important;
 }
-.icon.selected{
-    fill: #10c4b2 !important;
-}
+
 /* Stream Icon */
 #stream-btn{
     background: rgb(40, 40, 40);
@@ -168,16 +145,16 @@ button.btn-icon.btn-expand:hover{
 
 #play-btn{
     outline: transparent;
-    fill: #ced0d4!important;
-    background-color: #10a697!important;
-    color: #f0f1f1!important;
+    fill: var(--primary-color)!important;
+    background-color: var(--highlight)!important;
+    color: var(--primary-color)!important;
     height: auto;
 }
 #play-btn.playing{
     outline: transparent;
-    fill: #aaa!important;
+    fill: var(--primary-color);
     background-color: #c4102e!important;
-    color: #f0f1f1!important;
+    color: var(--primary-color);
     height: auto;
 }
 /*Keyframe icon*/
@@ -219,24 +196,7 @@ button.btn-icon.btn-expand:hover{
     position: absolute;
 }
 /*Content */
-/*.content{
-    background-color: white!important;
 
-}*/
-li.ltreeitem.selected div.ltreeitemtitle .incontent {
-    color:  #10c4b2 !important;
-}
-li.ltreeitem.semiselected div.ltreeitemtitle .incontent {
-    color:  #10c4b2 !important;
-}
-li.ltreeitem div.ltreeitemtitle .incontent:hover {
-	color:  #10c4b2 !important;
-	font-weight: bold;
-}
-li.ltreeitem:hover div.ltreeitemtitle .incontent{
-	color:  #10c4b2 !important;
-	font-weight: bold;
-}
 
 
 .graph-canvas{
@@ -346,7 +306,7 @@ iframe{
 
 input {
   position: relative;
-  background-color: transparent;
+ 
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin:4px 8px;
   border-radius: 4px;

@@ -49,7 +49,7 @@ class App{
 			this.streamer.onConnect = this.onWSconnected.bind(this);
 
 	    this.chat = new Chat();
-			this.iframe =   CORE.Interface.iframe;
+		this.iframe =   CORE.Interface.iframe;
 	}
 
     init(){
@@ -395,6 +395,11 @@ class App{
                 EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
             }
         }
+        if(env.iframe)
+        {
+            this.iframe.src = env.iframe;
+            CORE.Interface.iframe.src = env.iframe;
+        }
     }
 
 	loadCorpusData(data){
@@ -435,6 +440,7 @@ class App{
 
                     obj.env.graphs.push(data);
                 }
+                obj.env.iframe = this.iframe.src;
                 data = obj;
                 break;
 

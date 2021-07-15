@@ -1284,7 +1284,11 @@ class Interface {
     {
         LiteGUI.prompt(
             "Iframe URL",
-            function(v){this.iframe.src = v}.bind(this)
+            function(v){
+                if(v)
+                    this.iframe.src = v
+            }.bind(this),
+            {value:this.iframe.src}
         );
     }
     /* ----------------------------------------------------------------------------------------------------------------------- */

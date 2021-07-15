@@ -65,8 +65,8 @@
 .console .typing button#send {
 	border: 0;
 	border-radius: 0 8px 8px 0;
-	background-color: #76a5d4;
-	color: white;
+	/*background-color: #76a5d4;*/
+	color: var(--highlight);
 	width: 40px;
 	font-size: 1.8em;
 	padding: 10px;
@@ -75,8 +75,8 @@
 .console .typing button#mic {
 	font-size: 1.8em;
   border: 0;
-  color: white;
-  background-color: #76a5d4;
+  color: var(--highlight);
+  /*background-color: #76a5d4;*/
   /* background-color: transparent; */
   padding: 0px 11px;
   margin-left: 6px;
@@ -88,7 +88,8 @@
 }
 
 .console .typing button:hover {
-	background-color: #8a9caf !important;
+	background-color: var(--highlight) !important;
+	color: var(--primary-color);
 	cursor: pointer;
 }
 /*
@@ -107,9 +108,9 @@
  }
 .console button#clear-chat{
 	position: absolute;
-  right: 5px;
-  top: 10px;
-	background-color: #76a5d4;
+	right: 5px;
+	top: 10px;
+	background-color: var(--highlight);
 	color: white;
 	width: 90px;
 	border: 0px;
