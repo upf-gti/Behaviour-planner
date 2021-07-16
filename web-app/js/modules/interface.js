@@ -26,7 +26,8 @@ class Interface {
             tree: '<span class="material-icons">account_tree</span>',
             chat: '<span class="material-icons">chat</span>',
             pause: '<span class="material-icons">pause</span>',
-            refresh: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px"viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M86,17.2c-17.01998,0 -32.66383,6.21171 -44.67969,16.48333c-1.64003,1.30561 -2.43687,3.40213 -2.07805,5.46745c0.35882,2.06532 1.81609,3.77022 3.80038,4.44616c1.98429,0.67594 4.17929,0.21517 5.72428,-1.20164c10.02307,-8.56811 22.99492,-13.72865 37.23307,-13.72865c29.79361,0 54.18567,22.57745 57.05339,51.6h-16.92005l22.93333,34.4l22.93333,-34.4h-17.49114c-2.93142,-35.25049 -32.51591,-63.06667 -68.50886,-63.06667zM22.93333,57.33333l-22.93333,34.4h17.49115c2.93142,35.25049 32.51591,63.06667 68.50885,63.06667c17.01998,0 32.66383,-6.21171 44.67969,-16.48333c1.64004,-1.30561 2.43688,-3.40213 2.07807,-5.46746c-0.35882,-2.06533 -1.81609,-3.77024 -3.80039,-4.44617c-1.9843,-0.67594 -4.1793,-0.21516 -5.72429,1.20165c-10.02308,8.56811 -22.99493,13.72864 -37.23308,13.72864c-29.79361,0 -54.18567,-22.57744 -57.05339,-51.6h16.92005z"></path></svg>'
+            refresh: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px"viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M86,17.2c-17.01998,0 -32.66383,6.21171 -44.67969,16.48333c-1.64003,1.30561 -2.43687,3.40213 -2.07805,5.46745c0.35882,2.06532 1.81609,3.77022 3.80038,4.44616c1.98429,0.67594 4.17929,0.21517 5.72428,-1.20164c10.02307,-8.56811 22.99492,-13.72865 37.23307,-13.72865c29.79361,0 54.18567,22.57745 57.05339,51.6h-16.92005l22.93333,34.4l22.93333,-34.4h-17.49114c-2.93142,-35.25049 -32.51591,-63.06667 -68.50886,-63.06667zM22.93333,57.33333l-22.93333,34.4h17.49115c2.93142,35.25049 32.51591,63.06667 68.50885,63.06667c17.01998,0 32.66383,-6.21171 44.67969,-16.48333c1.64004,-1.30561 2.43688,-3.40213 2.07807,-5.46746c-0.35882,-2.06533 -1.81609,-3.77024 -3.80039,-4.44617c-1.9843,-0.67594 -4.1793,-0.21516 -5.72429,1.20165c-10.02308,8.56811 -22.99493,13.72864 -37.23308,13.72864c-29.79361,0 -54.18567,-22.57744 -57.05339,-51.6h16.92005z"></path></svg>',
+            light: '<svg xmlns="http://www.w3.org/2000/svg" class="icon" x="0px" y="0px" viewBox="0 0 172 172"><path d="M0,172v-172h172v172z" fill="none"></path><path d="M85.92302,7.16667c-1.39872,0.02045 -2.73437,0.58534 -3.72331,1.57471l-19.92529,19.92529h-28.23275c-2.96841,0.0003 -5.3747,2.40659 -5.375,5.375v28.23275l-19.92529,19.92529c-2.09823,2.0991 -2.09823,5.50149 0,7.60059l19.92529,19.92529v28.23275c0.0003,2.96841 2.40659,5.3747 5.375,5.375h28.23275l19.92529,19.92529c2.0991,2.09823 5.50149,2.09823 7.60059,0l19.92529,-19.92529h28.23275c2.96841,-0.0003 5.3747,-2.40659 5.375,-5.375v-28.23275l19.92529,-19.92529c2.09823,-2.0991 2.09823,-5.50149 0,-7.60059l-19.92529,-19.92529v-28.23275c-0.0003,-2.96841 -2.40659,-5.3747 -5.375,-5.375h-28.23275l-19.92529,-19.92529c-1.02666,-1.02708 -2.4252,-1.59508 -3.87728,-1.57471zM86,20.14225l17.69971,17.69971c1.00788,1.00801 2.37485,1.57443 3.80029,1.57471h25.08333v25.08333c0.00027,1.42544 0.5667,2.79242 1.57471,3.80029l17.69971,17.69971l-17.69971,17.69971c-1.00801,1.00788 -1.57443,2.37485 -1.57471,3.80029v25.08333h-25.08333c-1.42544,0.00027 -2.79242,0.5667 -3.80029,1.57471l-17.69971,17.69971z"></path></svg>'
         }
 
         this.sidePanelExpanded = false;
@@ -139,6 +140,9 @@ class Interface {
         this.inspector_area.add(this.graphinspector);
         docked.add(this.inspector_area);
 
+       /* var clearBtn = this.addButton("", {title: "Clear chat", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: CORE.App.chat.clearChat.bind(this)});
+        clearBtn.id = "clear-chat";
+        this.contentTabs.root.append(clearBtn)*/
         // OPEN BHV
         var btn_tab = this.contentTabs.addButtonTab("btn_tab","<img src='https://webglstudio.org/latest/imgs/mini-icon-script.png'>", this.onExpandInspector.bind(this,mainarea));
         btn_tab.tab.style.width = "23px";
@@ -149,7 +153,10 @@ class Interface {
         // CHAT
         var chat_tab = this.contentTabs.addTab("chat", {selected:true, title: this.icons.chat, width:"100%", height:"calc(100% - 40px)"});
         var chat_area = new LiteGUI.Area({id:"chat-content", autoresize:false});
+      
+        
         var chat = CORE.App.chat.createGUI(chat_area);
+        
         chat_tab.add(chat_area);
 
         // DRIVE
@@ -164,6 +171,15 @@ class Interface {
         var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
         var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon center play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
+        }});
+        var theme_mode = this.addButton("", {title: "Change light/dark", id: "data-theme", className: "btn btn-icon right",innerHTML: this.icons.light, callback: function(){
+            if(document.documentElement.getAttribute('data-theme')== "dark") {
+               // trans()
+                document.documentElement.setAttribute('data-theme', 'light')
+            } else {
+              //  trans()
+                document.documentElement.setAttribute('data-theme', 'dark')
+            }
         }});
         LiteGUI.menubar.refresh = (function()
         {
@@ -202,6 +218,7 @@ class Interface {
                 }});
             }
             LiteGUI.menubar.root.firstElementChild.appendChild(play_btn)
+            LiteGUI.menubar.root.firstElementChild.appendChild(theme_mode)
         }).bind(this);
     
         LiteGUI.menubar.refresh();
@@ -245,7 +262,7 @@ class Interface {
         div.className+= " litetabs buttons right";
         /*var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
         stream_btn.style.display="none";*/
-        var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: GraphManager.clearCurrentGraph});
+        var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: this.openConfirmDeleteDialog.bind(this,"Clear graph", GraphManager.clearCurrentGraph)});
         /*var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});*/
@@ -270,7 +287,7 @@ class Interface {
         var div2 = document.createElement("DIV");
 
         div2.className+= " litetabs buttons right";
-
+        div2.style = "width:100%!important"
        /* var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});*/
@@ -288,7 +305,7 @@ class Interface {
  
         this.iframearea.add(div2);
         this.iframe = document.createElement("iframe");
-        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
+        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json&autoplay=true";
         this.iframe.id="iframe-character";
         this.iframearea.add(this.iframe)
         iframeWindow = this.iframearea
@@ -549,7 +566,15 @@ class Interface {
     {
         LiteGUI.prompt("URL name", this.importFromURL.bind(this),{title: "Import from URL"});
     }
-
+    openConfirmDeleteDialog(title = "Delete", callback)
+    {
+        LiteGUI.choice("Are you sure?",["Delete", "Cancel"],
+            function(v){
+                if(v == "Delete")
+                    callback()
+            },
+            {title: title});
+    }
     // session_type is for guest issues, to load a template on login
     importFromURL(url, session_type)
     {
@@ -1276,19 +1301,22 @@ class Interface {
                 EntitiesManager.addWordsToWorld(tag,words)
                 dialog.close();
             }})
-        dialog.adjustSize();
+        dialog.adjustSize(4);
         dialog.add(inspector);
         dialog.makeModal();
     }
     showEditIframeDialog()
     {
         LiteGUI.prompt(
-            "Iframe URL",
+            "Only WebGLStudio scenes",
             function(v){
                 if(v)
                     this.iframe.src = v
             }.bind(this),
-            {value:this.iframe.src}
+            {
+                value:this.iframe.src,
+                title: "Iframe URL"
+            }
         );
     }
     /* ----------------------------------------------------------------------------------------------------------------------- */

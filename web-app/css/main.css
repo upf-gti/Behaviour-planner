@@ -36,17 +36,17 @@ button.btn:active {
 
 /*-----------String button*/
 button.btn-str{
-    padding: 1px 0px;
+    padding: 1px 0px!important;
     bottom:1px;
-    color: #DDD!important;/*#ffffff!important;*/
-    background-color: #626262!important;
-
+    color: var(--font-color-secondary);/*#ffffff!important;*/
+    background-color: var(--secondary-color);
     width: calc(50% - 20px);
     margin: 3px 10px;
     text-shadow:0 0!important;
+    border-radius: 4px;
 }
 button.btn-str:hover{
-    color: #ffffff!important;
+
     background-color:  var(--highlight)!important;/* #10c4b245!important;*/
 }
 
@@ -59,8 +59,12 @@ button.btn-icon {
     color: var(--font-color-secondary)!important;
     fill: var(--font-color-secondary)!important;
     background-color: transparent!important;
-    height: 100%;
+  /*  height: 100%;*/
 
+}
+button.btn-icon.icon{
+    color: var(--font-color-secondary)!important;
+    fill: var(--font-color-secondary)!important;
 }
 button.btn:focus{
     outline: transparent;
@@ -96,7 +100,7 @@ button.btn-icon.btn-expand:hover{
 }
 .icon{
     width:20px!important;
-    fill: var(--primary-color);/*!important;*/
+    /*fill: var(--primary-color);/*!important;*/
 
 }
 .icon:hover{
@@ -153,7 +157,7 @@ button.btn-icon.btn-expand:hover{
 #play-btn.playing{
     outline: transparent;
     fill: var(--primary-color);
-    background-color: #c4102e!important;
+    background-color: var(--alternative-color)!important;
     color: var(--primary-color);
     height: auto;
 }
@@ -310,7 +314,7 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin:4px 8px;
   border-radius: 4px;
-  color: white;
+ /* color: white;*/
   width: calc(100% - 56px);
 }
 .highlighter {
@@ -449,29 +453,35 @@ mark {
 /*
 Webglstudio editor
 */
-
+.resources-tree{
+    background-color: var(--secondary-color);
+    padding: 5px;
+    width: 100%;
+    height: 100%;
+}
 .resources-tree .ltree-level-1 {
 	font-size: 1.4em;
-	background-color: #223 !important;
+	/*background-color: #223 !important;*/
 	border-radius: 2px;
 	margin-top: 2px;
 }
 
 .resources-tree .ltree-level-1 .incontent {
-	color: #EEE;
+	color: var(--font-secondary-color);
 	font-weight: bold;
 }
 
 .resources-tree .ltreeitemtitle {
+    color: var(--font-color-secondary)!important;
 	padding: 4px;
 }
 
 .resources-tree .ltreeitem:nth-child(even) {
-	background-color: #111;
+	/*background-color: #111;*/
 }
 
 .resources-tree .ltreeitem:nth-child(even):hover {
-	background-color: #333;
+/*	background-color: #333;*/
 }
 
 .resource .extension {
@@ -489,7 +499,7 @@ Webglstudio editor
 }
 
 .file-list-title {
-    background-color: black;
+    background-color: var(--heading-color);/* black;*/
     color: white;
     height: 28;
     overflow: hidden;

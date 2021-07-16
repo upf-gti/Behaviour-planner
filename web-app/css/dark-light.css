@@ -10,9 +10,11 @@
     --opaque-color: #dcdcdce3;
 }
 [data-theme="dark"] {
-    --primary-color: #9A97F3;
-    --secondary-color: #818cab;
-    --font-color: #e1e1ff;
+    --primary-color: #222;
+   /* --secondary-color: #dcdcdc;*/
+    --alternative-color: #a15d3f;
+    --font-color: #dcdcdc;
+    --font-color-secondary: #eee;
     --bg-color: #3f3f3f;
-    --heading-color: #dcdcdc;
+    --heading-color: #262626;
 }

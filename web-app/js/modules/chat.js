@@ -21,10 +21,11 @@ class Chat{
       this.log_container.id = "log-container";
       typing_console.appendChild(this.log_container);
 
-      var clearBtn = document.createElement("BUTTON");
+     // var clearBtn = document.createElement("BUTTON");
+      var clearBtn = CORE.Interface.addButton("", {title: "Clear chat", className: "btn btn-icon right", innerHTML: CORE.Interface.icons.clear, callback: this.clearChat.bind(this)});
       clearBtn.id = "clear-chat";
-      clearBtn.innerText = "Clear";
-      clearBtn.addEventListener("click", this.clearChat.bind(this));
+     // clearBtn.innerText = "Clear";
+     // clearBtn.addEventListener("click", this.clearChat.bind(this));
       typing_console.appendChild(clearBtn);
 
       var typing = document.createElement("DIV");
@@ -36,7 +37,7 @@ class Chat{
       this.input.placeHolder = "type here...";
       this.input.addEventListener("keydown",function(e){
         var that = this;
-          if(e.keyCode == 13) //enter
+          if(e.keyCode == 13 &&  CORE.App.state == PLAYING) //enter
           {
               if(that.input.value == "")
                   return;

@@ -34,7 +34,7 @@ class Drive {
         }.bind(this))});
         fixed_files_inspector.addCombo("Type", "", {values: ["Graph", "Environment"], name_width: 60, content_width: 140, width: 200});
         fixed_files_inspector.addSeparator();
-        fixed_files_inspector.root.style.background = "#222";
+       // fixed_files_inspector.root.style.background = "#222";
 
         // files
         this.browser_container = browser_root.sections[1].content;
@@ -164,10 +164,10 @@ class Drive {
             var selected = null;
             var litetree = new LiteGUI.Tree({id: user_name, collapsed_depth: 3, indent_offset: -1 });
             litetree.root.classList.add("resources-tree");
-            litetree.root.style.backgroundColor = "black";
-            litetree.root.style.padding = "5px";
+            /*litetree.root.style.backgroundColor = "black";
+          /*  litetree.root.style.padding = "5px";
             litetree.root.style.width = "100%";
-            litetree.root.style.height = "100%";
+            litetree.root.style.height = "100%";*/
             LiteGUI.bind( litetree.root, "item_selected", function(item) {
                 selected = item.detail.data.id;
 
