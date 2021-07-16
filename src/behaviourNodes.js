@@ -1557,15 +1557,18 @@ HttpRequest.prototype.onGetOutputs = function(){
     return outputs;
 }
 
-HttpRequest.prototype.addProperty = function(name, value)
+HttpRequest.prototype.addProperty = function(name, value, is_header)
 {
     if(!name || name.constructor !== String) return false;
-    if(this.properties[name]) return false; //Name already used
 
-    this.properties[name] = value || "";
+    var container = is_header ? this.headers : this.properties;
+    
+    if(container[name]) return false; //Name already used
+
+    container[name] = value || "";
 
     // process special cases
-    this.propagate(name, this.properties[name]);
+    this.propagate(name, container[name]);
 
     return true;
 }
@@ -1584,6 +1587,11 @@ HttpRequest.prototype.propagate = function(name, value)
     }
 
     return true;
+}
+
+HttpRequest.getTemplate = function(name)
+{
+    return JSON.parse(JSON.stringify(HttpRequest.RAO_Templates[name]));
 }
 
 HttpRequest.RAO_Templates = {

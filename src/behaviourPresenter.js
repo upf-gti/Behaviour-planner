@@ -729,8 +729,7 @@ HttpRequest.prototype.onInspect = function(inspector)
         newValue = value;
     }});
     inspector.addButton(null, "As header", {callback: function(){
-        newName = "#" + newName;
-        if(that.addProperty(newName, newValue)){
+        if(that.addProperty(newName, newValue, true)){
             that.onInspect(inspector);
         }
     }});
@@ -820,8 +819,7 @@ HttpRequest.prototype.onInspect = function(inspector)
                 options.push({
                     title: t,
                     callback: function(){
-                        var template = HttpRequest.RAO_Templates[t];
-                        that.data = Object.assign({}, template);
+                        that.data = Object.assign({}, HttpRequest.getTemplate(t));
                         that.onInspect(inspector);
                     }
                 });
@@ -835,33 +833,41 @@ HttpRequest.prototype.onInspect = function(inspector)
 
     // Show data
     {
-        this.onInspectObject(inspector);
+        this.onInspectObject(inspector, this.data);
     }
     
 }
 
-HttpRequest.prototype.onInspectObject = function(inspector, object)
+HttpRequest.prototype.onInspectObject = function(inspector, o)
 {
     var that = this;
-    var o = object || this.data;
 
     for(let key in o) {
 
         var value = o[key];
-        var func = this.onInspectProperty(inspector, key, value);
+        var func = this.onInspectProperty(o, inspector, key, value);
 
         if(func){
-            inspector.widgets_per_row = 2;
-            inspector.addString(null, key, {width: "40%"});
-            var domEl = func(null, value, {width: "60%", callback: function(v){
+            inspector.widgets_per_row = 3;
+            inspector.addString(null, key, {width: "35%", callback: function(v){
+                var prev_value = o[key];
+                delete o[key];
+                o[v] = prev_value;
+                that.onInspect(inspector);
+            }});
+            var domEl = func(null, value, {width: "55%", callback: function(v){
                 o[key] = v;
+            }});
+            inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
+                delete o[key];
+                that.onInspect(inspector);
             }});
             inspector.widgets_per_row = 1;
         }
     }
 }
 
-HttpRequest.prototype.onInspectProperty = function(inspector, key, value, is_array_member)
+HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value, is_array_member)
 {
     var that = this;
     switch(value.constructor)
@@ -886,6 +892,10 @@ HttpRequest.prototype.onInspectProperty = function(inspector, key, value, is_arr
                         {title: key, disabled: true}, null,
                         {title: "Add key", callback: function(){
                             value["new_key"] = "";
+                            that.onInspect(inspector);
+                        }}, null,
+                        {title: "Remove", callback: function(){
+                            delete object[key];
                             that.onInspect(inspector);
                         }}
                     ], { event: e});
@@ -912,6 +922,10 @@ HttpRequest.prototype.onInspectProperty = function(inspector, key, value, is_arr
                            value[i]["new_key"] = "";
                         }
                         that.onInspect(inspector);
+                    }}, null,
+                    {title: "Remove", callback: function(){
+                        delete object[key];
+                        that.onInspect(inspector);
                     }}
                 ], { event: e});
             });
@@ -921,7 +935,7 @@ HttpRequest.prototype.onInspectProperty = function(inspector, key, value, is_arr
                     inspector.addSeparator();
                 if(value[i].constructor == Array)
                     continue;
-                this.onInspectProperty(inspector, key, value[i], true);
+                this.onInspectProperty(object, inspector, key, value[i], true);
             }
             return null;
             break;
