@@ -5,6 +5,7 @@
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+    background-color: var(--bg-color);
 }
 
 .litegraph.litecontextmenu {
@@ -13,10 +14,10 @@
     top: 100px;
     left: 100px;
     min-width: 100px;
-    color: #aaf;
+    color: var(--font-color-secondary);/* #aaf;*/
     padding: 0;
     box-shadow: 0 0 10px black !important;
-    background-color: #2e2e2e !important;
+    background-color: var(--secondary-color);/*#2e2e2e !important;*/
 	z-index: 10;
 }
 

@@ -17,28 +17,27 @@
 
 .console .log .msg {
 	width: calc(100% - 50px);
-  border-radius: 5px;
-  background-color: #EEE;
-  color: black;
-  font-size: 1.4em;
-  padding: 8px;
-  padding-left: 16px;
-	box-shadow: #EEE 2px 2px 2px;
+	border-radius: 5px;
+	background-color: var(--primary-color);
+	color: var(--font-color);
+	font-size: 1.4em;
+	padding: 8px;
+	padding-left: 16px;
+	/*box-shadow: #EEE 2px 2px 2px;*/
 	margin-left: 40px;
 	margin-bottom: 10px;
 }
 
 .console .log .msg.me
 {
-  background-color: #EFE;
+	background-color: var(--alternative-color);
 	margin-left: 0px;
 }
-
 .console .log .msg.sys
 {
-  font-size: 1em;
+	font-size: 1em;
 	color: #AAA;
-  background-color: white;
+	background-color: white;
 	margin-left: 0px;
 	width: 100%;
 	box-shadow: transparent 0 0 0;
@@ -65,8 +64,8 @@
 .console .typing button#send {
 	border: 0;
 	border-radius: 0 8px 8px 0;
-	background-color: #76a5d4;
-	color: white;
+	/*background-color: #76a5d4;*/
+	color: var(--highlight);
 	width: 40px;
 	font-size: 1.8em;
 	padding: 10px;
@@ -75,8 +74,8 @@
 .console .typing button#mic {
 	font-size: 1.8em;
   border: 0;
-  color: white;
-  background-color: #76a5d4;
+  color: var(--highlight);
+  /*background-color: #76a5d4;*/
   /* background-color: transparent; */
   padding: 0px 11px;
   margin-left: 6px;
@@ -88,7 +87,8 @@
 }
 
 .console .typing button:hover {
-	background-color: #8a9caf !important;
+	background-color: var(--highlight) !important;
+	color: var(--primary-color);
 	cursor: pointer;
 }
 /*
@@ -107,11 +107,18 @@
  }
 .console button#clear-chat{
 	position: absolute;
-  right: 5px;
-  top: 10px;
-	background-color: #76a5d4;
-	color: white;
-	width: 90px;
+	right: 5px;
+	top: 10px;
+	/*background-color: var(--highlight);*/
+	padding:0px;
 	border: 0px;
-
+}
+.console button#clear-chat:hover{
+	fill: var(--font-color-secondary);
+}
+.console button#clear-chat .icon{
+	fill: var(--highlight);
+}
+.console button#clear-chat .icon:hover{
+	fill: var(--font-color-secondary);
 }
