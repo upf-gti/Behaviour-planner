@@ -305,6 +305,7 @@ class Interface {
  
         this.iframearea.add(div2);
         this.iframe = document.createElement("iframe");
+        this.iframe.style.height = "calc(100% - 3px)"
         this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json&autoplay=true";
         this.iframe.id="iframe-character";
         this.iframearea.add(this.iframe)
@@ -1503,8 +1504,8 @@ class Interface {
                 /*var gest_btn = inspector.addButton(null, "Add Gesture Manager", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 gest_btn.getElementsByTagName("button")[0].className = "btn btn-str";*/
                 inspector = AgentManager.createAgentInspector(inspector, agent);
-                var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
-                graph_btn.getElementsByTagName("button")[0].className = "btn btn-str";
+                var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"litebutton btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
+                graph_btn.getElementsByTagName("button")[0].className = "litebutton btn btn-str";
 
               /*  inspect_area.clear();
                 if(inspec_area.childNodes.length>0)

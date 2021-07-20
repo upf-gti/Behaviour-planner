@@ -932,10 +932,17 @@ TimelineIntent.prototype.tick = function(agent, dt, info){
             bml[track.name] = [];
         }
         for(var j in track.clips){
-            if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
-            {
-                track.clips[j].properties.text = info.text || "Check out the development";
-            }
+            if(track.clips[j].constructor==ANIM.SpeechClip){
+                if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
+                {
+                    track.clips[j].properties.text = info.text || "Check out the development";
+                }else if(info && info.tags !=undefined)
+                {        
+                    for(var tag in info.tags){
+                        track.clips[j].properties.text = track.clips[j].properties.text.replace(tag, info.tags[tag]);                     
+                    }        
+                }
+            }           
             var data = track.clips[j].toJSON();
             data.type = track.clips[j].constructor.type;
             bml[track.name].push(data);

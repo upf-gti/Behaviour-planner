@@ -123,7 +123,7 @@ display: none;
 	white-space: nowrap;
 	/* height: 1.8em; */
 	/* text-align: center; */
-	/*background: #484848  !important;*/
+	background: var(--background-modifier-selected);
 	/* user-select: none; */
 	-moz-user-select: none;
 	/* -webkit-user-select: none; */
@@ -830,6 +830,7 @@ button.wcombobutton.selected {
 	padding: 2px;
 	cursor: pointer;
 	border-radius: 2px;
+	color: var(--textbox-markdown-syntax);
 }
 
 .inspector ul.lite-list li.selected {
@@ -838,8 +839,8 @@ button.wcombobutton.selected {
 }
 
 .inspector ul.lite-list li:hover {
-	color: black;
-	background-color: var(--highlight);
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
 }
 
 /* Here goes all the CSS related to layout the web (panels, windows, bars, etc) */
@@ -1690,6 +1691,10 @@ button.litebutton.close-button {
 	vertical-align: top;
 	padding: 4px 8px 2px 4px;
 	border-radius: 3px 3px 0 0;
+}
+.litetabs.litetabs.horizontal > ul.wtabcontainer > li.wtab:hover{
+	background-color: var(--background-modifier-hover); 
+   border-right: 4px solid var(--background-primary)!important;
 }
 
 .litetabs.vertical > ul.wtabcontainer > li.wtab {

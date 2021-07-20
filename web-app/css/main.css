@@ -42,16 +42,12 @@ button.btn:active {
 button.btn-str{
     padding: 1px 0px!important;
     bottom:1px;
-    color: var(--font-color-secondary);/*#ffffff!important;*/
-    background-color: var(--secondary-color);
+   /* color: var(--font-color-secondary);/*#ffffff!important;*/
+    /*background-color: var(--secondary-color);*/
     width: calc(50% - 20px);
     margin: 3px 10px;
     text-shadow:0 0!important;
     border-radius: 4px;
-}
-button.btn-str:hover{
-
-    background-color:  var(--highlight)!important;/* #10c4b245!important;*/
 }
 
 /*------------Icon button*/
