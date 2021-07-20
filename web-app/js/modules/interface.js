@@ -173,12 +173,12 @@ class Interface {
             CORE.App.onPlayClicked();
         }});
         var theme_mode = this.addButton("", {title: "Change light/dark", id: "data-theme", className: "btn btn-icon right",innerHTML: this.icons.light, callback: function(){
-            if(document.documentElement.getAttribute('data-theme')== "dark") {
+            if(document.documentElement.getAttribute('data-theme')== "light") {
                // trans()
-                document.documentElement.setAttribute('data-theme', 'light')
+                document.documentElement.setAttribute('data-theme', 'dark')
             } else {
               //  trans()
-                document.documentElement.setAttribute('data-theme', 'dark')
+                document.documentElement.setAttribute('data-theme', 'light')
             }
         }});
         LiteGUI.menubar.refresh = (function()
@@ -232,7 +232,7 @@ class Interface {
        this.createMenuBar();
 
         var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
-        mainarea.split("horizontal",[null,300], true);
+        mainarea.split("horizontal",[null,300], false);
         this.mainarea = mainarea;
        // mainarea.add(panel)
         LiteGUI.add( mainarea );
@@ -246,7 +246,7 @@ class Interface {
 
         /*-------------------------------------------------------------------------------------------*/
         // Left area
-        var canvas_area = new LiteGUI.Area({id :"canvasarea", content_id:"canvas-area", autoresize: true, inmediateResize: true});
+        var canvas_area = new LiteGUI.Area({id :"canvasarea", content_id:"canvas-area", autoresize: false, inmediateResize: true});
         this.canvas_area = canvas_area;
         this._graph_tab.add( canvas_area );
         //canvas_area.split("horizontal",[null,"20%"], true);
@@ -259,7 +259,7 @@ class Interface {
 
         var div = document.createElement("DIV");
 
-        div.className+= " litetabs buttons right";
+        div.className+= "tab-buttons-icons buttons right";
         /*var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
         stream_btn.style.display="none";*/
         var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: this.openConfirmDeleteDialog.bind(this,"Clear graph", GraphManager.clearCurrentGraph)});

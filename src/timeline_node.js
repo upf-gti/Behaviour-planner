@@ -1471,11 +1471,25 @@ SpeechClip.prototype.showInfo = function(panel)
 		if(i=="text"){
 			if(this.properties['inherited_text']==false)
 			{
+				var newPhrase = "";
+    			var tags = [];
 				var textarea = panel.addTextarea(i, property,{title:"Custom text", callback: function(v, value)
 					{
 						this.properties[i] = value;
 				}.bind(this, i)});
 				textarea.id = "custom-textarea";
+				textarea.addEventListener("keypress", function(e){
+					var that = this;
+					/*if(e.key=="Alt"||e.key=="AltGraph" || e.key=="Control"|| e.key=="CapsLock" || e.key=="Backspace")
+					  return;*/
+					newPhrase =   textarea.getValue();
+					if(e.key == "#"){
+						autocomplete(textarea, EntitiesManager.getEntities(), tags, {})
+						//displayEntity(i, phrase, e, tags)
+						newPhrase = e.target.value;
+					}
+					textarea.setValue( newPhrase );
+				}.bind(this));
 				continue;
 			}
 		}
@@ -1503,10 +1517,12 @@ SpeechClip.prototype.showInfo = function(panel)
 			{
 
 				case String:
+					
 					panel.addString(i, property, {callback: function(i,v)
 					{
 						this.properties[i] = v;
 					}.bind(this, i)});
+					
 					break;
 				case Number:
 					if(i=="amount")
