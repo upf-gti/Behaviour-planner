@@ -81,13 +81,17 @@ class Interface {
 
         this._player_tab = LiteGUI.main_tabs.addTab( "Player", {id:"_playertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-player.png", size: "full", content:"",
 			callback: function(tab_id){
-                if(that.iframearea && !that.iframe.contentWindow)
+                if(that.iframearea && !that.iframe.contentWindow){
                     that._player_tab.add(that.iframearea)
-
+                    /*if(that.iframe.contentWindow)
+                        that.iframe.contentWindow.player.skip_play_button=true*/
+                        
+                }
                 if(that.contentTabs) {
                     that.contentTabs.show();
                     that.sidepanel.add( that.contentTabs );
                 }
+                that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
 			},
 			callback_leave: function(tab_id) {
                 that.contentTabs.hide();
@@ -293,6 +297,8 @@ class Interface {
         }});*/
         var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.refresh, callback: function () {
             that.iframearea.add(that.iframe)
+            that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
+
         }});
         var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
             iframeWindow = window.open("iframe.html", "otherWindow");
@@ -306,9 +312,12 @@ class Interface {
         this.iframearea.add(div2);
         this.iframe = document.createElement("iframe");
         this.iframe.style.height = "calc(100% - 3px)"
-        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json&autoplay=true";
+        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json";
         this.iframe.id="iframe-character";
+        
         this.iframearea.add(this.iframe)
+        if(this.iframe.contentWindow)
+            this.iframe.contentWindow.player.skip_play_button=true
         iframeWindow = this.iframearea
 
         // Drive tab
@@ -1313,6 +1322,9 @@ class Interface {
             function(v){
                 if(v)
                     this.iframe.src = v
+                    if(this.iframe.contentWindow)
+                         this.iframe.contentWindow.player.skip_play_button=true
+                   
             }.bind(this),
             {
                 value:this.iframe.src,
