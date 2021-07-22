@@ -8,9 +8,8 @@
     padding:0!important;
 }
 .litetabs{
-     background-color: var(--heading-color);/* #343434; */
-    box-sizing: border-box;
-
+    /* background-color: var(--background-tertiary);/* #343434; */
+     box-sizing: border-box;
 }
 .litetabs.buttons{
     background-color: var(--heading-color) !important;
@@ -19,7 +18,12 @@
     min-width: 30px;
     height: 26px;
 }
-
+.tab-buttons-icons{
+    /* background-color: var(--background-primary); */
+    /* padding: 1px;*/
+    height: 26px;
+    border-bottom: 2px solid var(--background-tertiary);
+}
 /*Buttons*/
 button.fit-content{
     width: fit-content!important;
@@ -38,16 +42,12 @@ button.btn:active {
 button.btn-str{
     padding: 1px 0px!important;
     bottom:1px;
-    color: var(--font-color-secondary);/*#ffffff!important;*/
-    background-color: var(--secondary-color);
+   /* color: var(--font-color-secondary);/*#ffffff!important;*/
+    /*background-color: var(--secondary-color);*/
     width: calc(50% - 20px);
     margin: 3px 10px;
     text-shadow:0 0!important;
     border-radius: 4px;
-}
-button.btn-str:hover{
-
-    background-color:  var(--highlight)!important;/* #10c4b245!important;*/
 }
 
 /*------------Icon button*/
@@ -56,11 +56,10 @@ button.btn-str:hover{
 }
 button.btn-icon {
     /*bottom:1px;*/
-    color: var(--font-color-secondary)!important;
-    fill: var(--font-color-secondary)!important;
+    color: var(--textbox-markdown-syntax);
+    fill: var(--textbox-markdown-syntax);
     background-color: transparent!important;
-  /*  height: 100%;*/
-
+    /*  height: 100%;*/
 }
 button.btn-icon.icon{
     color: var(--font-color-secondary)!important;
@@ -71,9 +70,9 @@ button.btn:focus{
 }
 button.btn-icon:hover {
     outline: transparent;
-    background-color: var(--highlight)!important;
-    color: #ced0d4!important;
-    fill: #ced0d4!important;
+    /* background-color: var(--textbox-markdown-syntax)!important; */
+    color: var(--text-normal)!important;
+    fill: var(--text-normal)!important;
 }
 
 button.btn-icon.btn-expand:hover{
@@ -99,7 +98,7 @@ button.btn-icon.btn-expand:hover{
     -webkit-font-smoothing: antialiased;
 }
 .icon{
-    width:20px!important;
+    width:18px!important;
     /*fill: var(--primary-color);/*!important;*/
 
 }
@@ -149,15 +148,19 @@ button.btn-icon.btn-expand:hover{
 
 #play-btn{
     outline: transparent;
-    fill: var(--primary-color)!important;
-    background-color: var(--highlight)!important;
+    fill: var(--text-normal)!important;
+    background-color: var(--control-brand-foreground-new)!important;
     color: var(--primary-color)!important;
     height: auto;
+    border-radius: 40px;
+}
+#play-btn:hover{
+    background-color: var(--channels-default)!important;
 }
 #play-btn.playing{
     outline: transparent;
-    fill: var(--primary-color);
-    background-color: var(--alternative-color)!important;
+    fill: var(--text-normal)!important;
+    background-color: var(--control-brand-foreground-new)!important;
     color: var(--primary-color);
     height: auto;
 }
@@ -166,18 +169,18 @@ button.btn-icon.btn-expand:hover{
 	border: 2px solid rgba(0,0,0,0.3);
 	/*box-shadow: 0 0 2px black;*/
 	border-radius: 10px;
-	width: 12px;
-	height: 12px;
-	background-color: #666;
+	width: 10px;
+	height: 10px;
+	background-color: var(--interactive-muted);
 	display: inline-block;
 	margin-top: 2px;
 	margin-right: 5px;
-    transition: background-color 0.1s ease 0s;
-    -moz-transition: background-color 0.1s ease 0s;
+	transition: background-color 0.1s ease 0s;
+	-moz-transition: background-color 0.1s ease 0s;
 }
 
 .keyframe_icon:hover {
-	background-color: #71bdbd;
+	background-color: var(--interactive-hover);
 	cursor: pointer;
 }
 
@@ -201,7 +204,9 @@ button.btn-icon.btn-expand:hover{
 }
 /*Content */
 
-
+.graph-content{
+    background-color: var(--background-primary);
+}
 
 .graph-canvas{
     height: 100%;

@@ -18,8 +18,8 @@
 .console .log .msg {
 	width: calc(100% - 50px);
 	border-radius: 5px;
-	background-color: var(--primary-color);
-	color: var(--font-color);
+	background-color: var(--header-primary);
+	color: var(--text-muted);
 	font-size: 1.4em;
 	padding: 8px;
 	padding-left: 16px;
@@ -30,7 +30,8 @@
 
 .console .log .msg.me
 {
-	background-color: var(--alternative-color);
+	background-color: var(--channels-default);
+	color: var(--text-normal);
 	margin-left: 0px;
 }
 .console .log .msg.sys
@@ -46,16 +47,17 @@
 .console .typing {
 	width: calc(100% - 15px);
 	height: 70px;
+	padding-top: 0px;
 	border-top: 1px dashed #AAA;
 }
 
 .console .typing input {
 	border: 0;
 	border-radius: 4px;
-	background-color: #EEE;
-	color: black;
-	font-size: 1.8em;
-	width: calc( 100% - 120px );
+	background-color: var(--channels-default);
+	color: var(--background-tertiary);
+	font-size: 1.6em;
+	width: calc( 100% - 101px );
 	margin-left: 12px;
 	margin-top: 12px;
 	padding: 6px;
@@ -64,31 +66,32 @@
 .console .typing button#send {
 	border: 0;
 	border-radius: 0 8px 8px 0;
-	/*background-color: #76a5d4;*/
-	color: var(--highlight);
 	width: 40px;
-	font-size: 1.8em;
-	padding: 10px;
-	margin-left: 4px;
+	font-size: 1.5em;
+	padding: 8px 0px;
+	/*margin-left: 4px;
+	/* margin-top: 13px; */
+	margin: 0;
 }
 .console .typing button#mic {
-	font-size: 1.8em;
-  border: 0;
-  color: var(--highlight);
-  /*background-color: #76a5d4;*/
-  /* background-color: transparent; */
-  padding: 0px 11px;
-  margin-left: 6px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  /* background-size: contain; */
-  /* background-image: url(mic.png);*/
+	/* margin: 0; */
+	font-size: 2.8em;
+	border: 0;
+	padding: 0px 11px;
+	margin-left: 1px;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	/* background-size: contain; */
+	/* background-image: url(mic.png);*/
 }
-
+.console .typing button{
+	background-color: var(--background-secondary);
+	color: var(--text-muted);
+}
 .console .typing button:hover {
-	background-color: var(--highlight) !important;
-	color: var(--primary-color);
+	background-color: var(--background-modifier-selected);
+	color: var(--text-normal)!important;
 	cursor: pointer;
 }
 /*

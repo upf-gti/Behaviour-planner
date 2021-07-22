@@ -130,10 +130,14 @@ class App{
         if(CORE.App.bp.state == BP_STATE.STOP){
             CORE.App.state = PLAYING;
             CORE.App.bp.play();
+            if(this.iframe)//LS.Player from iframe
+                this.iframe.play();
         }else{
             CORE.App.state = STOP;
             CORE.App.bp.stop();
             this.chat.clearChat();
+            if(this.iframe)//LS.Player from iframe
+                this.iframe.stop();
         }
     }
 
@@ -397,8 +401,80 @@ class App{
         }
         if(env.iframe)
         {
+            CORE.Interface.iframe = this.iframe = new ONE.Player({
+                alpha: false, //enables to have alpha in the canvas to blend with background
+                stencil: true,
+                redraw: true, //force to redraw
+                autoplay:false,
+                resources: "https://webglstudio.org/latest/fileserver/files/",
+                autoresize: true, //resize the 3D window if the browser window is resized
+                loadingbar: true, //shows loading bar progress
+                skip_play_button: true,
+                proxy: "@/proxy.php?url=" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+            });
+            //this.iframe = document.createElement("iframe");
+            //this.iframe.style.height = "calc(100% - 3px)"
+           // this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
+            this.iframe.id="iframe-character";
+            var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
+    
+            //support for external server
+            var data = localStorage.getItem("wgl_user_preferences" );
+            if(data)
+            {
+                var config = JSON.parse(data);
+                if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
+                {
+                    allow_remote_scenes = true;
+                    ONE.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
+                }
+            }
+            if( window.enableWebGLCanvas )
+                enableWebGLCanvas( gl.canvas );
+    
+            //renders the loading bar, you can replace it in case you want your own loading bar 
+            this.iframe.renderLoadingBar = function( loading )
+            {
+                if(!loading)
+                    return;
+    
+                if(!enableWebGLCanvas)
+                    return;
+    
+                if(!gl.canvas.canvas2DtoWebGL_enabled)
+                    enableWebGLCanvas( gl.canvas );
+    
+                gl.start2D();
+    
+                var y = gl.canvas.height/2.0;//gl.drawingBufferHeight - 6;
+                gl.fillColor = [0,0,0,1];
+                gl.fillRect( 0, 0, gl.canvas.width, gl.canvas.height);
+                //scene
+                
+               gl.fillColor = loading.bar_color || [0.53,0.56,0.95,1.0];
+               /* gl.fillRect( 80, y, ((gl.drawingBufferWidth -80) * loading.scene_loaded*loading.resources_loaded), 40 );
+                */
+               // gl.fillColor = [0,0,0,1];
+               gl.font = "30px Arial";
+               var load = 2*loading.resources_loaded;
+               var f = Math.ceil(load/2*10000)/100
+                gl.fillText(f +"%", gl.canvas.width/2.0-40, y+20);
+                gl.strokeStyle = 'rgb(135, 144, 232)'
+                gl.beginPath();
+                gl.arc( gl.canvas.width/2.0, gl.canvas.height/2.0, 100, 0, load*Math.PI,true);
+                gl.lineWidth=20;
+                gl.stroke();
+                gl.closePath();
+               
+                //resources
+                //gl.fillColor = loading.bar_color || [0.9,0.5,1.0,1.0];
+               // gl.fillRect( 0, y + 4, gl.drawingBufferWidth * loading.resources_loaded, 4 );
+                gl.finish2D();
+                
+            }
             this.iframe.src = env.iframe;
             CORE.Interface.iframe.src = env.iframe;
+            CORE.Interface.iframe.loadScene(env.iframe)
         }
     }
 

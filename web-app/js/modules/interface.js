@@ -83,6 +83,11 @@ class Interface {
 			callback: function(tab_id){
                 if(that.iframearea && !that.iframe.contentWindow)
                     that._player_tab.add(that.iframearea)
+                   /* if(player)
+                    {
+                        player.autoplay=false;
+                        player.skip_play_button = true;
+                    }*/
 
                 if(that.contentTabs) {
                     that.contentTabs.show();
@@ -173,12 +178,12 @@ class Interface {
             CORE.App.onPlayClicked();
         }});
         var theme_mode = this.addButton("", {title: "Change light/dark", id: "data-theme", className: "btn btn-icon right",innerHTML: this.icons.light, callback: function(){
-            if(document.documentElement.getAttribute('data-theme')== "dark") {
+            if(document.documentElement.getAttribute('data-theme')== "light") {
                // trans()
-                document.documentElement.setAttribute('data-theme', 'light')
+                document.documentElement.setAttribute('data-theme', 'dark')
             } else {
               //  trans()
-                document.documentElement.setAttribute('data-theme', 'dark')
+                document.documentElement.setAttribute('data-theme', 'light')
             }
         }});
         LiteGUI.menubar.refresh = (function()
@@ -232,7 +237,7 @@ class Interface {
        this.createMenuBar();
 
         var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
-        mainarea.split("horizontal",[null,300], true);
+        mainarea.split("horizontal",[null,300], false);
         this.mainarea = mainarea;
        // mainarea.add(panel)
         LiteGUI.add( mainarea );
@@ -246,7 +251,7 @@ class Interface {
 
         /*-------------------------------------------------------------------------------------------*/
         // Left area
-        var canvas_area = new LiteGUI.Area({id :"canvasarea", content_id:"canvas-area", autoresize: true, inmediateResize: true});
+        var canvas_area = new LiteGUI.Area({id :"canvasarea", content_id:"canvas-area", autoresize: false, inmediateResize: true});
         this.canvas_area = canvas_area;
         this._graph_tab.add( canvas_area );
         //canvas_area.split("horizontal",[null,"20%"], true);
@@ -259,7 +264,7 @@ class Interface {
 
         var div = document.createElement("DIV");
 
-        div.className+= " litetabs buttons right";
+        div.className+= "tab-buttons-icons buttons right";
         /*var stream_btn = this.addButton("", {id: "stream-btn", title: "Stream behaviour", className: "btn btn-icon right",innerHTML: this.icons.stream, callback: this.onStream});
         stream_btn.style.display="none";*/
         var clear_btn = this.addButton("", {title: "Clear graph", className: "btn btn-icon right", innerHTML: this.icons.clear, callback: this.openConfirmDeleteDialog.bind(this,"Clear graph", GraphManager.clearCurrentGraph)});
@@ -304,12 +309,7 @@ class Interface {
         div2.append(show_btn2);
  
         this.iframearea.add(div2);
-        this.iframe = document.createElement("iframe");
-        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json&autoplay=true";
-        this.iframe.id="iframe-character";
-        this.iframearea.add(this.iframe)
-        iframeWindow = this.iframearea
-
+       
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -368,8 +368,88 @@ class Interface {
             // Call here any other resize
             // ...
         });
+        if(LGraphCanvas)
+            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE =  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC";
     }
+    init(){
+        this.iframe = new ONE.Player({
+            alpha: false, //enables to have alpha in the canvas to blend with background
+            stencil: true,
+            redraw: true, //force to redraw
+            autoplay:false,
+            resources: "https://webglstudio.org/latest/fileserver/files/",
+            autoresize: true, //resize the 3D window if the browser window is resized
+            loadingbar: true, //shows loading bar progress
+            skip_play_button: true,
+            proxy: "@/proxy.php?url=" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+        });
+        //this.iframe = document.createElement("iframe");
+        //this.iframe.style.height = "calc(100% - 3px)"
+       // this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
+        this.iframe.id="iframe-character";
+        var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
 
+        //support for external server
+        var data = localStorage.getItem("wgl_user_preferences" );
+        if(data)
+        {
+            var config = JSON.parse(data);
+            if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
+            {
+                allow_remote_scenes = true;
+                ONE.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
+            }
+        }
+        if( window.enableWebGLCanvas )
+		    enableWebGLCanvas( gl.canvas );
+
+        //renders the loading bar, you can replace it in case you want your own loading bar 
+        this.iframe.renderLoadingBar = function( loading )
+        {
+            if(!loading)
+                return;
+
+            if(!enableWebGLCanvas)
+                return;
+
+            if(!gl.canvas.canvas2DtoWebGL_enabled)
+                enableWebGLCanvas( gl.canvas );
+
+            gl.start2D();
+
+            var y = gl.canvas.height/2.0;//gl.drawingBufferHeight - 6;
+            gl.fillColor = [0,0,0,1];
+            gl.fillRect( 0, 0, gl.canvas.width, gl.canvas.height);
+            //scene
+            
+           gl.fillColor = loading.bar_color || [0.53,0.56,0.95,1.0];
+           /* gl.fillRect( 80, y, ((gl.drawingBufferWidth -80) * loading.scene_loaded*loading.resources_loaded), 40 );
+            */
+           // gl.fillColor = [0,0,0,1];
+           gl.font = "30px Arial";
+           var load = 2*loading.resources_loaded;
+           var f = Math.ceil(load/2*10000)/100
+            gl.fillText(f +"%", gl.canvas.width/2.0-40, y+20);
+            gl.strokeStyle = 'rgb(135, 144, 232)'
+            gl.beginPath();
+            gl.arc( gl.canvas.width/2.0, gl.canvas.height/2.0, 100, 0, load*Math.PI,true);
+            gl.lineWidth=20;
+            gl.stroke();
+            gl.closePath();
+           
+            //resources
+            //gl.fillColor = loading.bar_color || [0.9,0.5,1.0,1.0];
+           // gl.fillRect( 0, y + 4, gl.drawingBufferWidth * loading.resources_loaded, 4 );
+            gl.finish2D();
+            
+        }
+        this.iframe.src = "https://webglstudio.org/latest/fileserver/files/evalls/projects/RAO.scene.json";
+        this.iframe.loadScene(this.iframe.src)
+        this.iframearea.add(this.iframe.canvas)
+        iframeWindow = this.iframearea
+        if(!LS && ONE)
+            LS = ONE;
+    }
     onExpandInspector(area,e) {
 
         var that = this;
@@ -1311,7 +1391,82 @@ class Interface {
             "Only WebGLStudio scenes",
             function(v){
                 if(v)
+                {
+                    this.iframe.clear();
+                    this.iframe = new ONE.Player({
+                        alpha: false, //enables to have alpha in the canvas to blend with background
+                        stencil: true,
+                        redraw: true, //force to redraw
+                        autoplay:false,
+                        resources: "https://webglstudio.org/latest/fileserver/files/",
+                        autoresize: true, //resize the 3D window if the browser window is resized
+                        loadingbar: true, //shows loading bar progress
+                        skip_play_button: true,
+                        proxy: "@/proxy.php?url=" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+                    });
+                    //this.iframe = document.createElement("iframe");
+                    //this.iframe.style.height = "calc(100% - 3px)"
+                   // this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
+                    this.iframe.id="iframe-character";
+                    var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
+            
+                    //support for external server
+                    var data = localStorage.getItem("wgl_user_preferences" );
+                    if(data)
+                    {
+                        var config = JSON.parse(data);
+                        if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
+                        {
+                            allow_remote_scenes = true;
+                            ONE.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
+                        }
+                    }
+                    if( window.enableWebGLCanvas )
+                        enableWebGLCanvas( gl.canvas );
+            
+                    //renders the loading bar, you can replace it in case you want your own loading bar 
+                    this.iframe.renderLoadingBar = function( loading )
+                    {
+                        if(!loading)
+                            return;
+            
+                        if(!enableWebGLCanvas)
+                            return;
+            
+                        if(!gl.canvas.canvas2DtoWebGL_enabled)
+                            enableWebGLCanvas( gl.canvas );
+            
+                        gl.start2D();
+            
+                        var y = gl.canvas.height/2.0;//gl.drawingBufferHeight - 6;
+                        gl.fillColor = [0,0,0,1];
+                        gl.fillRect( 0, 0, gl.canvas.width, gl.canvas.height);
+                        //scene
+                        
+                       gl.fillColor = loading.bar_color || [0.53,0.56,0.95,1.0];
+                       /* gl.fillRect( 80, y, ((gl.drawingBufferWidth -80) * loading.scene_loaded*loading.resources_loaded), 40 );
+                        */
+                       // gl.fillColor = [0,0,0,1];
+                       gl.font = "30px Arial";
+                       var load = 2*loading.resources_loaded;
+                       var f = Math.ceil(load/2*10000)/100
+                        gl.fillText(f +"%", gl.canvas.width/2.0-40, y+20);
+                        gl.strokeStyle = 'rgb(135, 144, 232)'
+                        gl.beginPath();
+                        gl.arc( gl.canvas.width/2.0, gl.canvas.height/2.0, 100, 0, load*Math.PI,true);
+                        gl.lineWidth=20;
+                        gl.stroke();
+                        gl.closePath();
+                       
+                        //resources
+                        //gl.fillColor = loading.bar_color || [0.9,0.5,1.0,1.0];
+                       // gl.fillRect( 0, y + 4, gl.drawingBufferWidth * loading.resources_loaded, 4 );
+                        gl.finish2D();
+                        
+                    }
                     this.iframe.src = v
+                    this.iframe.loadScene(v);
+                }
             }.bind(this),
             {
                 value:this.iframe.src,
@@ -1503,8 +1658,8 @@ class Interface {
                 /*var gest_btn = inspector.addButton(null, "Add Gesture Manager", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 gest_btn.getElementsByTagName("button")[0].className = "btn btn-str";*/
                 inspector = AgentManager.createAgentInspector(inspector, agent);
-                var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
-                graph_btn.getElementsByTagName("button")[0].className = "btn btn-str";
+                var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"litebutton btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
+                graph_btn.getElementsByTagName("button")[0].className = "litebutton btn btn-str";
 
               /*  inspect_area.clear();
                 if(inspec_area.childNodes.length>0)

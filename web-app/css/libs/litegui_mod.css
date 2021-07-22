@@ -10,15 +10,15 @@ html {
 }
 
 .inspector {
-	/* margin-top: 10px; */
-	/*margin-bottom: 20px;*/
+	margin-top: 10px;
+	margin-bottom: 20px;
 	color: var(--font-color);
 	/*
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	*/
-	/*height: calc( 100% - 25px );*/
+	/* height: calc( 100% - 25px ); */
 	overflow: scroll;
 }
 
@@ -52,18 +52,11 @@ display: none;
 }
 
 .inspector .widget {
-/* problem selecting content inside a widget */
-	/*
+/* problem selecting content inside a widget *//*
 	user-select: all;
 	-moz-user-select: all;
 	-webkit-user-select: all;
-	*/
-
-	vertical-align: top;
-	min-height: 1.2em;
-	/*user-select: none;*/
-	margin-top: 2px;
-}
+	*/vertical-align: top;min-height: 1.2em;/*user-select: none;*/margin-top: 2px;}
 
 /* .inspector:not(.one_line) .widget.even {
 	background-color: rgba(40,40,40,0.5);
@@ -96,9 +89,12 @@ display: none;
 	-webkit-user-select: none;
 	/* cursor: grabbing; */
 }
+.inspector .wtitle, .inspector .wsectiontitle:hover {
+	color: var(--text-normal);
+}
 
 .inspector .wsectioncontent {
-	padding: 4px 4px;
+	/* padding: 4px 4px; */
 	background-color: var(--bg-color);
 }
 
@@ -122,15 +118,24 @@ display: none;
 }
 
 .inspector .wsectiontitle {
-	position: relative;
-	overflow: hidden;
+	/* position: relative; */
+	/* overflow: hidden; */
 	white-space: nowrap;
-	height: 1.8em;
-  /* text-align: center; */
-	/*background: #484848  !important;*/
-	user-select: none;
+	/* height: 1.8em; */
+	/* text-align: center; */
+	background: var(--background-modifier-selected);
+	/* user-select: none; */
 	-moz-user-select: none;
-	-webkit-user-select: none;
+	/* -webkit-user-select: none; */
+	color:  var(--channels-default);
+	box-sizing: border-box;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	font-size: 14px;
+	line-height: 16px;
+	letter-spacing: .25px;
+	font-family: var(--font-display);
+	font-weight: 600;
 }
 
 .inspector .wsectiontitle :hover{
@@ -175,8 +180,26 @@ display: none;
 }
 
 .inspector .wsection {
-	/*padding: 4px 2px;*/
-	/* margin-bottom: 4px; */
+	padding: 4px 2px;
+	margin-bottom: 4px;
+	position: relative;
+	overflow: hidden;
+	/* white-space: nowrap; */
+	/* height: 1.8em; */
+	/* text-align: center; */
+	/* background: #484848 !important; */
+	/* user-select: none; */
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	/* color: var(--channels-default); */
+	box-sizing: border-box;
+	text-overflow: ellipsis;
+	/* text-transform: uppercase; */
+	/* font-size: 12px; */
+	line-height: 16px;
+	letter-spacing: .25px;
+	font-family: var(--font-display);
+	font-weight: 600;
 }
 
 .inspector .wsection.selected .wsectiontitle {
@@ -198,21 +221,20 @@ display: none;
 
 .inspector .switch-section-button {
   float: left;
-	display: inline-block;
-
-	margin: 8px 8px -4px 0;
-	border-top: 6px solid #CCC;
-	border-left: 4px solid transparent;
-	border-right: 4px solid transparent;
-	border-bottom: 6px solid transparent;
+  display: inline-block;
+  margin: 6px 6px -4px 0;
+  border-top: 6px solid var(--channels-default);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid transparent;
 }
 
 .inspector .collapsed .switch-section-button {
-	margin: 6px 2px 0 2px;
+	margin: 4px 0px 0 2px;
 	border-left: 6px solid #CCC;
 	border-bottom: 4px solid transparent;
 	border-top: 4px solid transparent;
-	border-right: 6px solid transparent; 
+	border-right: 6px solid transparent;
 }
 
 
@@ -279,13 +301,13 @@ display: none;
 
 .inspector .wname {
 	display: inline-block;
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 0px; /* 2px */
 	padding-left: 4px;
 	font-weight: normal;
-	font-size: 1em;
+	font-size: 1.1em;
 	/* text-shadow: 0 1px 0 black; */
 	vertical-align: top;
 	user-select: none;
@@ -309,14 +331,14 @@ display: none;
 
 .inspector .wcontent {
 	display: inline-block;
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 0px;
-
 	width: -webkit-calc( 100% - 110px);
 	width: -moz-calc( 100% - 110px);
 	width: calc( 100% - 110px );
+	/* vertical-align: middle; */
 }
 
 .inspector.proportionalnamesize .wname {
@@ -335,9 +357,8 @@ display: none;
 
 .inspector .inputfield {
 	display: inline-block;
-	background-color: rgba(0, 0, 0, 0);
-
-/*	border: 0;
+	/* background-color: var(--channeltextarea-background); */
+	/*	border: 0;
 	border-top: 1px solid #000; 
 	border-bottom: 1px solid #3f3f3f; 
 	border-radius: 3px;	*/
@@ -418,7 +439,7 @@ input.text.number.full:hover{
 	color: #FEE;
 	/*font-size: 0.8em;*/
 	border: 0;
-	background-color: transparent;
+	/* background-color: transparent; */
 }
 
 .inspector .wcontent input:focus, .inspector .wcontent textarea:focus  {
@@ -445,11 +466,15 @@ input.text.number.full:hover{
 
 .inspector .wcontent input.string{
 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background-color: var(--heading-color);
-    border-radius: 4px;
-	color: var(--font-color-secondary);
-	caret-color: #5f88c9;
+border: 1px solid rgba(255, 255, 255, 0.2);
+
+background-color: var(--background-modifier-accent)!important;
+
+border-radius: 4px;
+
+color: var(--font-color-secondary);
+
+caret-color: #5f88c9;
 }
 
 .inspector .wcontent input.string :hover{
@@ -532,6 +557,7 @@ input.text.number.full:hover{
 
 	cursor: pointer;
 	margin-left: -20px;
+	margin-top: 3px;
 	background-color: #393939;
 }
 
@@ -542,9 +568,11 @@ input.text.number.full:hover{
 
 .inspector .wcontent .checkbox.on {
 	background-color: #FEE;
-/*	border-radius: 50%;*/
+	/* border-radius: 50%; */
 	background: url("../../imgs/tick.png");
-    background-size: cover;
+	/* vertical-align: middle; */
+	/* display: inline-block; */
+	background-size: cover;
 }
 
 .inspector .wcontent .flag {
@@ -577,12 +605,12 @@ input.text.number.full:hover{
     display: inline-block;
     margin: 0 4px 0 0;
     padding: 0;
-    text-shadow: 0 1px 1px black;
+    text-shadow: 0 0px 0px black;
     vertical-align: top;
-
-	width: -moz-calc(100% - 6px);
-	width: -webkit-calc(100% - 6px);
-	width: calc(100% - 6px);
+    width: -moz-calc(100% - 6px);
+    width: -webkit-calc(100% - 6px);
+    width: calc(100% - 6px);
+    /* font-size: 12px; */
 }
 
 .inspector .widget.big button, .litepanel button.big {
@@ -643,7 +671,7 @@ input.text.number.full:hover{
 	min-width: 6px;
 	height: 1.1em;
 	background: transparent url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAOCAYAAADjXQYbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MjA0NDk1MjdGOENFMTFFMUE0RDE4Mzk5RDUwMTkxQ0EiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MjA0NDk1MjhGOENFMTFFMUE0RDE4Mzk5RDUwMTkxQ0EiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoyMDQ0OTUyNUY4Q0UxMUUxQTREMTgzOTlENTAxOTFDQSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoyMDQ0OTUyNkY4Q0UxMUUxQTREMTgzOTlENTAxOTFDQSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtL6rxoAAACMSURBVHjaYqytrWVAAhJA/ALGYUKS4AHiA1AaQzIfiNWBOAFdEqS6CMoG0czIkiABIShbEYhDYJJCSLpgoBREsADxXyB2ZsAEzCDJX0CcDLMHCXSAJL8DsSjMHig4C8T3YQ7qQ9NVj+za40B8BMo+BcRb0QOhG0rXYAshkOrpQLwbmyTIS7nIFgMEGABQBhYS6byJwQAAAABJRU5ErkJggg==') no-repeat center center;
-	vertical-align: top;
+	vertical-align: middle;
 	margin: 1px 2px;
 	cursor: n-resize;
 }
@@ -802,6 +830,7 @@ button.wcombobutton.selected {
 	padding: 2px;
 	cursor: pointer;
 	border-radius: 2px;
+	color: var(--textbox-markdown-syntax);
 }
 
 .inspector ul.lite-list li.selected {
@@ -810,16 +839,11 @@ button.wcombobutton.selected {
 }
 
 .inspector ul.lite-list li:hover {
-	color: black;
-	background-color: var(--highlight);
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
 }
 
 /* Here goes all the CSS related to layout the web (panels, windows, bars, etc) */
-
-html, body {
-	height: 100%;
-	background-color: var(--bg-color);
-}
 
 div {
 	margin: 0;
@@ -880,33 +904,34 @@ div {
 }
 
 .litepanel, .litedialog {
-	background-color: var(--primary-color);
+	background-color: var(--background-secondary);
 	box-sizing: border-box;
 	overflow:hidden;
-	color: #888;
+	/* color: #888; */
 }
 
 .litepanel .panel-header, .litedialog .panel-header {
 	font-size: 1.35em;
 	padding: 0.2em 0 0 0.2em;
 	background-color: var(--secondary-color);
-  /*  background-image: linear-gradient(right , #555, #333);
+	/*  background-image: linear-gradient(right , #555, #333);
     background-image: -moz-linear-gradient(right , #555, #333);
     background-image: -webkit-linear-gradient(right , #555, #333);*/
-
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
-	color: white;
-
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	color: var(--header-primary);
 	width: 100%;
 	min-height: 20px;
 	height: 1.5em;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
-	user-select: none; 
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 	/* overflow: hidden; */
 	/* padding: 6px; */
+	font-family: var(--font-display);
+	font-weight: 500;
+	box-shadow: var(--elevation-low);
 }
 
 .litepanel .panel-header button, .litedialog .panel-header button {
@@ -989,7 +1014,7 @@ div {
 	position: absolute;
 	top:0;
 	left:0;
-	background-color: var(--opaque-color);/* rgba(0,0,0,0.8);*/
+	background-color: var(--deprecated-card-bg);/* rgba(0,0,0,0.8);*/
 	width: 100%;
 	height: 100%;
 	z-index: 100;
@@ -1381,12 +1406,16 @@ box-sizing: border-box;
 
 
 /* Here goes the css related to look and feel (buttons, lists, titles) */
-body {
+html,body {
 	font-family: 'Arial';
 	font-family: 'Roboto', sans-serif;
 	font-size: 12px;
-	color: #AAA;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	height: 100%;
 }
+
+body.litegui-maincontent {}
 
 h1,h2,h3 {
 	margin: 0;
@@ -1416,7 +1445,7 @@ a:hover {
 }	
 
 #mainmenubar {
-	background-color: var(--heading-color); 
+	background-color: var(--background-tertiary);
 	padding: 2px 0px;
 	/*border-bottom: 1px solid #afafaf;*/
 }
@@ -1440,7 +1469,7 @@ a:hover {
 }
 
 .litemenubar li:hover {
-	color: #fff;
+	color: var(--textbox-markdown-syntax);
 }
 
 .litemenubar-panel {
@@ -1448,22 +1477,22 @@ a:hover {
 	top: 5px;
 	left: 5px;
 	min-width: 200px;
-	background-color: #444;
-	box-shadow: 0 0 3px black;
+	background-color: var(--activity-card-background);
+	box-shadow: 0 0 3px var(--background-floating);
 	padding: 4px;
-	border-bottom: 2px solid var(--highlight);
+	border-bottom: 2px solid var(--header-secondary);
 	z-index: 10;
 }
 
 .litemenu-entry, .litemenu-title {
 	font-size: 13px;
-	color: #AAA;
+	color: var(--text-normal);
 	padding: 0 0 0 4px;
 	margin: 2px;
 	padding-left: 2px;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
-	user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 	cursor: pointer;
 }
 
@@ -1516,7 +1545,7 @@ a:hover {
 }
 
 .litemenu-entry:hover:not(.disabled):not(.separator) {
-	background-color: #555;
+	background-color: var(--deprecated-text-input-border-hover);
 	color: #EEE;
 }
 
@@ -1549,9 +1578,9 @@ a:hover {
 }
 
 button.litebutton {
-    color: #DDD;
+    color: var(--channeltextarea-background);
     display: inline-block;
-    background-color: var(--secondary-color) !important;
+    background-color: var(--control-brand-foreground-new);
     margin: 2px;
     padding: 2px;
     vertical-align: top;
@@ -1565,7 +1594,8 @@ button.litebutton:active, button.litebutton:focus {
 }
 
 button.litebutton:hover:not(:disabled) {
-    background: #626262 !important;
+    background: var(--background-modifier-selected);
+    color:  var(--control-brand-foreground-new);
 }
 
 button.litebutton:active:not(:disabled) {
@@ -1586,8 +1616,10 @@ button.litebutton:disabled {
 	padding: 0;
 	width: 1.1em;
 	height: 1.1em;
-    box-shadow: 0 0 0;
+	box-shadow: 0 0 0;
 	border: 1px solid #222;
+	background: none;
+	color:  var(--control-brand-foreground-new);
 }
 
 button.litebutton.close-button {
@@ -1602,11 +1634,12 @@ button.litebutton.close-button {
 
 .litetabs.vertical {
 	height: 100%;
+	background-color: var(--background-tertiary);
 }
 
-.wtabcontainer {
+/*.wtabcontainer {
 	background: var(--heading-color);
-}
+}*/
 
 .litetabs ul.wtabcontainer {
 	min-height: 24px;
@@ -1615,14 +1648,13 @@ button.litebutton.close-button {
 	padding-left: 2px;
 	/*margin-top: 4px;*/
 	list-style-type: none;
-	border-bottom: 2px solid var(--highlight);
-
+	border-bottom: 2px solid var(--background-tertiary);
 	overflow: hidden;
-    white-space: nowrap;
-
-	-moz-box-sizing: border-box;	
-	-webkit-box-sizing: border-box;	
-	box-sizing: border-box;	
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	/* background-color: var(--background-primary); */
 }
 
 .litetabs.vertical > ul.wtabcontainer {
@@ -1660,6 +1692,10 @@ button.litebutton.close-button {
 	padding: 4px 8px 2px 4px;
 	border-radius: 3px 3px 0 0;
 }
+.litetabs.litetabs.horizontal > ul.wtabcontainer > li.wtab:hover{
+	background-color: var(--background-modifier-hover); 
+   border-right: 4px solid var(--background-primary)!important;
+}
 
 .litetabs.vertical > ul.wtabcontainer > li.wtab {
 	position: relative;
@@ -1672,7 +1708,13 @@ button.litebutton.close-button {
 	width: 100%;
 	border-radius: 3px 0 0 3px ;
 }
-
+.litetabs.vertical > ul.wtabcontainer > li.wtab:hover{
+	 background-color: var(--background-modifier-hover); 
+	border-right: 4px solid var(--background-primary)!important;
+}
+.litetabs.vertical > ul.wtabcontainer > li.wtab.selected{
+	border-right: 4px solid var(--background-primary)!important;
+}
 .litetabs.vertical > ul.wtabcontainer > li.wtab .tabbigicon {
 	opacity: 0.5;
 }
@@ -1682,11 +1724,11 @@ button.litebutton.close-button {
 }
 
 .litetabs li.wtab.selected {
-	color: var(--highlight) !important;
-	background-color: var(--primary-color);
+	/* color: var(--text-normal); */
+	/* background-color: var(--background-modifier-accent); */
 	/*border: 1px solid #888;*/
-	border-bottom: 0;
-	/*box-shadow: 0 -2px 2px rgba(0,0,0,0.5);*/
+	/* border-bottom: 0; */
+	/* box-shadow: 0 -2px 2px rgba(0,0,0,0.5); */
 }
 
 .litetabs li.wtab.button {
@@ -1697,7 +1739,7 @@ button.litebutton.close-button {
 
 .litetabs li.wtab:hover:not(.selected) {
 	background-color: var(--secondary-color);	
-	color: #DDD;
+	
 }
 
 .litetabs li.wtab.selected .tabbigicon, .litetabs li.wtab:hover .tabbigicon {
@@ -1770,8 +1812,9 @@ button.litebutton.close-button {
 
 .litetree{
 
-	/*height: 125px;*/
-	overflow: scroll;
+margin-top: 10px;
+
+overflow: scroll;
 }
 
 .litetree::-webkit-scrollbar{
@@ -1784,12 +1827,14 @@ li.ltreeitem {
 	cursor: pointer;
 	/*background: url("../imgs/tree_lines_16x16.png") no-repeat scroll 5px -8px transparent;*/
 	padding: 3px;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
-	font-size: 15px;
+	font-size: 14px;
 }
-
+li.ltreeitem:hover{
+	background-color: var(--background-modifier-hover);
+}
 li.ltreeitem:hover div.ltreeitemtitle .incontent{
 	color: var(--highlight);
 	font-weight: bold;
@@ -1814,20 +1859,20 @@ li.ltreeitem.root_item {
 }
 
 li.ltreeitem div.ltreeitemtitle {
-	color: var(--font-color);
+	color: var(--text-muted);
 	min-width: 100px;
 	white-space: nowrap;
 }
 
 
  li.ltreeitem div.ltreeitemtitle .incontent:hover {
-	color: var(--highlight);
-
+	color: var(--text-normal);
 } 
 
 li.ltreeitem.selected  div.ltreeitemtitle .incontent {
-	color: var(--highlight);
+	color: var(--text-normal);
 	font-weight: bold;
+	background-color: var(--background-message-hover);
 }
 
 li.ltreeitem.semiselected div.ltreeitemtitle .incontent {

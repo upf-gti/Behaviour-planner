@@ -2,7 +2,10 @@
     "nocache": false,
 
     "imports" : [
+        
         "../src/libs/gl-matrix-min.js",
+        "js/libs/litegl.js",
+        "js/libs/Canvas2DtoWebGL.js",
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
         "../src/behaviourGraph.js",
@@ -11,7 +14,9 @@
         "../src/timeline_node.js",
         "../src/behaviourPlanner.js",
         "../src/utils.js",
-
+        
+        
+        "js/libs/onecore.js",
         "js/libs/litefileserver.js",
         "js/libs/HBTEditor.js",
         "js/libs/timeline.js",

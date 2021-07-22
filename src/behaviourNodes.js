@@ -932,10 +932,17 @@ TimelineIntent.prototype.tick = function(agent, dt, info){
             bml[track.name] = [];
         }
         for(var j in track.clips){
-            if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
-            {
-                track.clips[j].properties.text = info.text || "Check out the development";
-            }
+            if(track.clips[j].constructor==ANIM.SpeechClip){
+                if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
+                {
+                    track.clips[j].properties.text = info.text || "Check out the development";
+                }else if(info && info.tags !=undefined)
+                {        
+                    for(var tag in info.tags){
+                        track.clips[j].properties.text = track.clips[j].properties.text.replace(tag, info.tags[tag]);                     
+                    }        
+                }
+            }           
             var data = track.clips[j].toJSON();
             data.type = track.clips[j].constructor.type;
             bml[track.name].push(data);
@@ -1557,15 +1564,18 @@ HttpRequest.prototype.onGetOutputs = function(){
     return outputs;
 }
 
-HttpRequest.prototype.addProperty = function(name, value)
+HttpRequest.prototype.addProperty = function(name, value, is_header)
 {
     if(!name || name.constructor !== String) return false;
-    if(this.properties[name]) return false; //Name already used
 
-    this.properties[name] = value || "";
+    var container = is_header ? this.headers : this.properties;
+    
+    if(container[name]) return false; //Name already used
+
+    container[name] = value || "";
 
     // process special cases
-    this.propagate(name, this.properties[name]);
+    this.propagate(name, container[name]);
 
     return true;
 }
@@ -1584,6 +1594,11 @@ HttpRequest.prototype.propagate = function(name, value)
     }
 
     return true;
+}
+
+HttpRequest.getTemplate = function(name)
+{
+    return JSON.parse(JSON.stringify(HttpRequest.RAO_Templates[name]));
 }
 
 HttpRequest.RAO_Templates = {
