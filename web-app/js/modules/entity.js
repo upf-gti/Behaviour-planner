@@ -6,7 +6,6 @@ var EntitiesManager = {
     customEntities : {},
     preInit(){
 
-
         var compromise = document.createElement('script');
         compromise.src = "https://unpkg.com/compromise";
         var compromise_numbers = document.createElement('script');
@@ -57,7 +56,7 @@ var EntitiesManager = {
     getEntities()
     {
         if(this.entities.length == 0)
-            initData()
+            this.initData()
         return this.entities;
     },
     getAllEntitiesInfo()

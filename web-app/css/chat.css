@@ -18,8 +18,8 @@
 .console .log .msg {
 	width: calc(100% - 50px);
 	border-radius: 5px;
-	background-color: var(--header-primary);
-	color: var(--text-muted);
+	background-color: #c6e0f4;
+	color: var(--textbox-markdown-syntax);
 	font-size: 1.4em;
 	padding: 8px;
 	padding-left: 16px;
@@ -30,8 +30,11 @@
 
 .console .log .msg.me
 {
-	background-color: var(--channels-default);
-	color: var(--text-normal);
+	background-color: #fff;
+	/* border: #8080805c solid 1px; */
+	/* border-width: thin; */
+	/* border: 1px; */
+	color: var(--textbox-markdown-syntax);
 	margin-left: 0px;
 }
 .console .log .msg.sys

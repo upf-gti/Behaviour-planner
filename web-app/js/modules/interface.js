@@ -31,7 +31,39 @@ class Interface {
         }
 
         this.sidePanelExpanded = false;
+        if(LGraphCanvas)
+        {
+            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE =  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAQAAACROWYpAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABGSURBVHjaYvzPQD5gYhjVPKp56GlW7Ff8rJhFQPd/HFDhk8J/heP/GfBB3M6uZDjB0ILfYsbRLDmqeVTzYNIMAAAA//8DAK8kJEiO7JpEAAAAAElFTkSuQmCC"//iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAQAAACR313BAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAA4SURBVHjaYvzPgA8wMQwNacV+xc+KWSjy/5GgwieF/wrHkUVQDS9jOMbQjCzAOGSDBQAAAP//AwAQRhUzQOQRQQAAAABJRU5ErkJggg=="//"iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC"
+            LGraphCanvas.default_connection_color = {
+                input_off: "#778",
+                input_on: "#2f3136",
+                output_off: "#778",
+                output_on: "#2f3136"
+            };
+            
+            LGraphCanvas.connections_width = 2;
+            LGraphCanvas.render_connections_shadows = false;
+        }
+        if(LiteGraph)
+        {
+            LiteGraph.LINK_COLOR = "#99a0aa"
+            LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#0390d6"//"#6198ad"//"#ecd4ff";#a0d1f4
+            LiteGraph.EVENT_LINK_COLOR = "#0390d6";
+            LiteGraph.NODE_TEXT_FONT = "Monaco";
+            LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(0,0,0,0.5)";
+            LiteGraph.DEFAULT_LINK_SHADOW_COLOR = "rgba(0,0,0,0)";
 
+            if(document.documentElement.getAttribute("data-theme") == "dark"){
+                LiteGraph.NODE_DEFAULT_COLOR =  "#333";
+                LiteGraph.NODE_DEFAULT_BGCOLOR = "#353535";
+                LiteGraph.NODE_DEFAULT_BOXCOLOR = "#666";
+            }else{
+                LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
+                LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
+                LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+                LiteGraph.EVENT_LINK_COLOR = "#000";
+            }
+        }
     }
 
     createTabs() {
@@ -172,7 +204,7 @@ class Interface {
         //create menubar
 		LiteGUI.createMenubar(null,{sort_entries: false, height:"29px"});
 
-        var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
+        var example_url = baseURL+"https://webglstudio.org/projects/present/repository/files/evalls/default.json";
         var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon center play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});
@@ -180,10 +212,27 @@ class Interface {
             if(document.documentElement.getAttribute('data-theme')== "light") {
                // trans()
                 document.documentElement.setAttribute('data-theme', 'dark')
+                if(LiteGraph){
+                    LiteGraph.NODE_DEFAULT_COLOR =  "#333";
+                    LiteGraph.NODE_DEFAULT_BGCOLOR = "#353535";
+                    LiteGraph.NODE_DEFAULT_BOXCOLOR = "#666";
+                    LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(0,0,0,0.5)";
+                    LiteGraph.EVENT_LINK_COLOR = "#FFF";
+                    LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#0390d6";
+                }
             } else {
               //  trans()
                 document.documentElement.setAttribute('data-theme', 'light')
+                if(LiteGraph){
+                    LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
+                    LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
+                    LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+                    LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(250,250,250,0.5)";
+                    LiteGraph.EVENT_LINK_COLOR = "#000";
+                    LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#a0d1f4";
+                }
             }
+            LGraphCanvas.active_canvas.draw(true);
         }});
         LiteGUI.menubar.refresh = (function()
         {
@@ -208,6 +257,8 @@ class Interface {
             LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
             LiteGUI.menubar.add("Edit/Scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)
             
+            LiteGUI.menubar.add("About", {callback: this.showAppInfo})
+
             if(!CORE.modules["FileSystem"].session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
@@ -396,11 +447,6 @@ class Interface {
         GraphManager.resize();
         that.timeline_dialog.resize();
         onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
-    }
-
-    timeline()
-    {
-
     }
 
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
@@ -1140,7 +1186,7 @@ class Interface {
                 {
                     if(lg_user === "guest")
                     CORE["Interface"].importFromURL(
-                        baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json",
+                        baseURL+"/projects/present/repository/files/evalls/default.json",
                         SESSION.IS_GUEST
                     );
 
@@ -1625,8 +1671,35 @@ class Interface {
         //this.focus();
         }
     }
+    showAppInfo(){
+        readTextFile("https://webglstudio.org/users/evalls/Behaviour-planner/README.md",
+        function(data){
+            var dialog = new LiteGUI.Dialog({ title:"About the application", width: 800, closable: true });
+            var inspector = new LiteGUI.Inspector();
+            inspector.root.innerHTML =marked(data);
+            dialog.add(inspector)
+            dialog.show()
+            
+        })
+    }
 }
-
+function readTextFile(file, callback)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                if(callback)
+                    callback(rawFile.responseText);
+            }
+        }
+    }
+    rawFile.send(null);
+}
 function autocomplete(inp, arr, words, options) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/

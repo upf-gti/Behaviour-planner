@@ -476,8 +476,8 @@ class App{
             }*/
             this.iframe.src = env.iframe;
             CORE.Interface.iframe.src = env.iframe;
-            this.iframe.contentWindow.onload = function(){ this.iframe.contentWindow.player.skip_play_button = true}.bind(this)
-           /* CORE.Interface.iframe.loadScene(env.iframe)*/
+            if(this.iframe.contentWindow)
+                this.iframe.contentWindow.onload = function(){ this.iframe.contentWindow.player.skip_play_button = true}.bind(this)         
         }
     }
 
