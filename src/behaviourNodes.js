@@ -85,7 +85,7 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 this.setOutputData(o, values[output.name]);
                 }
             }
-
+            this.graph.context.blackboard.apply({entities:values})
             var info = {tags: values, text: info.text}
             
             //this.description = this.properties.property_to_compare + ' property passes the threshold';
@@ -936,14 +936,35 @@ TimelineIntent.prototype.tick = function(agent, dt, info){
                 if(track.clips[j].properties.inherited_text != undefined && track.clips[j].properties.inherited_text)
                 {
                     track.clips[j].properties.text = info.text || "Check out the development";
-                }else if(info && info.tags !=undefined)
-                {        
-                    for(var tag in info.tags){
-                        track.clips[j].properties.text = track.clips[j].properties.text.replace(tag, info.tags[tag]);                     
-                    }        
                 }
             }           
             var data = track.clips[j].toJSON();
+            
+            if(data.text)
+            {               
+                var tags = data.text.replace(/[.,\/!$%\^&\*;:{}=\-_`~()]/g,"").match(/#\S+/g);
+                if(tags)
+                {  
+                    var values = {};
+                    for(var x=0; x<tags.length; x++)
+                    {
+                        var tag = tags[i];
+                        if(info && info.tags !=undefined&& info.tags[tag])
+                        {   
+                            values[tag] = info.tags[tag];
+                        }
+                        else
+                        {
+                            var value = this.graph.context.blackboard.getValue("entities",tag)
+                            if(value)
+                                values[tag] = value;
+                        }
+                        if(values[tag])
+                            data.text = data.text.replace(tag, values[tag]);                             
+                    }
+                }
+            }
+
             data.type = track.clips[j].constructor.type;
             bml[track.name].push(data);
         }
