@@ -33,22 +33,25 @@ class Interface {
         this.sidePanelExpanded = false;
         if(LGraphCanvas)
         {
-            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC"
+            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE =  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAQAAACROWYpAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABGSURBVHjaYvzPQD5gYhjVPKp56GlW7Ff8rJhFQPd/HFDhk8J/heP/GfBB3M6uZDjB0ILfYsbRLDmqeVTzYNIMAAAA//8DAK8kJEiO7JpEAAAAAElFTkSuQmCC"//iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAQAAACR313BAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAA4SURBVHjaYvzPgA8wMQwNacV+xc+KWSjy/5GgwieF/wrHkUVQDS9jOMbQjCzAOGSDBQAAAP//AwAQRhUzQOQRQQAAAABJRU5ErkJggg=="//"iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC"
             LGraphCanvas.default_connection_color = {
                 input_off: "#778",
-                input_on: "#faf2ff",
+                input_on: "#2f3136",
                 output_off: "#778",
-                output_on: "#faf2ff"
+                output_on: "#2f3136"
             };
-            LGraphCanvas.connections_width = 3;
+            
+            LGraphCanvas.connections_width = 2;
             LGraphCanvas.render_connections_shadows = false;
         }
         if(LiteGraph)
         {
-            LiteGraph.LINK_COLOR = "#7d9eab"
-            LiteGraph.CONNECTING_LINK_COLOR = "#6198ad"//"#ecd4ff";
-            LiteGraph.EVENT_LINK_COLOR = "#ffffff";
+            LiteGraph.LINK_COLOR = "#99a0aa"
+            LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#0390d6"//"#6198ad"//"#ecd4ff";#a0d1f4
+            LiteGraph.EVENT_LINK_COLOR = "#0390d6";
             LiteGraph.NODE_TEXT_FONT = "Monaco";
+            LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(0,0,0,0.5)";
+            LiteGraph.DEFAULT_LINK_SHADOW_COLOR = "rgba(0,0,0,0)";
 
             if(document.documentElement.getAttribute("data-theme") == "dark"){
                 LiteGraph.NODE_DEFAULT_COLOR =  "#333";
@@ -58,6 +61,7 @@ class Interface {
                 LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
                 LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
                 LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+                LiteGraph.EVENT_LINK_COLOR = "#000";
             }
         }
     }
@@ -212,6 +216,9 @@ class Interface {
                     LiteGraph.NODE_DEFAULT_COLOR =  "#333";
                     LiteGraph.NODE_DEFAULT_BGCOLOR = "#353535";
                     LiteGraph.NODE_DEFAULT_BOXCOLOR = "#666";
+                    LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(0,0,0,0.5)";
+                    LiteGraph.EVENT_LINK_COLOR = "#FFF";
+                    LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#0390d6";
                 }
             } else {
               //  trans()
@@ -220,8 +227,12 @@ class Interface {
                     LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
                     LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
                     LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+                    LiteGraph.DEFAULT_SHADOW_COLOR = "rgba(250,250,250,0.5)";
+                    LiteGraph.EVENT_LINK_COLOR = "#000";
+                    LiteGraph.CONNECTING_LINK_COLOR = LiteGraph.HIGHLIGHT_LINK_COLOR = "#a0d1f4";
                 }
             }
+            LGraphCanvas.active_canvas.draw(true);
         }});
         LiteGUI.menubar.refresh = (function()
         {

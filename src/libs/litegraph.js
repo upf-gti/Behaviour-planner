@@ -34,6 +34,7 @@
         NODE_DEFAULT_BOXCOLOR: "#666",
         NODE_DEFAULT_SHAPE: "box",
         DEFAULT_SHADOW_COLOR: "rgba(0,0,0,0.5)",
+        DEFAULT_LINK_SHADOW_COLOR: "rgba(0,0,0,0.5)",
         DEFAULT_GROUP_FONT: 24,
 
 		WIDGET_BGCOLOR: "#222",
@@ -44,6 +45,7 @@
         LINK_COLOR: "#9A9",
         EVENT_LINK_COLOR: "#A86",
         CONNECTING_LINK_COLOR: "#AFA",
+        HIGHLIGHT_LINK_COLOR: "#FFF",
 
         MAX_NUMBER_OF_NODES: 1000, //avoid infinite loops
         DEFAULT_POSITION: [100, 100], //default node position
@@ -7441,7 +7443,7 @@ LGraphNode.prototype.executeAction = function(action)
                     if ( this.connecting_node && !LiteGraph.isValidConnection( slot.type , out_slot.type) ) {
                         ctx.globalAlpha = 0.4 * editor_alpha;
                     }
-
+                    slot.color_on = node.color;
                     ctx.fillStyle =
                         slot.link != null
                             ? slot.color_on ||
@@ -7522,7 +7524,7 @@ LGraphNode.prototype.executeAction = function(action)
                     if (max_y < pos[1] + LiteGraph.NODE_SLOT_HEIGHT * 0.5) {
                         max_y = pos[1] + LiteGraph.NODE_SLOT_HEIGHT * 0.5;
                     }
-
+                    slot.color_on = node.color;
                     ctx.fillStyle =
                         slot.links && slot.links.length
                             ? slot.color_on ||
@@ -8016,7 +8018,7 @@ LGraphNode.prototype.executeAction = function(action)
                 area[1] -= title_height;
                 area[3] += title_height;
             }
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;//1;
             ctx.globalAlpha = 0.8;
             ctx.beginPath();
             if (shape == LiteGraph.BOX_SHAPE) {
@@ -8182,7 +8184,7 @@ LGraphNode.prototype.executeAction = function(action)
                         link,
                         true,
                         f,
-                        "white",
+                        LiteGraph.HIGHLIGHT_LINK_COLOR,
                         start_dir,
                         end_dir
                     );
@@ -8230,7 +8232,7 @@ LGraphNode.prototype.executeAction = function(action)
             color = this.default_link_color;
         }
         if (link != null && this.highlighted_links[link.id]) {
-            color = "#FFF";
+            color = LiteGraph.HIGHLIGHT_LINK_COLOR;
         }
 
         start_dir = start_dir || LiteGraph.RIGHT;
@@ -8370,7 +8372,7 @@ LGraphNode.prototype.executeAction = function(action)
             this.ds.scale > 0.6 &&
             !skip_border
         ) {
-            ctx.strokeStyle = "rgba(0,0,0,0.5)";
+            ctx.strokeStyle = LiteGraph.DEFAULT_LINK_SHADOW_COLOR;
             ctx.stroke();
         }
 

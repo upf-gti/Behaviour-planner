@@ -4,6 +4,8 @@ function HBTEditor(data )
 	 throw("You must use new to create a HBTEditor");
 	this._ctor(data);
 }
+HBTEditor.DARK_MODE = 0;
+HBTEditor.LIGHT_MODE = 0;
 
 HBTEditor.prototype._ctor = function(id)
 {
@@ -16,6 +18,7 @@ HBTEditor.prototype._ctor = function(id)
     this.time = 0;
     this.last_time = 0;
     this.root_node = null;
+    this.mode = HBTEditor.LIGHT_MODE;
 }
 HBTEditor.prototype.init = function( hbt_graph )
 {
@@ -26,8 +29,8 @@ HBTEditor.prototype.init = function( hbt_graph )
     this.canvas2D.height = HBTEditor_cont.clientHeight;
     this.canvas2D.id = "HBTEditor"+hbt_graph.id;
     HBTEditor_cont.appendChild(this.canvas2D);
-    LiteGraph.NODE_TITLE_COLOR = "#DDD";
-    LiteGraph.NODE_TEXT_COLOR = "#DDD"
+    LiteGraph.NODE_TITLE_COLOR = "#fff";
+    LiteGraph.NODE_TEXT_COLOR = "#fff"
 
     this.graph = hbt_graph.graph;
 	this.graph.current_behaviour = new Behaviour();
@@ -38,7 +41,12 @@ HBTEditor.prototype.init = function( hbt_graph )
 
     this.graph_canvas = new LGraphCanvas(this.canvas2D , hbt_graph.graph);
     //this.graph_canvas.default_link_color = "#98bcbe";
-
+    this.graph_canvas.default_connection_color = {
+        input_off: "#778",
+        input_on: "#0390d6",
+        output_off: "#778",
+        output_on: "#0390d6"
+    };
     this.graph_canvas.onNodeSelected = function(node)
     {
         console.log(node);

@@ -56,7 +56,7 @@ display: none;
 	user-select: all;
 	-moz-user-select: all;
 	-webkit-user-select: all;
-	*/vertical-align: top;min-height: 1.2em;/*user-select: none;*/margin-top: 2px;}
+	*/vertical-align: middle;min-height: 1.2em;/*user-select: none;*/margin-top: 2px;}
 
 /* .inspector:not(.one_line) .widget.even {
 	background-color: rgba(40,40,40,0.5);
@@ -100,7 +100,7 @@ display: none;
 
 .inspector .wtitle {
 	margin-top: 6px;
-	background-color: #444;
+	background-color: var(--background-tertiary);
 	color: var(--font-color-secondary);
 }
 
@@ -164,7 +164,7 @@ display: none;
 }
 
 .inspector .wcontent button.single {
-	padding: 2px;
+	padding: 3px;
 }
 
 .inspector .icon {
@@ -309,7 +309,7 @@ display: none;
 	font-weight: normal;
 	font-size: 1.1em;
 	/* text-shadow: 0 1px 0 black; */
-	vertical-align: top;
+	vertical-align: middle;
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
@@ -338,7 +338,7 @@ display: none;
 	width: -webkit-calc( 100% - 110px);
 	width: -moz-calc( 100% - 110px);
 	width: calc( 100% - 110px );
-	/* vertical-align: middle; */
+	vertical-align: middle;
 }
 
 .inspector.proportionalnamesize .wname {
@@ -366,7 +366,7 @@ display: none;
 
 input.text.number.full:hover{
 
-	background-color: #393939;
+background-color: var(--background-modifier-hover);
 }
 
 .inspector .wcontent .inputfield input:focus, .inspector .wcontent .inputfield textarea:focus
@@ -387,7 +387,7 @@ input.text.number.full:hover{
 }
 
 .inspector .inputfield.disabled {
-	background-color: #333;
+	/* background-color: #333; */
 }
 
 .inspector .inputfield.disabled input, .inspector .inputfield.disabled textarea {
@@ -602,6 +602,7 @@ caret-color: #5f88c9;
 }
 
 .inspector .wcontent button {
+    border: none;
     display: inline-block;
     margin: 0 4px 0 0;
     padding: 0;
@@ -611,6 +612,7 @@ caret-color: #5f88c9;
     width: -webkit-calc(100% - 6px);
     width: calc(100% - 6px);
     /* font-size: 12px; */
+    color: var(--interactive-active);
 }
 
 .inspector .widget.big button, .litepanel button.big {
@@ -663,6 +665,7 @@ caret-color: #5f88c9;
 	width: -webkit-calc(100% - 14px);
 	width: calc(100% - 14px);
 	margin-right: 3px;
+	background-color: var(--background-modifier-accent);
 }
 
 .inspector .drag_widget {
@@ -1458,19 +1461,19 @@ a:hover {
 
 .litemenubar li {
 	font-size: 15px;
-	color: var(--font-secondary-color);
+	color: var(--interactive-normal);
 	display: inline-block;
 	min-width: 50px;
 	padding-left: 10px;
 	padding-right: 10px;
 	user-select: none;
-	-moz-user-select: none;  
-	-webkit-user-select: none;  
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	cursor: pointer;
 }
 
 .litemenubar li:hover {
-	color: var(--textbox-markdown-syntax);
+	color: var(--interactive-active);
 }
 
 .litemenubar-panel {
@@ -1579,9 +1582,9 @@ a:hover {
 }
 
 button.litebutton {
-    color: var(--channeltextarea-background);
+    color: var(--interactive-active);
     display: inline-block;
-    background-color: var(--control-brand-foreground-new);
+    background-color: var(--brand-experiment);
     margin: 2px;
     padding: 2px;
     vertical-align: top;
@@ -1595,12 +1598,12 @@ button.litebutton:active, button.litebutton:focus {
 }
 
 button.litebutton:hover:not(:disabled) {
-    background: var(--background-modifier-selected);
-    color:  var(--control-brand-foreground-new);
+    /* background: var(--brand-experiment-95a); */
+    color: var(--interactive-hover);
 }
 
 button.litebutton:active:not(:disabled) {
-    background: #5f88c9 !important;
+    background: var(--brand-experiment) !important;
 }
 
 button.litebutton:disabled {
@@ -1620,7 +1623,7 @@ button.litebutton:disabled {
 	box-shadow: 0 0 0;
 	border: 1px solid #222;
 	background: none;
-	color:  var(--control-brand-foreground-new);
+	color:  var(--brand-experiment);
 }
 
 button.litebutton.close-button {
@@ -1710,15 +1713,15 @@ button.litebutton.close-button {
 	border-radius: 3px 0 0 3px ;
 }
 .litetabs.vertical > ul.wtabcontainer > li.wtab:hover{
-	 background-color: var(--background-modifier-hover); 
-	border-right: 4px solid var(--background-primary)!important;
+	 background-color: var(--background-modifier-hover);
+	 border-left: 4px solid var(--background-primary)!important;
 }
 .litetabs.vertical > ul.wtabcontainer > li.wtab.selected{
-	border-right: 4px solid var(--background-primary)!important;
+	border-left: 4px solid var(--background-primary)!important;
 	background-color: var(--background-modifier-hover)!important;
 }
 .litetabs.vertical > ul.wtabcontainer > li.wtab .tabbigicon {
-	opacity: 0.5;
+	opacity: var(--opacity);
 }
 
 .litetabs .wtab.autoswitch * {

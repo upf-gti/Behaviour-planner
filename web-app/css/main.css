@@ -104,7 +104,7 @@ button.btn-icon.btn-expand:hover{
 }
 .icon:hover{
 
-    fill: var(--bg-color)!important;
+fill: var(--bg-color)!important;
 }
 
 /* Stream Icon */
@@ -148,7 +148,7 @@ button.btn-icon.btn-expand:hover{
 
 #play-btn{
     outline: transparent;
-    fill: var(--text-normal)!important;
+    fill: var(--text-normal);
     background-color: var(--control-brand-foreground-new)!important;
     color: var(--primary-color)!important;
     height: auto;
