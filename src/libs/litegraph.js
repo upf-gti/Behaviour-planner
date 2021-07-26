@@ -16,7 +16,7 @@
         VERSION: 0.4,
 
         CANVAS_GRID_SIZE: 10,
-
+        NODE_TEXT_FONT: "Arial",
         NODE_TITLE_HEIGHT: 30,
         NODE_TITLE_TEXT_Y: 20,
         NODE_SLOT_HEIGHT: 20,
@@ -6995,7 +6995,7 @@ LGraphNode.prototype.executeAction = function(action)
 		ctx.globalAlpha = 1;
 
 		ctx.fillStyle = "#888";
-		ctx.font = "14px Arial";
+		ctx.font = "14px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
 		ctx.textAlign = "left";
 		ctx.fillText( "Graph Inputs", 20, 34 );
 		var pos = this.mouse;
@@ -7007,7 +7007,7 @@ LGraphNode.prototype.executeAction = function(action)
 		}
 
 		var y = 50;
-		ctx.font = "20px Arial";
+		ctx.font = "20px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
 		if(subnode.inputs)
 		for(var i = 0; i < subnode.inputs.length; ++i)
 		{
@@ -7086,7 +7086,7 @@ LGraphNode.prototype.executeAction = function(action)
 			{
 				ctx.fillStyle = textcolor;
 				ctx.textAlign = "center";
-				ctx.font = ((h * 0.65)|0) + "px Arial";
+				ctx.font = ((h * 0.65)|0) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
 				ctx.fillText( text, x + w * 0.5,y + h * 0.75 );
 				ctx.textAlign = "left";
 			}
@@ -7121,7 +7121,7 @@ LGraphNode.prototype.executeAction = function(action)
         ctx.save();
         ctx.translate(x, y);
 
-        ctx.font = "10px Arial";
+        ctx.font = "10px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.fillStyle = "#888";
         if (this.graph) {
             ctx.fillText( "T: " + this.graph.globaltime.toFixed(2) + "s", 5, 13 * 1 );
@@ -7171,7 +7171,7 @@ LGraphNode.prototype.executeAction = function(action)
             ctx.lineWidth = 10;
             ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
             ctx.lineWidth = 1;
-            ctx.font = "40px Arial";
+            ctx.font = "40px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
             ctx.textAlign = "center";
             ctx.fillStyle = subgraph_node.bgcolor || "#AAA";
             var title = "";
@@ -9021,7 +9021,7 @@ LGraphNode.prototype.executeAction = function(action)
 
             var font_size =
                 group.font_size || LiteGraph.DEFAULT_GROUP_FONT_SIZE;
-            ctx.font = font_size + "px Arial";
+            ctx.font = font_size + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
             ctx.fillText(group.title, pos[0] + 4, pos[1] + font_size);
         }
 
@@ -12008,7 +12008,7 @@ if (typeof exports != "undefined") {
 
 		//button
 		ctx.textAlign = "center";
-		ctx.font = "24px Arial";
+		ctx.font = "24px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
 		ctx.fillStyle = over ? "#DDD" : "#999";
 		ctx.fillText( "+", this.size[0] * 0.5, y + 24 );
 	}
@@ -13477,7 +13477,7 @@ if (typeof exports != "undefined") {
             return;
         }
         ctx.fillStyle = "#AAA";
-        ctx.font = "20px Arial";
+        ctx.font = "20px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.textAlign = "center";
         ctx.fillText(this.num, this.size[0] * 0.5, this.size[1] * 0.5);
     };
@@ -13753,7 +13753,7 @@ if (typeof exports != "undefined") {
         var size = this.size[1] * 0.5;
         var margin = 0.25;
         var h = this.size[1] * 0.8;
-        ctx.font = this.properties.font || (size * 0.8).toFixed(0) + "px Arial";
+        ctx.font = this.properties.font || (size * 0.8).toFixed(0) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         var w = ctx.measureText(this.title).width;
         var x = (this.size[0] - (w + size)) * 0.5;
 
@@ -13836,13 +13836,13 @@ if (typeof exports != "undefined") {
             ctx.lineTo(x + h * 0.1, h * 0.8);
             ctx.lineTo(x + h * -0.1, h * 0.8);
             ctx.fill();
-            ctx.font = (h * 0.7).toFixed(1) + "px Arial";
+            ctx.font = (h * 0.7).toFixed(1) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         } else {
-            ctx.font = (h * 0.8).toFixed(1) + "px Arial";
+            ctx.font = (h * 0.8).toFixed(1) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         }
 
         ctx.textAlign = "center";
-        ctx.font = (h * 0.7).toFixed(1) + "px Arial";
+        ctx.font = (h * 0.7).toFixed(1) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.fillStyle = "#EEE";
         ctx.fillText(
             this.properties.value.toFixed(this._precision),
@@ -14050,7 +14050,7 @@ if (typeof exports != "undefined") {
 
         //text
         ctx.fillStyle = this.mouseOver ? "white" : "#AAA";
-        ctx.font = Math.floor(radius * 0.5) + "px Arial";
+        ctx.font = Math.floor(radius * 0.5) + "px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.textAlign = "center";
         ctx.fillText(
             this.properties.value.toFixed(this.properties.precision),
@@ -15525,7 +15525,7 @@ if (typeof exports != "undefined") {
             return;
         }
 
-        ctx.font = "40px Arial";
+        ctx.font = "40px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.fillStyle = "#666";
         ctx.textAlign = "center";
         ctx.fillText(
@@ -16284,7 +16284,7 @@ if (typeof exports != "undefined") {
             return;
         }
 
-        ctx.font = "40px Arial";
+        ctx.font = "40px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.fillStyle = "#666";
         ctx.textAlign = "center";
         ctx.fillText(
@@ -23933,7 +23933,7 @@ var varToTypeGLSL = LiteGraph.varToTypeGLSL = function varToTypeGLSL( v, input_t
 		ctx.fill();
 		//button
 		ctx.textAlign = "center";
-		ctx.font = "24px Arial";
+		ctx.font = "24px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
 		ctx.fillStyle = over ? "#DDD" : "#999";
 		ctx.fillText( "+", this.size[0] * 0.5, y + 24 );
 	}
@@ -28269,7 +28269,7 @@ function LGraphGeometryDisplace() {
             return;
         }
 
-        ctx.font = "30px Arial";
+        ctx.font = "30px " + LGraphCanvas.NODE_TEXT_FONT;// Arial";
         ctx.fillText(this._str, 10, this.size[1] * 0.8);
     };
 

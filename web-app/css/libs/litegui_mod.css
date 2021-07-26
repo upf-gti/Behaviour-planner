@@ -899,8 +899,9 @@ div {
 }
 
 .litedialog .content {
-	padding: 2px;
-	/*font-size: 12px;*/
+	padding: 4px 10px;
+	font-size: 14px;
+	text-align: justify;
 }
 
 .litepanel, .litedialog {
@@ -1714,6 +1715,7 @@ button.litebutton.close-button {
 }
 .litetabs.vertical > ul.wtabcontainer > li.wtab.selected{
 	border-right: 4px solid var(--background-primary)!important;
+	background-color: var(--background-modifier-hover)!important;
 }
 .litetabs.vertical > ul.wtabcontainer > li.wtab .tabbigicon {
 	opacity: 0.5;

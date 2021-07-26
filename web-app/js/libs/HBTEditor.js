@@ -37,7 +37,7 @@ HBTEditor.prototype.init = function( hbt_graph )
     var that = this;
 
     this.graph_canvas = new LGraphCanvas(this.canvas2D , hbt_graph.graph);
-    this.graph_canvas.default_link_color = "#98bcbe";
+    //this.graph_canvas.default_link_color = "#98bcbe";
 
     this.graph_canvas.onNodeSelected = function(node)
     {

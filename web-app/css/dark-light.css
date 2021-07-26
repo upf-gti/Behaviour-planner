@@ -74,8 +74,8 @@
     --elevation-medium:0 4px 4px rgba(0,0,0,0.16);
     --elevation-high:0 8px 16px rgba(0,0,0,0.24);
     --logo-primary:#fff;
-    --control-brand-foreground:hsl(227,calc(var(--saturation-factor, 1)*57.9%),77.6%);
-    --control-brand-foreground-new:hsl(235,calc(var(--saturation-factor, 1)*86.1%),77.5%);
+    --control-brand-foreground: #6198ad8a;/*hsl(227,calc(var(--saturation-factor, 1)*57.9%),77.6%);*/
+    --control-brand-foreground-new: #6198ad; /*hsl(235,calc(var(--saturation-factor, 1)*86.1%),77.5%);*/
     --background-mentioned:hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,0.1);
     --background-mentioned-hover:hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,0.08);
     --background-message-hover:rgba(4,4,5,0.07);
@@ -168,8 +168,8 @@
     --elevation-medium:0 4px 4px rgba(0,0,0,0.08);
     --elevation-high:0 8px 16px rgba(0,0,0,0.16);
     --logo-primary:hsl(227,calc(var(--saturation-factor, 1)*58.4%),65.1%);
-    --control-brand-foreground:hsl(227,calc(var(--saturation-factor, 1)*58.4%),65.1%);
-    --control-brand-foreground-new:hsl(227,calc(var(--saturation-factor, 1)*57.9%),77.6%);
+    --control-brand-foreground:#6198ad; /*hsl(227,calc(var(--saturation-factor, 1)*58.4%),65.1%);*/
+    --control-brand-foreground-new:#6198ad8a; /*hsl(227,calc(var(--saturation-factor, 1)*57.9%),77.6%);*/
     --background-mentioned:hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,0.1);
     --background-mentioned-hover:hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,0.2);
     --background-message-hover:rgba(6,6,7,0.02);

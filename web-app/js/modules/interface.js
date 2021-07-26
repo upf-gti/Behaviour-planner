@@ -31,7 +31,35 @@ class Interface {
         }
 
         this.sidePanelExpanded = false;
+        if(LGraphCanvas)
+        {
+            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC"
+            LGraphCanvas.default_connection_color = {
+                input_off: "#778",
+                input_on: "#faf2ff",
+                output_off: "#778",
+                output_on: "#faf2ff"
+            };
+            LGraphCanvas.connections_width = 3;
+            LGraphCanvas.render_connections_shadows = false;
+        }
+        if(LiteGraph)
+        {
+            LiteGraph.LINK_COLOR = "#7d9eab"
+            LiteGraph.CONNECTING_LINK_COLOR = "#6198ad"//"#ecd4ff";
+            LiteGraph.EVENT_LINK_COLOR = "#ffffff";
+            LiteGraph.NODE_TEXT_FONT = "Monaco";
 
+            if(document.documentElement.getAttribute("data-theme") == "dark"){
+                LiteGraph.NODE_DEFAULT_COLOR =  "#333";
+                LiteGraph.NODE_DEFAULT_BGCOLOR = "#353535";
+                LiteGraph.NODE_DEFAULT_BOXCOLOR = "#666";
+            }else{
+                LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
+                LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
+                LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+            }
+        }
     }
 
     createTabs() {
@@ -81,18 +109,17 @@ class Interface {
 
         this._player_tab = LiteGUI.main_tabs.addTab( "Player", {id:"_playertab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-player.png", size: "full", content:"",
 			callback: function(tab_id){
-                if(that.iframearea && !that.iframe.contentWindow)
+                if(that.iframearea && !that.iframe.contentWindow){
                     that._player_tab.add(that.iframearea)
-                   /* if(player)
-                    {
-                        player.autoplay=false;
-                        player.skip_play_button = true;
-                    }*/
-
+                    /*if(that.iframe.contentWindow)
+                        that.iframe.contentWindow.player.skip_play_button=true*/
+                        
+                }
                 if(that.contentTabs) {
                     that.contentTabs.show();
                     that.sidepanel.add( that.contentTabs );
                 }
+                that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
 			},
 			callback_leave: function(tab_id) {
                 that.contentTabs.hide();
@@ -173,7 +200,7 @@ class Interface {
         //create menubar
 		LiteGUI.createMenubar(null,{sort_entries: false, height:"29px"});
 
-        var example_url = baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json";
+        var example_url = baseURL+"https://webglstudio.org/projects/present/repository/files/evalls/default.json";
         var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon center play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});
@@ -181,9 +208,19 @@ class Interface {
             if(document.documentElement.getAttribute('data-theme')== "light") {
                // trans()
                 document.documentElement.setAttribute('data-theme', 'dark')
+                if(LiteGraph){
+                    LiteGraph.NODE_DEFAULT_COLOR =  "#333";
+                    LiteGraph.NODE_DEFAULT_BGCOLOR = "#353535";
+                    LiteGraph.NODE_DEFAULT_BOXCOLOR = "#666";
+                }
             } else {
               //  trans()
                 document.documentElement.setAttribute('data-theme', 'light')
+                if(LiteGraph){
+                    LiteGraph.NODE_DEFAULT_COLOR =  "#cdcdcd";
+                    LiteGraph.NODE_DEFAULT_BGCOLOR = "#cbcbcb";
+                    LiteGraph.NODE_DEFAULT_BOXCOLOR = "#9a9a9a";
+                }
             }
         }});
         LiteGUI.menubar.refresh = (function()
@@ -209,6 +246,8 @@ class Interface {
             LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
             LiteGUI.menubar.add("Edit/Scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)
             
+            LiteGUI.menubar.add("About", {callback: this.showAppInfo})
+
             if(!CORE.modules["FileSystem"].session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
@@ -298,6 +337,8 @@ class Interface {
         }});*/
         var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.refresh, callback: function () {
             that.iframearea.add(that.iframe)
+            that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
+
         }});
         var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
             iframeWindow = window.open("iframe.html", "otherWindow");
@@ -309,7 +350,16 @@ class Interface {
         div2.append(show_btn2);
  
         this.iframearea.add(div2);
-       
+        this.iframe = document.createElement("iframe");
+        this.iframe.style.height = "calc(100% - 3px)"
+        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json";
+        this.iframe.id="iframe-character";
+        
+        this.iframearea.add(this.iframe)
+        if(this.iframe.contentWindow)
+            this.iframe.contentWindow.player.skip_play_button=true
+        iframeWindow = this.iframearea
+
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -368,88 +418,8 @@ class Interface {
             // Call here any other resize
             // ...
         });
-        if(LGraphCanvas)
-            LGraphCanvas.DEFAULT_BACKGROUND_IMAGE =  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADxSURBVHja7NfBCcNADEXBtZuQ+q9TIJfgPdiWD/MgtyWEDAj+iojq7nX3iYjefDf1fTX0+x59d3T30n86/QVABASIgAARECD6GiQza+dhZvbmu6nvq6Hf9+g7S93JEhAgAgJEQIAIiKVuqVvqcrKACAgQAQEiIEBkqVvqlrqTJSBABASIgAAREFnqlrqcLCACAkRAgAiIgFjqlrql7mQJCBABASIgAgJElrqlLicLiIAAERABASIglrqlbqk7WQICREAEBIiAAJGlbqnLyQIiIAICRECACIilbqlb6k6WgAgIEAEBIiBA9EoXAAAA//8DACCgqqgKP5/pAAAAAElFTkSuQmCC";
     }
-    init(){
-        this.iframe = new ONE.Player({
-            alpha: false, //enables to have alpha in the canvas to blend with background
-            stencil: true,
-            redraw: true, //force to redraw
-            autoplay:false,
-            resources: "https://webglstudio.org/latest/fileserver/files/",
-            autoresize: true, //resize the 3D window if the browser window is resized
-            loadingbar: true, //shows loading bar progress
-            skip_play_button: true,
-            proxy: "@/proxy.php?url=" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
-        });
-        //this.iframe = document.createElement("iframe");
-        //this.iframe.style.height = "calc(100% - 3px)"
-       // this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
-        this.iframe.id="iframe-character";
-        var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
 
-        //support for external server
-        var data = localStorage.getItem("wgl_user_preferences" );
-        if(data)
-        {
-            var config = JSON.parse(data);
-            if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
-            {
-                allow_remote_scenes = true;
-                ONE.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
-            }
-        }
-        if( window.enableWebGLCanvas )
-		    enableWebGLCanvas( gl.canvas );
-
-        //renders the loading bar, you can replace it in case you want your own loading bar 
-        this.iframe.renderLoadingBar = function( loading )
-        {
-            if(!loading)
-                return;
-
-            if(!enableWebGLCanvas)
-                return;
-
-            if(!gl.canvas.canvas2DtoWebGL_enabled)
-                enableWebGLCanvas( gl.canvas );
-
-            gl.start2D();
-
-            var y = gl.canvas.height/2.0;//gl.drawingBufferHeight - 6;
-            gl.fillColor = [0,0,0,1];
-            gl.fillRect( 0, 0, gl.canvas.width, gl.canvas.height);
-            //scene
-            
-           gl.fillColor = loading.bar_color || [0.53,0.56,0.95,1.0];
-           /* gl.fillRect( 80, y, ((gl.drawingBufferWidth -80) * loading.scene_loaded*loading.resources_loaded), 40 );
-            */
-           // gl.fillColor = [0,0,0,1];
-           gl.font = "30px Arial";
-           var load = 2*loading.resources_loaded;
-           var f = Math.ceil(load/2*10000)/100
-            gl.fillText(f +"%", gl.canvas.width/2.0-40, y+20);
-            gl.strokeStyle = 'rgb(135, 144, 232)'
-            gl.beginPath();
-            gl.arc( gl.canvas.width/2.0, gl.canvas.height/2.0, 100, 0, load*Math.PI,true);
-            gl.lineWidth=20;
-            gl.stroke();
-            gl.closePath();
-           
-            //resources
-            //gl.fillColor = loading.bar_color || [0.9,0.5,1.0,1.0];
-           // gl.fillRect( 0, y + 4, gl.drawingBufferWidth * loading.resources_loaded, 4 );
-            gl.finish2D();
-            
-        }
-        this.iframe.src = "https://webglstudio.org/latest/fileserver/files/evalls/projects/RAO.scene.json";
-        this.iframe.loadScene(this.iframe.src)
-        this.iframearea.add(this.iframe.canvas)
-        iframeWindow = this.iframearea
-        if(!LS && ONE)
-            LS = ONE;
-    }
     onExpandInspector(area,e) {
 
         var that = this;
@@ -466,11 +436,6 @@ class Interface {
         GraphManager.resize();
         that.timeline_dialog.resize();
         onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
-    }
-
-    timeline()
-    {
-
     }
 
     /* -----------------------------------------------------------GRAPH AREA------------------------------------------------------------ */
@@ -1210,7 +1175,7 @@ class Interface {
                 {
                     if(lg_user === "guest")
                     CORE["Interface"].importFromURL(
-                        baseURL+"/users/evalls/dialog-manager/dev/data/RAO-expressions.json",
+                        baseURL+"/projects/present/repository/files/evalls/default.json",
                         SESSION.IS_GUEST
                     );
 
@@ -1391,82 +1356,10 @@ class Interface {
             "Only WebGLStudio scenes",
             function(v){
                 if(v)
-                {
-                    this.iframe.clear();
-                    this.iframe = new ONE.Player({
-                        alpha: false, //enables to have alpha in the canvas to blend with background
-                        stencil: true,
-                        redraw: true, //force to redraw
-                        autoplay:false,
-                        resources: "https://webglstudio.org/latest/fileserver/files/",
-                        autoresize: true, //resize the 3D window if the browser window is resized
-                        loadingbar: true, //shows loading bar progress
-                        skip_play_button: true,
-                        proxy: "@/proxy.php?url=" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
-                    });
-                    //this.iframe = document.createElement("iframe");
-                    //this.iframe.style.height = "calc(100% - 3px)"
-                   // this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json";
-                    this.iframe.id="iframe-character";
-                    var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
-            
-                    //support for external server
-                    var data = localStorage.getItem("wgl_user_preferences" );
-                    if(data)
-                    {
-                        var config = JSON.parse(data);
-                        if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
-                        {
-                            allow_remote_scenes = true;
-                            ONE.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
-                        }
-                    }
-                    if( window.enableWebGLCanvas )
-                        enableWebGLCanvas( gl.canvas );
-            
-                    //renders the loading bar, you can replace it in case you want your own loading bar 
-                    this.iframe.renderLoadingBar = function( loading )
-                    {
-                        if(!loading)
-                            return;
-            
-                        if(!enableWebGLCanvas)
-                            return;
-            
-                        if(!gl.canvas.canvas2DtoWebGL_enabled)
-                            enableWebGLCanvas( gl.canvas );
-            
-                        gl.start2D();
-            
-                        var y = gl.canvas.height/2.0;//gl.drawingBufferHeight - 6;
-                        gl.fillColor = [0,0,0,1];
-                        gl.fillRect( 0, 0, gl.canvas.width, gl.canvas.height);
-                        //scene
-                        
-                       gl.fillColor = loading.bar_color || [0.53,0.56,0.95,1.0];
-                       /* gl.fillRect( 80, y, ((gl.drawingBufferWidth -80) * loading.scene_loaded*loading.resources_loaded), 40 );
-                        */
-                       // gl.fillColor = [0,0,0,1];
-                       gl.font = "30px Arial";
-                       var load = 2*loading.resources_loaded;
-                       var f = Math.ceil(load/2*10000)/100
-                        gl.fillText(f +"%", gl.canvas.width/2.0-40, y+20);
-                        gl.strokeStyle = 'rgb(135, 144, 232)'
-                        gl.beginPath();
-                        gl.arc( gl.canvas.width/2.0, gl.canvas.height/2.0, 100, 0, load*Math.PI,true);
-                        gl.lineWidth=20;
-                        gl.stroke();
-                        gl.closePath();
-                       
-                        //resources
-                        //gl.fillColor = loading.bar_color || [0.9,0.5,1.0,1.0];
-                       // gl.fillRect( 0, y + 4, gl.drawingBufferWidth * loading.resources_loaded, 4 );
-                        gl.finish2D();
-                        
-                    }
                     this.iframe.src = v
-                    this.iframe.loadScene(v);
-                }
+                    if(this.iframe.contentWindow)
+                         this.iframe.contentWindow.player.skip_play_button=true
+                   
             }.bind(this),
             {
                 value:this.iframe.src,
@@ -1767,8 +1660,35 @@ class Interface {
         //this.focus();
         }
     }
+    showAppInfo(){
+        readTextFile("https://webglstudio.org/users/evalls/Behaviour-planner/README.md",
+        function(data){
+            var dialog = new LiteGUI.Dialog({ title:"About the application", width: 800, closable: true });
+            var inspector = new LiteGUI.Inspector();
+            inspector.root.innerHTML =marked(data);
+            dialog.add(inspector)
+            dialog.show()
+            
+        })
+    }
 }
-
+function readTextFile(file, callback)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                if(callback)
+                    callback(rawFile.responseText);
+            }
+        }
+    }
+    rawFile.send(null);
+}
 function autocomplete(inp, arr, words, options) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
