@@ -118,7 +118,9 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 }
             }
         }
-
+        var idx = this.outputs.getIdexOf(["text","string"]);
+        if(idx>-1)
+            this.setOutputData(idx,text)
         if(this.running_node_in_banch)
             agent.bt_info.running_node_index = null;
 
@@ -163,7 +165,7 @@ ParseCompare.prototype.onGetInputs = function(){
 }
 
 ParseCompare.prototype.onGetOutputs = function(){
-    var outputs = [];
+    var outputs = [["text","string"]];
     for(var i in this.tags_outputs)
         outputs.push([i, this.tags_outputs[i]]);
     return outputs;
@@ -261,7 +263,15 @@ EventNode.prototype.tick = function(agent, dt, info){
 
 			return value;
 		}
-	}
+	}if(this.outputs)
+    {
+        for(var i = 0; i < this.outputs.length; i++)
+        {
+            if(this.outputs[i][0] == this.properties.type && this.data)
+                this.setOutputData(i, this.data)
+        }
+            
+    }
 
 	// if(this.running_node_in_banch)
 	// 	agent.bt_info.running_node_index = null;
@@ -294,6 +304,10 @@ EventNode.prototype.onStart = EventNode.prototype.onDeselected = function(){
 	this.outputs[0].links = [];
 	for(var i in children)
 		this.outputs[0].links.push(children[i].inputs[0].link);
+}
+EventNode.prototype.onGetOutputs = function()
+{
+    return [[this.properties.type,"*"]]
 }
 
 LiteGraph.registerNodeType("btree/Event", EventNode);

@@ -337,7 +337,7 @@ input {
 textarea{
   margin: 0;
   border-radius: 0;
-  color: white; /* or whatever */
+  color: var(--text-normal); /* or whatever */
   background-color: #00000017!important;
   -webkit-writing-mode: horizontal-tb !important;
     text-rendering: auto;
