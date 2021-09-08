@@ -5936,12 +5936,25 @@ LGraphNode.prototype.executeAction = function(action)
                             }
                         }
                     }
-                }
 
-                this.connecting_output = null;
-                this.connecting_pos = null;
-                this.connecting_node = null;
-                this.connecting_slot = -1;
+                    this.connecting_output = null;
+                    this.connecting_pos = null;
+                    this.connecting_node = null;
+                    this.connecting_slot = -1;
+                }
+                else
+                {
+                    // present: open search box
+                    this.showSearchBox(e);
+
+                    LiteGraph.AutoConnectNodeData = {
+                        connecting_output: this.connecting_output,
+                        connecting_pos: this.connecting_pos,
+                        connecting_node: this.connecting_node,
+                        connecting_slot: this.connecting_slot
+                    };
+                }
+                
             } //not dragging connection
             else if (this.resizing_node) {
                 this.dirty_canvas = true;
@@ -8092,6 +8105,14 @@ LGraphNode.prototype.executeAction = function(action)
         var nodes = this.graph._nodes;
         for (var n = 0, l = nodes.length; n < l; ++n) {
             var node = nodes[n];
+
+            this.isCurrentNodeInTrace = false;
+
+            if(AgentManager.agent_selected && AgentManager.agent_selected.evaluation_trace) {
+                var trace = AgentManager.agent_selected.evaluation_trace;
+                this.isCurrentNodeInTrace |= (trace.find(e => e == node.id) != undefined);
+            }
+
             //for every input (we render just inputs because it is easier as every slot can only have one input)
             if (!node.inputs || !node.inputs.length) {
                 continue;
@@ -8173,7 +8194,8 @@ LGraphNode.prototype.executeAction = function(action)
                 );
 
                 //event triggered rendered on top
-                if (link && link._last_time && now - link._last_time < 1000) {
+                if (link) {
+                    var trigger = link._last_time && now - link._last_time < 1000;
                     var f = 2.0 - (now - link._last_time) * 0.002;
                     var tmp = ctx.globalAlpha;
                     ctx.globalAlpha = tmp * f;
@@ -8183,8 +8205,8 @@ LGraphNode.prototype.executeAction = function(action)
                         end_node_slotpos,
                         link,
                         true,
-                        f,
-                        LiteGraph.HIGHLIGHT_LINK_COLOR,
+                        trigger,
+                        trigger ? LiteGraph.HIGHLIGHT_LINK_COLOR : LiteGraph.LINK_COLOR,
                         start_dir,
                         end_dir
                     );
@@ -8463,10 +8485,12 @@ LGraphNode.prototype.executeAction = function(action)
         }
 
         //render flowing points
-        if (flow) {
+
+        if (this.isCurrentNodeInTrace)
+        {
             ctx.fillStyle = color;
             for (var i = 0; i < 5; ++i) {
-                var f = (LiteGraph.getTime() * 0.001 + i * 0.2) % 1;
+                var f = flow ? (LiteGraph.getTime() * 0.001 + i * 0.2) % 1 : (i * 0.2) % 1;
                 var pos = this.computeConnectionPoint(
                     a,
                     b,
@@ -9729,6 +9753,12 @@ LGraphNode.prototype.executeAction = function(action)
             if (dialog.parentNode) {
                 dialog.parentNode.removeChild(dialog);
             }
+
+            that.connecting_output = null;
+            that.connecting_pos = null;
+            that.connecting_node = null;
+            that.connecting_slot = -1;
+            LiteGraph.AutoConnectNodeData = null;
         };
 
         var timeout_close = null;
@@ -9841,7 +9871,7 @@ LGraphNode.prototype.executeAction = function(action)
 
         function select(name) {
             if (name) {
-                if (that.onSearchBoxSelection) {
+                if (that.onSearchBoxSelection && LiteGraph.AutoConnectNodeData) {
                     that.onSearchBoxSelection(name, event, graphcanvas);
                 } else {
                     var extra = LiteGraph.searchbox_extras[name.toLowerCase()];
@@ -11238,7 +11268,7 @@ LGraphNode.prototype.executeAction = function(action)
             root.className += " " + options.className;
         }
         root.style.minWidth = 100;
-        root.style.minHeight = 100;
+        root.style.minHeight = 10;
         root.style.pointerEvents = "none";
         setTimeout(function() {
             root.style.pointerEvents = "auto";

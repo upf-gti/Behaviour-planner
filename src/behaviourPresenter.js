@@ -747,14 +747,14 @@ HttpRequest.prototype.onInspect = function(inspector)
 
         inspector.addInfo("", p, {width: "30%", content_width: "100%"});
 
-        inspector.addString(null, this.properties[p], {width: "60%", content_width: "100%", callback: function(v){
+        inspector.addString(null, this.headers[p], {width: "60%", content_width: "100%", callback: function(v){
             that.propagate(p, v);
-            that.properties[p] = v;
+            that.headers[p] = v;
         }});
 
         inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
             that.propagate(p, null);
-            delete that.properties[p];
+            delete that.headers[p];
             that.onInspect(inspector);
         }});
     }

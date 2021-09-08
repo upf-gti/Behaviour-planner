@@ -59,6 +59,54 @@ HBTEditor.prototype.init = function( hbt_graph )
         console.log(node);
     }
 
+    this.graph_canvas.onSearchBoxSelection = function(name, event, graphcanvas)
+    {
+        var node = LiteGraph.createNode(name);
+        if (node) {
+            node.pos = graphcanvas.convertEventToCanvasOffset(
+                event
+            );
+            graphcanvas.graph.add(node);
+        }
+
+        var input = node.getInputInfo(0);
+        if(!input) 
+            return;
+
+        graphcanvas.graph.beforeChange();
+
+        var inputData = LiteGraph.AutoConnectNodeData;
+
+        //auto connect
+        if (input.type == LiteGraph.EVENT) {
+            inputData.connecting_node.connect(
+                inputData.connecting_slot,
+                node,
+                LiteGraph.EVENT
+            );
+        } else if (
+            !input.link &&
+            LiteGraph.isValidConnection(
+                input.type && inputData.connecting_output.type
+            )
+        ) {
+            inputData.connecting_node.connect(
+                inputData.connecting_slot,
+                node,
+                0
+            );
+        }
+
+        LiteGraph.AutoConnectNodeData = null;
+
+        this.connecting_output = null;
+        this.connecting_pos = null;
+        this.connecting_node = null;
+        this.connecting_slot = -1;
+
+        graphcanvas.graph.afterChange();
+    }
+
     this.graph_canvas.onDropItem = function( data )
     { 
         var type = data.dataTransfer.getData("type");

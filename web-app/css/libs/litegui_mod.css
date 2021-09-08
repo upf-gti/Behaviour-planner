@@ -11,7 +11,7 @@ html {
 
 .inspector {
 	margin-top: 10px;
-	margin-bottom: 20px;
+	margin-bottom: 10px;
 	color: var(--font-color);
 	/*
 	user-select: none;
@@ -1463,7 +1463,7 @@ a:hover {
 	font-size: 15px;
 	color: var(--interactive-normal);
 	display: inline-block;
-	min-width: 50px;
+	min-width: 5px;
 	padding-left: 10px;
 	padding-right: 10px;
 	user-select: none;

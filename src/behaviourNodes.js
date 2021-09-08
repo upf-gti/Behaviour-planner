@@ -1510,6 +1510,11 @@ HttpRequest.prototype.onExecute = function()
     }
 }
 
+HttpRequest.prototype.isTag = function(value)
+{
+    return value.constructor === String && value.length && value[0] == "#";
+}
+
 HttpRequest.prototype.tick = function(agent, dt, info)
 {
     // info:
@@ -1517,17 +1522,15 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     // text: "cosas y/o 645651655"
     
     // Clone so changes on values if there is any tag doesn't change original one
-    var parameters = Object.assign({}, this.properties.parameters); 
-    if(info) {
-        for(var p in parameters) {
-            var value = parameters[p];
+    var body = Object.assign({}, this.data); 
+    if(info && info.tags) {
+        for(var p in body) {
+            var value = body[p];
             // Try to match a tag from info
-            if(info.tags && value.constructor === String && value[0] == "#"){ 
-                if(info.tags[value]){
-                    parameters[p] = info.tags[value];
-                }
-            }else if(info[p]!=undefined){
-                parameters[p] = info[p];
+            if(this.isTag(value) && info.tags[value]){ 
+                body[p] = info.tags[value];
+            }else if(info[p] != undefined){
+                body[p] = info[p];
             }
         }
     }
@@ -1535,7 +1538,7 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     var requestParams = {
         "parameters": this.properties,
         "headers": this.headers,
-        "data": this.data
+        "data": body
     };
 
     this.behaviour.setData(requestParams);

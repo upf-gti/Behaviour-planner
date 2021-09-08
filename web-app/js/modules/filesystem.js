@@ -103,7 +103,7 @@ class FileSystem{
         else
         {
             this.session = session;
-            console.log("%cLOGGED " + session.user.username,"color: #7676cc; font-size: 16px" );
+            console.log("%cLOGGED " + session.user.username, "color: #7676cc; font-size: 16px" );
         }
 
         if(callback)

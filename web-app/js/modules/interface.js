@@ -236,10 +236,27 @@ class Interface {
         }});
         LiteGUI.menubar.refresh = (function()
         {
-            
             // Clean first
             LiteGUI.menubar.clear();
             
+            var session = CORE.modules["FileSystem"].session;
+
+            if(!session)
+            {
+                LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
+            }else
+            {
+                // LiteGUI.menubar.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
+                LiteGUI.menubar.add(session.user.username + "/Logout", {callback: function(e){
+                    var FS = CORE.modules["FileSystem"];
+                    FS.session.logout(FS.onLogout.bind(FS, function(){
+                        LiteGUI.menubar.refresh();
+                    }));
+                }});
+            }
+
+            LiteGUI.menubar.add("|");
+
             LiteGUI.menubar.add("Project/New/Empty"); //clear all
             LiteGUI.menubar.add("Project/New/Template", {callback: this.importFromURL.bind(this, example_url)});
             // Server options
@@ -259,19 +276,11 @@ class Interface {
             
             LiteGUI.menubar.add("About", {callback: this.showAppInfo})
 
-            if(!CORE.modules["FileSystem"].session)
-            {
-                LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
-            }else
-            {
-                // LiteGUI.menubar.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
-                LiteGUI.menubar.add("Account/Logout", {callback: function(e){
-                    var FS = CORE.modules["FileSystem"];
-                    FS.session.logout(FS.onLogout.bind(FS, function(){
-                        LiteGUI.menubar.refresh();
-                    }));
-                }});
-            }
+            LiteGUI.menubar.menu[0].element.classList.add("user-name-menubar")
+
+            // LiteGUI.menubar.add("|", { disabled: true });
+            // LiteGUI.menubar.add(session ? "<b>" + session.user.username + "<b>" : "", { disabled: true });
+
             LiteGUI.menubar.root.firstElementChild.appendChild(play_btn)
             LiteGUI.menubar.root.firstElementChild.appendChild(theme_mode)
         }).bind(this);
@@ -1144,6 +1153,7 @@ class Interface {
         var dialog = new LiteGUI.Dialog({ id:"login-dialog", title:"Login", width: 300, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
+        error_inspector.addInfo(null, "Server status: Not logged");
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
         var pass_widget = inspector.addString("Password", pass, {password: true, callback: function(v){ pass = v; }});
 
@@ -1196,7 +1206,7 @@ class Interface {
                 else
                 {
                     error_inspector.clear();
-                    error_inspector.addInfo(null, "-- " + msg_info);
+                    error_inspector.addInfo(null, "Server status: " + msg_info);
                 }
             }));
         }
@@ -1212,9 +1222,10 @@ class Interface {
         pass2 = "", email = "";
         let errors = false;
 
-        var dialog = new LiteGUI.Dialog({ id:"register-dialog", title:"Register", width: 350, closable:true });
+        var dialog = new LiteGUI.Dialog({ id:"register-dialog", title:"Register", width: 350, closable: true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
+        error_inspector.addInfo(null, "Server status: Not logged");
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
         inspector.addString("Email", email, {callback: function(v){ email = v; }});
         inspector.addString("Password", pass, {password: true, callback: function(v){ pass = v; }});
@@ -1233,14 +1244,14 @@ class Interface {
                     }else
                     {
                         error_inspector.clear();
-                        error_inspector.addInfo(null, "-- " + request.msg);
+                        error_inspector.addInfo(null, "Server status: " + request.msg);
                         console.error(request.msg);
                     }
                 });
             }else
             {
                 error_inspector.clear();
-                error_inspector.addInfo(null, "-- Please confirm password");
+                error_inspector.addInfo(null, "Server status: Please confirm password");
                 console.error("Wrong pass confirmation");
             }
         }});
