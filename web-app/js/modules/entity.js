@@ -65,7 +65,7 @@ var EntitiesManager = {
     },
     checkPhoneFormatValidity(text)
     {
-        if(text.length >= 7 && text.length <= 9 )
+        if(text.length >= 7 && text.length <= 11 ) //9 + 2 numbers for extension
             return text
         return false
     },

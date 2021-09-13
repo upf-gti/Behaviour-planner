@@ -1660,7 +1660,7 @@ HttpRequest.RAO_Templates = {
         "api-version": "v1.0",
         "request-id": "AX0001",
         "sms-text": "This is the message to the user mobile phone",
-        "mobile-number": "3933300112233"
+        "mobile-number": "#PhoneNumber"
     }
 }
 

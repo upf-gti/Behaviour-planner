@@ -15,7 +15,10 @@ var UTILS = {
 
 		var dataType = parameters.dataType || "text";
 		if(dataType == "json") //parse it locally
-			dataType = "text";
+		{
+			dataType = "application/json";
+			data = JSON.stringify(data);
+		}
 		else if(dataType == "xml") //parse it locally
 			dataType = "text";
 		else if (dataType == "binary")
@@ -38,8 +41,8 @@ var UTILS = {
 			asyncRequest = parameters.async;
 
         xhr.open( method, parameters.url, asyncRequest);
-        if(dataType)
-            xhr.responseType = dataType;
+        /*if(dataType)
+            xhr.responseType = dataType;*/
         if (parameters.mimeType)
             xhr.overrideMimeType( parameters.mimeType );
 
@@ -97,14 +100,14 @@ var UTILS = {
 				request.error(err);
 		}
 
-		var formData = new FormData();
+		/*var formData = new FormData();
 		if( data )
 		{
 			for(var i in data)
 				formData.append(i, data[i]);
-		}
+		}*/
 
-        xhr.send( formData );
+        xhr.send( data );
 		return xhr;
 	},
 
