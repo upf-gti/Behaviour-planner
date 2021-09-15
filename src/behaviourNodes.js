@@ -1489,6 +1489,22 @@ function HttpRequest()
     this.behaviour.type = B_TYPE.http_request;
 }
 
+HttpRequest.prototype.onConfigure = function(o)
+{
+    if(o.headers)
+        this.headers = o.headers;
+    if(o.data)
+        this.data = o.data;
+}
+
+HttpRequest.prototype.onSerialize = function(o)
+{
+    if(this.headers)
+        o.headers = this.headers;
+    if(this.data)
+        o.data = this.data;
+}
+
 //Update values from inputs, if any
 HttpRequest.prototype.onExecute = function()
 {
