@@ -617,19 +617,22 @@ class Interface {
                 } 
             }
             else if (e.key == 'Enter') {
+                e.preventDefault();
                 if(start == end && this.value.substring(start - 1, start) == "{") {
-                    e.preventDefault();
                     this.value = this.value.substring(0, start) + "\n" + makeSpaces() + "\n" + makeSpaces(true) + "}" + this.value.substring(end);
                     this.selectionStart = this.selectionEnd = start + tabSpaces * tabIndex + 1;
                     tabIndex++;
+                }else
+                {
+                    this.value = this.value.substring(0, start) + "\n" + makeSpaces(true) + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + tabSpaces * (tabIndex-1) + 1;
                 }
-            }/*else if (e.key == '"') {
-                e.preventDefault();
+            }else if (e.key == '"') {
                 if(start == end){
-                    this.value += '"';
-                    this.selectionStart = this.selectionEnd = start + 1;
+                    this.value = this.value.substring(0, start) + '"' + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start;
                 }
-            }*/
+            }
 
             return false;
         });
@@ -1256,7 +1259,8 @@ class Interface {
         var dialog = new LiteGUI.Dialog({ id:"login-dialog", title:"Login", width: 300, closable:true });
         var inspector = new LiteGUI.Inspector();
         var error_inspector = new LiteGUI.Inspector();
-        error_inspector.addInfo(null, "Server status: Not logged");
+        var error_text = error_inspector.addInfo(null, "Server status: Not logged");
+        error_text.querySelector(".winfo").style.margin = "5px";
         inspector.addString("Username", user, {callback: function(v){ user = v; }});
         var pass_widget = inspector.addString("Password", pass, {password: true, callback: function(v){ pass = v; }});
 
@@ -1272,6 +1276,7 @@ class Interface {
             }
         });
 
+        inspector.addSeparator();
         inspector.widgets_per_row = 2;
         inspector.addButton(null, "Register", {name_width: "30%", callback: (function(){
             this.showCreateAccountDialog();
