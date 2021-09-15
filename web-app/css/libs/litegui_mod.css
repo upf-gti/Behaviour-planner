@@ -136,6 +136,7 @@ display: none;
 	letter-spacing: .25px;
 	font-family: var(--font-display);
 	font-weight: 600;
+	padding-top: 7px;
 }
 
 .inspector .wsectiontitle :hover{

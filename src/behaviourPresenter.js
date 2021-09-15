@@ -812,11 +812,21 @@ HttpRequest.prototype.onInspect = function(inspector)
             e.preventDefault();
 
             var options = [
-                {title: "Templates", disabled: true}, null
+                {title: "Templates", disabled: true}, null, {
+                    title: "From JSON",
+                    callback: function(){
+                        CORE.Interface.openTemplateLoader();
+                    }
+                }, {
+                    title: "RAO",
+                    submenu: {
+                        options: []
+                    }
+                }
             ];
 
             for(let t in HttpRequest.RAO_Templates) {
-                options.push({
+                options[3].submenu.options.push({
                     title: t,
                     callback: function(){
                         that.data = Object.assign({}, HttpRequest.getTemplate(t));

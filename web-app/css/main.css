@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@600&display=swap');
+
 /*Checkbox*/
 .inspector .wcontent .checkbox {
     margin-left: 2px!important;
@@ -165,7 +167,7 @@ fill: var(--bg-color)!important;
     height: auto;
 }
 /*Keyframe icon*/
-.keyframe_icon {
+.keyframe_icon, .keyframe_icon_status{
 	border: 2px solid rgba(0,0,0,0.3);
 	/*box-shadow: 0 0 2px black;*/
 	border-radius: 10px;
@@ -179,11 +181,18 @@ fill: var(--bg-color)!important;
 	-moz-transition: background-color 0.1s ease 0s;
 }
 
+.valid {
+	background-color: rgb(102, 218, 7);
+}
+
+.invalid {
+	background-color: rgb(201, 20, 20);
+}
+
 .keyframe_icon:hover {
 	background-color: var(--interactive-hover);
 	cursor: pointer;
 }
-
 
 .left{
     left: 2px;
@@ -566,7 +575,6 @@ Webglstudio editor
 	opacity: 0.5;
 }
 
-
 .file-list-block .info {
 	margin: 20px;
 	font-size: 4em;
@@ -579,4 +587,11 @@ Webglstudio editor
 li.user-name-menubar{
     font-size:  1.65em;   
     font-weight: bold;
+}
+
+.console-text textarea{
+    font-family: 'Inconsolata', monospace !important;
+    font-size: 1.25em;
+    background-color: #252525 !important;
+    resize: none;
 }

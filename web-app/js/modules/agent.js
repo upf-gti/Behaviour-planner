@@ -167,8 +167,8 @@ var AgentManager = {
                 inspector.widgets_per_row = 3;
 
                 var _k,_v;
-                inspector.addString(null, "",  { width:"50%", placeHolder:"param name",  callback: v => _k = v });
-                inspector.addString(null, "",  { width:"calc(50% - 45px)", placeHolder:"value",       callback: v => _v = v });
+                inspector.addString(null, "",  { width:"50%", placeHolder:"Name",  callback: v => _k = v });
+                inspector.addString(null, "",  { width:"calc(50% - 45px)", placeHolder:"Value",       callback: v => _v = v });
                 inspector.addButton(null, "+", { width:40, callback: e => {
                     if(!_k || !_v)
                         return;

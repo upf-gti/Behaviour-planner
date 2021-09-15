@@ -570,6 +570,105 @@ class Interface {
             CORE.App.agent_selected.hbt_graph = graph.name;
     }
 
+    openTemplateLoader() {
+        var that = this;
+        var pretitle = "<span class='keyframe_icon_status valid'></span>";
+		var dialog = new LiteGUI.Dialog({ title:"New template", width: 600, closable: true });
+		var inspector = new LiteGUI.Inspector();
+        inspector.widgets_per_row = 2;
+		var plain_text = null;
+        inspector.addString("Format:", "JSON",{disabled: true, width: "35%", name_width: "40%"});
+        var valid_text = inspector.addString("", "Valid", {disabled: true, width: "20%", name_width: "20%", pretitle: pretitle});
+        inspector.addSeparator();
+        inspector.widgets_per_row = 1;
+		var text_area = inspector.addTextarea(null, "",{height: "350px", callback: function(v){
+			plain_text = v;
+		}});
+        var text_box = text_area.querySelector(".inputfield");
+        text_box.classList.add("console-text");
+        var inputArea = text_box.querySelector("textarea");
+        var tabIndex = 1;
+        var tabSpaces = 4;
+
+        function makeSpaces(less){
+            var string = "";
+            for(var i = 0; i < tabSpaces * (tabIndex - (less ? 1 : 0)); i++)
+            string += " ";
+            return string;
+        }
+
+        inputArea.addEventListener('keydown', function(e) {
+
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+
+            if (e.key == 'Tab') {
+                e.preventDefault();
+                // Soportar más casos de espacios/tabs
+                if(e.shiftKey) {
+                    if(tabIndex > 0 && start == end && this.value.substring(start - tabSpaces, start) == makeSpaces()) {
+                        this.value = this.value.substring(0, start - tabSpaces);
+                        tabIndex--;
+                    }
+                }else {
+                    tabIndex++;
+                    this.value = this.value.substring(0, start) + makeSpaces() + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + tabSpaces;
+                } 
+            }
+            else if (e.key == 'Enter') {
+                if(start == end && this.value.substring(start - 1, start) == "{") {
+                    e.preventDefault();
+                    this.value = this.value.substring(0, start) + "\n" + makeSpaces() + "\n" + makeSpaces(true) + "}" + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + tabSpaces * tabIndex + 1;
+                    tabIndex++;
+                }
+            }/*else if (e.key == '"') {
+                e.preventDefault();
+                if(start == end){
+                    this.value += '"';
+                    this.selectionStart = this.selectionEnd = start + 1;
+                }
+            }*/
+
+            return false;
+        });
+        inspector.widgets_per_row = 2;
+        var template_name = null;
+        inspector.addString("Name", "", {placeHolder: "unnamed", callback: function(v){
+            template_name = v;
+        }})
+
+        function __validate(data){
+            valid_text.querySelector(".inputfield input").value = "Valid";
+            valid_text.querySelector(".keyframe_icon_status").classList.replace("invalid", "valid");
+            dialog.close();
+            // process template
+            HttpRequest.RAO_Templates["/" + (template_name || "unnamed")] = data;
+        }
+
+        function __error(){
+            valid_text.querySelector(".inputfield input").value = "Invalid";
+            valid_text.querySelector(".keyframe_icon_status").classList.replace("valid", "invalid");
+        }
+
+        inspector.addButton(null, "Load", function(){
+			if(!plain_text)
+                return;
+            var data;
+            try{
+                data = JSON.parse(plain_text);
+                __validate(data);
+            }catch(e){
+                __error();
+            }
+		});
+        inspector.widgets_per_row = 1;
+		dialog.add( inspector );
+		dialog.adjustSize(2);
+		dialog.makeModal();
+    }
+
     openImportDialog(data, session_type) {
 
         var title = "Replace current graph?";
@@ -631,6 +730,7 @@ class Interface {
     {
         LiteGUI.prompt("URL name", this.importFromURL.bind(this),{title: "Import from URL"});
     }
+
     openConfirmDeleteDialog(title = "Delete", callback)
     {
         LiteGUI.choice("Are you sure?",["Delete", "Cancel"],
@@ -640,6 +740,7 @@ class Interface {
             },
             {title: title});
     }
+
     // session_type is for guest issues, to load a template on login
     importFromURL(url, session_type)
     {
@@ -1096,10 +1197,11 @@ class Interface {
                 widgets.addTitle( "Path");
                 widgets.root.appendChild(litetree.root);
                 widgets.addTitle( "Files");
-                widgets.addList( null, files, {height: "150px", callback: function(v) {
+                var list = widgets.addList( null, files, {height: "150px", callback: function(v) {
                     file_selected = v;
                     widgets.on_refresh();
                 } });
+                list.style.marginTop = "-115px";
 
                 var thb = widgets.addContainer("thb");
                 thb.style.width = "50%";
@@ -1196,10 +1298,15 @@ class Interface {
                 if(valid)
                 {
                     if(lg_user === "guest")
-                    CORE["Interface"].importFromURL(
-                        baseURL+"/projects/present/repository/files/evalls/default.json",
-                        SESSION.IS_GUEST
-                    );
+                        CORE["Interface"].importFromURL(
+                            baseURL+"/projects/present/repository/files/evalls/default.json",
+                            SESSION.IS_GUEST
+                        );
+                    else if(lg_user === "arodriguez")
+                        CORE["Interface"].importFromURL(
+                            baseURL+"/projects/present/repository/files/arodriguez/test_event.json",
+                            SESSION.IS_GUEST
+                        );
 
                     dialog.close();
                     LiteGUI.menubar.refresh();
@@ -1217,6 +1324,7 @@ class Interface {
 
         dialog.makeModal();
     }
+
     showCreateAccountDialog()
     {
         let user = "", pass = "",
