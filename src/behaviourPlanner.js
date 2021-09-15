@@ -355,4 +355,4 @@ function _behaviourPlanner(global){
     global.BehaviourPlanner = BehaviourPlanner;
 }
 
-_graphManager(this);
+_behaviourPlanner(this);
