@@ -745,7 +745,7 @@ class Interface {
                     v === "Graph" ? "download-graph" : "download-env",
                     filename
                 );
-                boo = JSON.stringify(boo);
+                boo = JSON.stringify(boo, null, 4);
             }
             catch (e)
             {
@@ -925,20 +925,21 @@ class Interface {
                     widgets.root.appendChild(litetree.root);
                     widgets.addTitle( "Files");
                     widgets.widgets_per_row = 2;
-                    widgets.addList( null, files, {height: "150px", callback: function(file){
+                    var list = widgets.addList( null, files, {height: "100px", callback: function(file){
 
                         filename = file.filename.split(".").shift();
                         fixed_widgets.on_refresh();
                         widget_fullpath.on_refresh();
                     }});
 
+                    list.style.marginTop = "-115px";
+
                     var thb = widgets.addContainer("thb");
                     thb.style.width = "50%";
                     thb.style.height = "145px";
                     thb.style.display = "inline-block";
-                    thb.style.marginTop = "5px";
-                    thb.innerHTML = "<img height='100%' src='" + url + "'>";
-
+                    thb.style.margin = "auto";
+                    thb.innerHTML = "<img width='100%' src='" + url + "'>";
                     widgets.addSeparator();
                     widgets.widgets_per_row = 2;
                     widgets.addButton( null, "Save graph", {callback: function() {
@@ -980,7 +981,7 @@ class Interface {
                 dialog.add(fixed_widgets);
                 dialog.add(widget_fullpath);
                 dialog.add(widgets);
-                dialog.setPosition( window.innerWidth/2 - w/2, window.innerHeight/2 - 250 );
+                dialog.setPosition( window.innerWidth/2 - w/2, 125 );
 
             }));
         });

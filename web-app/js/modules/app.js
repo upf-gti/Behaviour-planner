@@ -93,15 +93,22 @@ class App{
 
         document.body.addEventListener("keydown", function(e){
             
-            if(e.keyCode == 79 && e.ctrlKey){
+            if((e.key == "o" || e.keyCode == 79) && e.ctrlKey){
 
                 e.preventDefault();
                 e.stopPropagation();
 
                 if(CORE["Interface"])
-                {
                     CORE["Interface"].showLoadFromServerDialog();
-                }
+            }
+
+            if((e.key == "s" || e.keyCode == 83) && e.ctrlKey){
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                if(CORE["Interface"])
+                    CORE["Interface"].showExportDialog();
             }
         });
 
