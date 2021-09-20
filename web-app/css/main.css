@@ -154,7 +154,7 @@ fill: var(--bg-color)!important;
     background-color: var(--control-brand-foreground-new)!important;
     color: var(--primary-color)!important;
     height: auto;
-    border-radius: 40px;
+    border-radius: 4px;
 }
 #play-btn:hover{
     background-color: var(--channels-default)!important;

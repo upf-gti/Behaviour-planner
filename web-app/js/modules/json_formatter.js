@@ -104,7 +104,7 @@ class JSONFormatter {
                     e.preventDefault();
 
                     if(this.value.substring(start - 1, start) == "{") {
-                        this.value = this.value.substring(0, start) + "\n" + that.makeSpaces(numTabs + 1) + "\n" + that.makeSpaces(numTabs) + "}" + this.value.substring(end);
+                        this.value = this.value.substring(0, start) + "\n" + that.makeSpaces(numTabs + 1) + "\n" + that.makeSpaces(numTabs) + this.value.substring(end);
                         this.selectionStart = this.selectionEnd = start + tabSpaces * (numTabs + 1) + 1;
                     }else
                     {
@@ -114,6 +114,11 @@ class JSONFormatter {
                 }else if (e.key == '"') {
                     if(start == end && this.value.substring(start - 1, start) != '"' && this.value.substring(start, start + 1) != '"'){
                         this.value = this.value.substring(0, start) + '"' + this.value.substring(end);
+                        this.selectionStart = this.selectionEnd = start;
+                    }
+                }else if (e.key == '{') {
+                    if(start == end) {
+                        this.value = this.value.substring(0, start) + '}' + this.value.substring(end);
                         this.selectionStart = this.selectionEnd = start;
                     }
                 }
