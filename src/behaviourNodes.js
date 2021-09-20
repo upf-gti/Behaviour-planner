@@ -1489,12 +1489,21 @@ function HttpRequest()
     this.behaviour.type = B_TYPE.http_request;
 }
 
+HttpRequest.prototype.onConfigure = function(o)
+{
+    if(o.imported_templates)
+        HttpRequest.Imported_Templates = o.imported_templates;
+}
+
 HttpRequest.prototype.onSerialize = function(o)
 {
     if(this.headers)
         o.headers = this.headers;
     if(this.data)
         o.data = this.data;
+
+    if(Object.keys(HttpRequest.Imported_Templates).length)
+        o.imported_templates = HttpRequest.Imported_Templates;
 }
 
 //Update values from inputs, if any
@@ -1671,6 +1680,35 @@ HttpRequest.Imported_Templates = {
 
 HttpRequest.RAO_Templates = {
 
+    "/aidocreader": {
+        "api-version": "v1.0",
+        "request-id": "AX0001",
+        "front": {
+          "image-id": "0001",
+          "description": "cid-42488231-front.jpg",
+          "doc-types": [
+            "ITA",
+            "DRIVER LICENSE"
+          ],
+          "content": "iVBORw0KGgo...AANSUhEUgAA==",
+          "comparison-text": {
+            "<label-name>": "ROSSI"
+          }
+        },
+        "back": {
+          "image-id": "0001",
+          "description": "cid-42488231-front.jpg",
+          "doc-types": [
+            "ITA",
+            "DRIVER LICENSE"
+          ],
+          "content": "iVBORw0KGgo...AANSUhEUgAA==",
+          "comparison-text": {
+            "<label-name>": "ROSSI"
+          }
+        },
+        "options": "string"
+    },
     "/facematching": {
         "api-version": "v1.0",
         "request-id": "AX0001",
@@ -1685,6 +1723,12 @@ HttpRequest.RAO_Templates = {
         "options": {
             "<option-name>": "True"
         }
+    },
+    "/sendotp": {
+        "api-version": "v1.0",
+        "request-id": "AX0001",
+        "sms-text": "This is the One Time Password generated: #OTP",
+        "mobile-number": "3933300112233"
     },
     "/sendsms": {
         "api-version": "v1.0",

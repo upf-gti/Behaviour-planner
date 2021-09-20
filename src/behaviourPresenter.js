@@ -842,6 +842,16 @@ HttpRequest.prototype.onInspect = function(inspector)
                 });
             }
 
+            if(options[3].submenu.options.length){
+                options[3].submenu.options.push(null, {
+                    title: "Clear all",
+                    callback: function(){
+                        HttpRequest.Imported_Templates = {};
+                        that.onInspect(inspector);
+                    }
+                });
+            }
+
             for(let t in HttpRequest.RAO_Templates) {
                 options[4].submenu.options.push({
                     title: t,
