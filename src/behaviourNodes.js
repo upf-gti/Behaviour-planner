@@ -118,7 +118,7 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 }
             }
         }
-        var idx = this.outputs.getIndexOf(["text","string"]);
+        var idx = this.outputs.indexOf(["text","string"]);
         if(idx>-1)
             this.setOutputData(idx,text)
         if(this.running_node_in_banch)
