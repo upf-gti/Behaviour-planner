@@ -27,6 +27,7 @@
         "js/modules/drive.js",
         "js/modules/interface.js",
         "js/modules/entity.js",
+        "js/modules/json_formatter.js",
         "js/modules/app.js"
     ]
 }

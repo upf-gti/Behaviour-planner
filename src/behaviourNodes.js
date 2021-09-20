@@ -1580,7 +1580,24 @@ HttpRequest.prototype.send = function(params) {
     UTILS.request(params);
 }
 
-HttpRequest.prototype.onGetInputs = function(){
+HttpRequest.prototype.onStart = HttpRequest.prototype.onDeselected = function()
+{
+	var children = this.getOutputNodes(0);
+	if(!children) return;
+	children.sort(function(a,b){
+		if(a.pos[0] > b.pos[0])
+		  return 1;
+		if(a.pos[0] < b.pos[0])
+		  return -1;
+	});
+
+	this.outputs[0].links = [];
+	for(var i in children)
+		this.outputs[0].links.push(children[i].inputs[0].link);
+}
+
+HttpRequest.prototype.onGetInputs = function()
+{
     var inputs = [];
 
     for(var p in this.properties){
@@ -1594,8 +1611,8 @@ HttpRequest.prototype.onGetInputs = function(){
     return inputs;
 }
 
-HttpRequest.prototype.onGetOutputs = function(){
-    
+HttpRequest.prototype.onGetOutputs = function()
+{
     var node_outputs = ["response"];
     var outputs = [];
 

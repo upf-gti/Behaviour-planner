@@ -123,6 +123,43 @@ var UTILS = {
       return Math.random().toString(36).substr(2); // remove `0.`
     },
 
+	getLine: function(text, idx) {
+		
+		if(idx > text.length)
+		return -1;
+
+		var s = "";
+
+		for (var i = 0; i < idx; i++) {
+			if (text[i] === '\n')
+				s = "";
+			else
+			s += text[i];
+		}
+	  
+		return s;
+	},
+
+	getTabs: function(text, n) {
+		var count = 0;
+		var spaces = 0;
+
+		for (var i = 0; i < text.length; i++) {
+			if (text[i] === ' '){
+				spaces++;
+
+				if(spaces == n){
+					count++;
+					spaces = 0;
+				}
+			}
+			else
+				spaces = 0;
+		}
+
+		return count;
+	},
+
     getFileExtension(filename) {
 
         var tkn = filename.split(".");
