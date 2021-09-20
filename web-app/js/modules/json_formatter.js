@@ -50,6 +50,9 @@ class JSONFormatter {
     openWindow() {
         
         var that = this;
+        this.plain_text = null;
+        this.fromfile = null;
+        this.name = "unnamed";
 
         var pretitle = "<span class='keyframe_icon_status valid'></span>";
 		var dialog = new LiteGUI.Dialog({ title:"New template", width: 600, closable: true });
@@ -112,7 +115,7 @@ class JSONFormatter {
                         this.selectionStart = this.selectionEnd = start + tabSpaces * (numTabs) + 1;
                     }
                 }else if (e.key == '"') {
-                    if(start == end && this.value.substring(start - 1, start) != '"' && this.value.substring(start, start + 1) != '"'){
+                    if(start == end && this.value.substring(start - 1, start) != '"' && this.value.substring(start, start + 1) == '\n'){
                         this.value = this.value.substring(0, start) + '"' + this.value.substring(end);
                         this.selectionStart = this.selectionEnd = start;
                     }
