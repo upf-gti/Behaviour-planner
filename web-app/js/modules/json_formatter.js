@@ -19,7 +19,7 @@ class JSONFormatter {
     validate(data) {
         this.valid_text.querySelector(".inputfield input").value = "Valid";
         this.valid_text.querySelector(".keyframe_icon_status").classList.replace("invalid", "valid");
-        HttpRequest.RAO_Templates["/" + this.name] = data;
+        HttpRequest.Imported_Templates["/" + this.name] = data;
     }
 
     error() {

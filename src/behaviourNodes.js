@@ -1659,10 +1659,15 @@ HttpRequest.prototype.propagate = function(name, value)
     return true;
 }
 
-HttpRequest.getTemplate = function(name)
+HttpRequest.getTemplate = function(name, template_list)
 {
-    return JSON.parse(JSON.stringify(HttpRequest.RAO_Templates[name]));
+    template_list = template_list || HttpRequest.RAO_Templates;
+    return JSON.parse(JSON.stringify(template_list[name]));
 }
+
+HttpRequest.Imported_Templates = {
+
+};
 
 HttpRequest.RAO_Templates = {
 

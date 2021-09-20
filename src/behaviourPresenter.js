@@ -813,20 +813,37 @@ HttpRequest.prototype.onInspect = function(inspector)
 
             var options = [
                 {title: "Templates", disabled: true}, null, {
-                    title: "From JSON",
+                    title: "New",
                     callback: function(){
                         CORE.Interface.openTemplateLoader();
                     }
-                }, {
-                    title: "RAO",
+                },
+                {
+                    title: "Saved",
+                    submenu: {
+                        options: []
+                    }
+                },
+                {
+                    title: "Default RAO",
                     submenu: {
                         options: []
                     }
                 }
             ];
 
-            for(let t in HttpRequest.RAO_Templates) {
+            for(let t in HttpRequest.Imported_Templates) {
                 options[3].submenu.options.push({
+                    title: t,
+                    callback: function(){
+                        that.data = Object.assign({}, HttpRequest.getTemplate(t, HttpRequest.Imported_Templates));
+                        that.onInspect(inspector);
+                    }
+                });
+            }
+
+            for(let t in HttpRequest.RAO_Templates) {
+                options[4].submenu.options.push({
                     title: t,
                     callback: function(){
                         that.data = Object.assign({}, HttpRequest.getTemplate(t));
