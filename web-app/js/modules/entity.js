@@ -65,8 +65,12 @@ var EntitiesManager = {
     },
     checkPhoneFormatValidity(text)
     {
-        if(text.length >= 7 && text.length <= 11 ) //9 + 2 numbers for extension
+        if(text.length >= 7 && text.length <= 12 ) //9 + 2 numbers for extension   
+        {
+            if(text[0] == '3')
+                text = '+'+text;
             return text
+        }
         return false
     },
     addWordsToWorld(tag, words){

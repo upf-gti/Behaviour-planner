@@ -1562,23 +1562,62 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     this.behaviour.STATUS = STATUS.success;
     this.graph.evaluation_behaviours.push(this.behaviour);
 
-    this.send( Object.assign({}, requestParams) );
+    this.send( Object.assign({}, requestParams) ,agent,dt);
     return this.behaviour;
 }
 
-HttpRequest.prototype.send = function(params) {
+HttpRequest.prototype.send = function(params,agent,dt) {
 
     var that = this;
 
     params.success = function(response, req){
         // console.log("request completed", response);
         
-        for(var output in that.outputs){
+      /*  for(var output in that.outputs){
             // if not connected, do nothing
             if(!output.links)
             continue;
             that.setOutputData(output, response);
+        }*/
+
+        //this.graph.context.blackboard.apply({entities:values})
+        var info = {tags: null, data: response}
+            
+        //this.description = this.properties.property_to_compare + ' property passes the threshold';
+        var children = that.getOutputNodes(0);
+        //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+        if(children.length == 0){
+            that.behaviour.type = B_TYPE.http_request;
+            that.behaviour.STATUS = STATUS.success;
+            return that.behaviour;
         }
+
+        for(let n in children){
+            var child = children[n];
+            var value = child.tick(agent, dt, info);
+            if(value && value.STATUS == STATUS.success){
+                agent.evaluation_trace.push(that.id);
+                /* MEDUSA Editor stuff, not part of the core */
+                if(agent.is_selected)
+                    highlightLink(that, child);
+
+                return value;
+            }
+            else if(value && value.STATUS == STATUS.running){
+                agent.evaluation_trace.push(that.id);
+                /* MEDUSA Editor stuff, not part of the core */
+                if(agent.is_selected)
+                    highlightLink(that, child)
+
+                return value;
+            }
+        }
+               
+        if(that.running_node_in_banch)
+            agent.bt_info.running_node_index = null;
+
+            that.behaviour.STATUS = STATUS.fail;
+        return that.behaviour;
     }
 
     params.error = function(err){
@@ -1588,6 +1627,50 @@ HttpRequest.prototype.send = function(params) {
     // Do http request here
     UTILS.request(params);
 }
+HttpRequest.prototype.onResponse = function(load)
+{
+    var response = this.response;
+    if(this.status != 200)
+    {
+        var err = "Error " + this.status;
+        if(request.error)
+            request.error(err);
+        LEvent.trigger(xhr,"fail", this.status);
+        return;
+    }
+
+    if(parameters.dataType == "json") //chrome doesnt support json format
+    {
+        try
+        {
+            response = JSON.parse(response);
+        }
+        catch (err)
+        {
+            if(request.error)
+                request.error(err);
+            else
+                throw err;
+        }
+    }
+    else if(parameters.dataType == "xml")
+    {
+        try
+        {
+            var xmlparser = new DOMParser();
+            response = xmlparser.parseFromString(response,"text/xml");
+        }
+        catch (err)
+        {
+            if(request.error)
+                request.error(err);
+            else
+                throw err;
+        }
+    }
+    if(request.success)
+        request.success.call(this, response, this);
+};
 
 HttpRequest.prototype.onStart = HttpRequest.prototype.onDeselected = function()
 {
@@ -1740,6 +1823,82 @@ HttpRequest.RAO_Templates = {
 
 LiteGraph.registerNodeType("events/HttpRequest", HttpRequest);
 
+/**
+ * HttpResponse
+ * Compare the HTTPresponse code. If there is a match it continues execution to the child nodes.
+ */
+ HttpResponse.CODES = [200,201,400];
+
+ function HttpResponse(){
+    this.shape = 2;
+    this.color = "#2c3394";
+    this.bgcolor = "#6969aa";
+    this.boxcolor = "#999";
+    var w = 210;
+    var h = 80;
+
+    //Properties
+    this.properties = {
+        "code": "200"
+    };
+
+
+    this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+    this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
+
+    this.widgets_up = true;
+    this.size = [w,h];
+    
+    this._codeWidget = this.addWidget("combo", "Code", this.properties.code, function(v){ that.properties.code = v; },  {values: HttpResponse.CODES});
+    
+    this._node = null;
+    this._component = null;
+    this.serialize_widgets = true;
+    this.widgets_up = true;
+
+    this.behaviour = new Behaviour();
+    this.behaviour.type = B_TYPE.http_response || 20;
+}
+
+//mapping must has the form [vocabulary array, mapped word]
+HttpResponse.prototype.onConfigure = function(o){
+  /*  if(o.phrases)
+        this.phrases = o.phrases;
+    if(o.visible_phrases)
+        this.visible_phrases = o.visible_phrases;
+    if(o.input_contexts)
+        this.input_contexts = o.input_contexts;
+    if(o.output_contexts)
+        this.output_contexts = o.output_contexts;*/
+}
+
+HttpResponse.prototype.onSerialize = function(o){
+  /*  if(this.phrases)
+        o.phrases = this.phrases;
+    if(this.visible_phrases)
+        o.visible_phrases = this.visible_phrases;
+    if(this.input_contexts)
+        o.input_contexts = this.input_contexts;
+    if(this.output_contexts)
+        o.output_contexts = this.output_contexts;*/
+}
+
+HttpResponse.prototype.tick = function(agent, dt, info){
+   
+}
+
+
+HttpResponse.prototype.onDeselected = function (){
+	var parent = this.getInputNode(0);
+	if(parent)
+		parent.onDeselected();
+}
+
+HttpResponse.prototype.onShowNodePanel = function( event, pos, graphcanvas ){
+    return true; //return true is the event was used by your node, to block other behaviours
+}
+
+LiteGraph.registerNodeType("btree/HttpResponse", HttpResponse );
 //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
 Selector.prototype.tick = function(agent, dt, info){
 	//there is a task node in running state
