@@ -1493,6 +1493,9 @@ HttpRequest.prototype.onConfigure = function(o)
 {
     if(o.imported_templates)
         HttpRequest.Imported_Templates = o.imported_templates;
+
+    this.headers = Object.assign({}, o.headers);
+    this.properties = Object.assign({}, o.properties);
 }
 
 HttpRequest.prototype.onSerialize = function(o)
