@@ -58,8 +58,7 @@ var UTILS = {
 			{
 				var err = "Error " + this.status;
 				if(request.error)
-					request.error(err);
-				LEvent.trigger(xhr,"fail", this.status);
+					request.error(err, response, this);
 				return;
 			}
 
@@ -72,7 +71,7 @@ var UTILS = {
 				catch (err)
 				{
 					if(request.error)
-						request.error(err);
+						request.error(err, response, this);
 					else
 						throw err;
 				}
@@ -87,17 +86,19 @@ var UTILS = {
 				catch (err)
 				{
 					if(request.error)
-						request.error(err);
+						request.error(err, response, this);
 					else
 						throw err;
 				}
 			}
+			
 			if(request.success)
 				request.success.call(this, response, this);
 		};
+
         xhr.onerror = function(err) {
 			if(request.error)
-				request.error(err);
+				request.error(err, this);
 		}
 
 		/*var formData = new FormData();
