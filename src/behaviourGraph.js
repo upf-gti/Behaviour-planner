@@ -17,7 +17,8 @@ var B_TYPE = {
     intent: 16,
     request: 17,
     timeline_intent:18,
-    http_request:19
+    http_request:19,
+    http_response:20
 }
 
 //-----------------------LITEGRAPH SUBGRAPH INPUT FOR HBT------------------------------------//

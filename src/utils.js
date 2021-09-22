@@ -53,6 +53,11 @@ var UTILS = {
 
         xhr.onload = function(load)
 		{
+			if(request.onload){
+				request.onload(this, parameters);
+				return;
+			}
+
 			var response = this.response;
 			if(this.status != 200)
 			{

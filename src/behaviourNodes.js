@@ -1566,8 +1566,7 @@ HttpRequest.prototype.tick = async function(agent, dt, info)
     this.graph.evaluation_behaviours.push(this.behaviour);
 
     var httpResponse = await this.send( Object.assign({}, requestParams), agent, dt);
-    console.log(httpResponse);    
-
+    
     if(httpResponse && httpResponse.behaviour){
         return httpResponse.behaviour;
     }else{
@@ -1581,26 +1580,27 @@ HttpRequest.prototype.send = async function(params, agent, dt) {
 
     return new Promise( (resolve, reject)=> {
         
-        params.success = function(response, req) {
-
-            var o = {
-                response: response,
-                request: req
-            }
+        params.onload = function(request, parameters) {
 
             function resolveResponse(b){
-                o.behaviour = b;
+                var o = {
+                    request: request,
+                    behaviour: b
+                }
                 resolve(o);
             }
 
-            var info = {tags: null, data: o};
+            var info = {tags: null, data: {
+                req: request,
+                params: parameters
+            }};
             var children = that.getOutputNodes(0);
 
             //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
             if(!children || children.length == 0){
                 that.behaviour.type = B_TYPE.http_request;
                 that.behaviour.STATUS = STATUS.success;
-                return resolveResponse(o);
+                return resolve();
             }
     
             for(let n in children){
@@ -1618,7 +1618,8 @@ HttpRequest.prototype.send = async function(params, agent, dt) {
                     agent.evaluation_trace.push(that.id);
                     /* MEDUSA Editor stuff, not part of the core */
                     if(agent.is_selected)
-                        highlightLink(that, child)
+                        highlightLink(that, child);
+    
                     return resolveResponse(value);
                 }
             }
@@ -1627,16 +1628,7 @@ HttpRequest.prototype.send = async function(params, agent, dt) {
                 agent.bt_info.running_node_index = null;
     
             that.behaviour.STATUS = STATUS.fail;
-            return resolveResponse(o);
-        }
-    
-        params.error = function(err, req){
-            console.error(err);
-            that.behaviour.STATUS = STATUS.fail;
-            resolve({
-                error: err,
-                request: req
-            });
+            return resolve();
         }
         
         // Do http request here
@@ -1807,18 +1799,19 @@ LiteGraph.registerNodeType("btree/HttpRequest", HttpRequest);
     this.bgcolor = "#6969aa";
     this.boxcolor = "#999";
     var w = 210;
-    var h = 80;
+    var h = 40;
 
     //Properties
     this.properties = {
         "code": 200
     };
 
+    this.size = [w,h];
+
     this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
     this.addOutput("","path", { pos:[w*0.5, h] , dir:LiteGraph.DOWN});
 
     this.widgets_up = true;
-    this.size = [w,h];
     
     var that = this;
     this._codeWidget = this.addWidget("combo", "Code", this.properties.code, function(v){ that.properties.code = v; },  {values: HttpResponse.CODES});
@@ -1829,7 +1822,7 @@ LiteGraph.registerNodeType("btree/HttpRequest", HttpRequest);
     this.widgets_up = true;
 
     this.behaviour = new Behaviour();
-    this.behaviour.type = B_TYPE.http_response || 20;
+    this.behaviour.type = B_TYPE.http_response;
 }
 
 //mapping must has the form [vocabulary array, mapped word]
@@ -1862,13 +1855,61 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
         return this.behaviour;
     }
 
-    var httpResponse = info.data;
-    if(httpResponse.request.status == this.properties["code"]) {
-        console.log("Succes!!")
-    }else{
-        console.warn("Node not controlling status " + httpResponse.request.status);
-    }
+    var response = this.parseResponse(info.data);
+
+    // do something with the response
+    console.log(response);    
+    // ...
+
+    this.behaviour.STATUS = response ? STATUS.success : STATUS.fail;
+    return this.behaviour;
+}
+
+HttpResponse.prototype.parseResponse = function (data) {
     
+    if(!data.req || !data.params)
+        return null;
+
+    var xhr = data.req;
+    var params = data.params;
+
+    // Check control code
+    if(xhr.status != this.properties["code"])
+        return null;
+
+    var response = xhr.response;
+
+    function __validate() {
+
+        if(params.dataType == "json") {
+            try  {
+                response = JSON.parse(response);
+            }
+            catch (err) {
+                // throw err;
+            }
+        }
+        else if(params.dataType == "xml") {
+            try {
+                var xmlparser = new DOMParser();
+                response = xmlparser.parseFromString(response,"text/xml");
+            }
+            catch (err) {
+                // throw err;
+            }
+        }
+    }
+
+    switch(xhr.status) {
+        case 200:
+            __validate();
+            break;
+        default:
+            console.warn("HttpRequest Error", xhr);
+            break;
+    }
+
+    return response;
 }
 
 HttpResponse.prototype.onDeselected = function () {

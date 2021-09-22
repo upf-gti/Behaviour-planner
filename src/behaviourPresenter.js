@@ -664,7 +664,7 @@ CustomRequest.prototype.onInspect = function(inspector){
   
     inspector.clear();
   
-    inspector.addTitle("CustomRequest");
+    inspector.addTitle("Custom Request");
   
     inspector.widgets_per_row = 1;
     inspector.addString("Type", this.properties.type, {width: "100%", content_width: "70%", callback: function(value){
@@ -715,7 +715,7 @@ HttpRequest.prototype.onInspect = function(inspector)
   
     inspector.clear();
   
-    inspector.addSection("HttpRequest");
+    inspector.addSection("Http Request");
 
     inspector.widgets_per_row = 2;
     inspector.addTitle("Add request property");
@@ -979,6 +979,20 @@ HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value
     }
 
     return func;
+}
+
+HttpResponse.prototype.onInspect = function(inspector)
+{
+    var that = this;
+  
+    inspector.clear();
+  
+    inspector.addSection("Http Response");
+
+    inspector.addCombo("Code", this.properties["code"], {values: HttpResponse.CODES, callback: function(v){
+        that.properties["code"] = v;
+    }});
+    
 }
 
 //TODO ParseEvent not updated to new events!
