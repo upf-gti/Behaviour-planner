@@ -249,21 +249,44 @@ EventNode.prototype.tick = function(agent, dt, info){
             var value = child.tick(agent, dt, this.data);
         else
             var value = child.tick(agent, dt);
-
-		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)){
-			if(agent.is_selected)
-				highlightLink(this, child)
-			//push the node_id to the evaluation trace
-			agent.evaluation_trace.push(this.id);
-
-			//know if bt_info params must be reset
-			//if the node was not in the previous
-			// if(!nodePreviouslyEvaluated(agent, this.id))
-			// 	resetHBTreeProperties(agent)
-
-			return value;
-		}
-	}if(this.outputs)
+        
+        if(typeof(value.then)=="function")
+        {
+            return value.then = function (data){
+                if(data && (data.STATUS == STATUS.success || data.STATUS == STATUS.running)){
+                    if(agent.is_selected)
+                        highlightLink(this, child)
+                    //push the node_id to the evaluation trace
+                    agent.evaluation_trace.push(this.id);
+        
+                    //know if bt_info params must be reset
+                    //if the node was not in the previous
+                    // if(!nodePreviouslyEvaluated(agent, this.id))
+                    // 	resetHBTreeProperties(agent)
+        
+                    return data
+                }
+            }
+        }
+        else{
+            if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)){
+                if(agent.is_selected)
+                    highlightLink(this, child)
+                //push the node_id to the evaluation trace
+                agent.evaluation_trace.push(this.id);
+    
+                //know if bt_info params must be reset
+                //if the node was not in the previous
+                // if(!nodePreviouslyEvaluated(agent, this.id))
+                // 	resetHBTreeProperties(agent)
+    
+                return value;
+            }
+        }
+		
+    }
+	
+    if(this.outputs)
     {
         for(var i = 0; i < this.outputs.length; i++)
         {
@@ -1860,9 +1883,44 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
     // do something with the response
     console.log(response);    
     // ...
+    if(response.status == this.properties.code){
+        //this.description = this.properties.property_to_compare + ' property passes the threshold';
+        var children = this.getOutputNodes(0);
+        //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+        if(children.length == 0){
+            this.behaviour.type = B_TYPE.http_response;
+            this.behaviour.STATUS = STATUS.success;
+            return this.behaviour;
+        }
+        var info = {data: response.data}
+        for(let n in children){
+            var child = children[n];
+            var value = child.tick(agent, dt, info);
+            if(value && value.STATUS == STATUS.success){
+                agent.evaluation_trace.push(this.id);
+                /* MEDUSA Editor stuff, not part of the core */
+                if(agent.is_selected)
+                    highlightLink(this, child);
 
-    this.behaviour.STATUS = response ? STATUS.success : STATUS.fail;
+                return value;
+            }
+            else if(value && value.STATUS == STATUS.running){
+                agent.evaluation_trace.push(this.id);
+                /* MEDUSA Editor stuff, not part of the core */
+                if(agent.is_selected)
+                    highlightLink(this, child)
+
+                return value;
+            }
+        }
+    }
+    if(this.running_node_in_banch)
+            agent.bt_info.running_node_index = null;
+
+    this.behaviour.STATUS = STATUS.fail;
     return this.behaviour;
+    /*this.behaviour.STATUS = response ? STATUS.success : STATUS.fail;
+    return this.behaviour;*/
 }
 
 HttpResponse.prototype.parseResponse = function (data) {
@@ -1909,7 +1967,7 @@ HttpResponse.prototype.parseResponse = function (data) {
             break;
     }
 
-    return response;
+    return { status : xhr.status, data : response};
 }
 
 HttpResponse.prototype.onDeselected = function () {
