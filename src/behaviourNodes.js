@@ -249,78 +249,35 @@ EventNode.prototype.tick = function(agent, dt, info){
             var value = child.tick(agent, dt, this.data);
         else
             var value = child.tick(agent, dt);
-        
-        if(typeof(value.then)=="function")
+
+		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)){
+			if(agent.is_selected)
+				highlightLink(this, child)
+			//push the node_id to the evaluation trace
+			agent.evaluation_trace.push(this.id);
+
+			//know if bt_info params must be reset
+			//if the node was not in the previous
+			// if(!nodePreviouslyEvaluated(agent, this.id))
+			// 	resetHBTreeProperties(agent)
+
+			return value;
+		}
+	}if(this.outputs)
+    {
+        for(var i = 0; i < this.outputs.length; i++)
         {
-            var that = this;
-            return value.then( function (data){
-                if(data && (data.STATUS == STATUS.success || data.STATUS == STATUS.running)){
-                    if(agent.is_selected)
-                        highlightLink(that, child)
-                    //push the node_id to the evaluation trace
-                    agent.evaluation_trace.push(that.id);
-        
-                    //know if bt_info params must be reset
-                    //if the node was not in the previous
-                    // if(!nodePreviouslyEvaluated(agent, this.id))
-                    // 	resetHBTreeProperties(agent)
-                    agent.bt_info.running_node_index = null;
-			        agent.bt_info.running_node_id = null
-                    return data
-                }
-                	
-                if(that.outputs)
-                {
-                    for(var i = 0; i < that.outputs.length; i++)
-                    {
-                        if(that.outputs[i][0] == that.properties.type && that.data)
-                            that.setOutputData(i, that.data)
-                    }
-                        
-                }
-
-                
-            })
-            // if(this.running_node_in_banch)
-                // 	agent.bt_info.running_node_index = null;
-
-                that.behaviour.STATUS = STATUS.fail;
-                return that.behaviour;
+            if(this.outputs[i][0] == this.properties.type && this.data)
+                this.setOutputData(i, this.data)
         }
-        else{
-            if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)){
-                if(agent.is_selected)
-                    highlightLink(this, child)
-                //push the node_id to the evaluation trace
-                agent.evaluation_trace.push(this.id);
-    
-                //know if bt_info params must be reset
-                //if the node was not in the previous
-                // if(!nodePreviouslyEvaluated(agent, this.id))
-                // 	resetHBTreeProperties(agent)
-    
-                return value;
-            }
-            	
-            if(this.outputs)
-            {
-                for(var i = 0; i < this.outputs.length; i++)
-                {
-                    if(this.outputs[i][0] == this.properties.type && this.data)
-                        this.setOutputData(i, this.data)
-                }
-                    
-            }
-
-            // if(this.running_node_in_banch)
-            // 	agent.bt_info.running_node_index = null;
-
-            this.behaviour.STATUS = STATUS.fail;
-            return this.behaviour;
-        }
-		
+            
     }
 
+	// if(this.running_node_in_banch)
+	// 	agent.bt_info.running_node_index = null;
+
+	this.behaviour.STATUS = STATUS.fail;
+	return this.behaviour;
 }
 
 EventNode.prototype.onConfigure = function(info){
