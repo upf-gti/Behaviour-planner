@@ -1574,6 +1574,7 @@ HttpRequest.prototype.tick = function(agent, dt, info)
         var b = this.response.behaviour;
         this.graph.evaluation_behaviours.push(b);
         this.graph.context.removeRunningNode(this);
+        delete this.response;
         return b;
     }else{
         return this.graph.context.addRunningNode(this);
