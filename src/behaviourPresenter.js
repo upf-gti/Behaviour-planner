@@ -815,7 +815,9 @@ HttpRequest.prototype.onInspect = function(inspector)
                 {title: "Templates", disabled: true}, null, {
                     title: "New",
                     callback: function(){
-                        CORE.Interface.openTemplateLoader();
+                        CORE.Interface.openTemplateLoader(function(name, data){
+                            HttpRequest.Imported_Templates["/" + name] = data;
+                        });
                     }
                 },
                 {
@@ -906,6 +908,9 @@ HttpRequest.prototype.onInspectObject = function(inspector, o)
 
 HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value, is_array_member)
 {
+    if(!value)
+    return;
+
     var that = this;
     switch(value.constructor)
     {
@@ -988,12 +993,80 @@ HttpResponse.prototype.onInspect = function(inspector)
     inspector.clear();
   
     inspector.addSection("Http Response");
+    inspector.addTitle("Extract data");
 
-    inspector.addCombo("Code", this.properties["code"], {values: HttpResponse.CODES, callback: function(v){
-        that.properties["code"] = v;
+    // Show data
+    {
+        this.onInspectObject(inspector, this.data);
+    }
+
+    // Load template 
+    inspector.addSeparator();
+    inspector.widgets_per_row = 1;
+    var templateBtn = inspector.addButton(null, "From template", {callback: function(value, e){
+
+        e.preventDefault();
+
+        var options = [
+            {title: "Templates", disabled: true}, null, {
+                title: "New",
+                callback: function(){
+                    CORE.Interface.openTemplateLoader(function(name, data){
+                        HttpResponse.Imported_Templates["/" + name] = data;
+                    });
+                }
+            },
+            {
+                title: "Saved",
+                submenu: {
+                    options: []
+                }
+            },
+            {
+                title: "Default RAO",
+                submenu: {
+                    options: []
+                }
+            }
+        ];
+
+        for(let t in HttpResponse.Imported_Templates) {
+            options[3].submenu.options.push({
+                title: t,
+                callback: function(){
+                    that.data = Object.assign({}, HttpResponse.getTemplate(t, HttpResponse.Imported_Templates));
+                    that.onInspect(inspector);
+                }
+            });
+        }
+
+        if(options[3].submenu.options.length){
+            options[3].submenu.options.push(null, {
+                title: "Clear all",
+                callback: function(){
+                    HttpResponse.Imported_Templates = {};
+                    that.onInspect(inspector);
+                }
+            });
+        }
+
+        for(let t in HttpResponse.RAO_Templates) {
+            options[4].submenu.options.push({
+                title: t,
+                callback: function(){
+                    that.data = Object.assign({}, HttpResponse.getTemplate(t));
+                    that.onInspect(inspector);
+                }
+            });
+        }
+
+        new LiteGraph.ContextMenu(options, {event: e});
+
     }});
-    
 }
+
+HttpResponse.prototype.onInspectObject = HttpRequest.prototype.onInspectObject;
+HttpResponse.prototype.onInspectProperty = HttpRequest.prototype.onInspectProperty;
 
 //TODO ParseEvent not updated to new events!
 /*

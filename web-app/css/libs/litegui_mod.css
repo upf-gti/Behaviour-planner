@@ -100,7 +100,7 @@ display: none;
 
 .inspector .wtitle {
 	margin-top: 6px;
-	background-color: var(--background-tertiary);
+	background-color: var(--background-secondary);
 	color: var(--font-color-secondary);
 }
 

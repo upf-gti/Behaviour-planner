@@ -570,9 +570,9 @@ class Interface {
             CORE.App.agent_selected.hbt_graph = graph.name;
     }
 
-    openTemplateLoader() {
+    openTemplateLoader(callback) {
         if(CORE.modules["JSONFormatter"])
-            CORE.modules["JSONFormatter"].openWindow();
+            CORE.modules["JSONFormatter"].openWindow(callback);
     }
 
     openImportDialog(data, session_type) {

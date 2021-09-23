@@ -16,10 +16,12 @@ class JSONFormatter {
         return string;
     }
 
-    validate(data) {
+    validate(data, callback) {
         this.valid_text.querySelector(".inputfield input").value = "Valid";
         this.valid_text.querySelector(".keyframe_icon_status").classList.replace("invalid", "valid");
-        HttpRequest.Imported_Templates["/" + this.name] = data;
+
+        if(callback)
+            callback(this.name, data);
     }
 
     error() {
@@ -47,7 +49,7 @@ class JSONFormatter {
         reader.readAsText( f );
     }
 
-    openWindow() {
+    openWindow(callback) {
         
         var that = this;
         this.plain_text = null;
@@ -140,7 +142,7 @@ class JSONFormatter {
                 var data;
                 try{
                     data = JSON.parse(that.plain_text);
-                    that.validate(data);
+                    that.validate(data, callback);
                     dialog.close();
                 }catch(e){
                     that.error();

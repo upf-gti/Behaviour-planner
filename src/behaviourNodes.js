@@ -1802,6 +1802,7 @@ LiteGraph.registerNodeType("btree/HttpRequest", HttpRequest);
         "code": 200
     };
 
+    this.data = {};
     this.size = [w,h];
 
     this.addInput("","path", { pos:[w*0.5, - LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
@@ -1821,27 +1822,21 @@ LiteGraph.registerNodeType("btree/HttpRequest", HttpRequest);
     this.behaviour.type = B_TYPE.http_response;
 }
 
-//mapping must has the form [vocabulary array, mapped word]
-HttpResponse.prototype.onConfigure = function(o) {
-  /*  if(o.phrases)
-        this.phrases = o.phrases;
-    if(o.visible_phrases)
-        this.visible_phrases = o.visible_phrases;
-    if(o.input_contexts)
-        this.input_contexts = o.input_contexts;
-    if(o.output_contexts)
-        this.output_contexts = o.output_contexts;*/
+HttpResponse.prototype.onConfigure = function(o)
+{
+    if(o.imported_templates)
+        HttpResponse.Imported_Templates = o.imported_templates;
+
+    this.properties = Object.assign({}, o.properties);
 }
 
-HttpResponse.prototype.onSerialize = function(o) {
-  /*  if(this.phrases)
-        o.phrases = this.phrases;
-    if(this.visible_phrases)
-        o.visible_phrases = this.visible_phrases;
-    if(this.input_contexts)
-        o.input_contexts = this.input_contexts;
-    if(this.output_contexts)
-        o.output_contexts = this.output_contexts;*/
+HttpResponse.prototype.onSerialize = function(o)
+{
+    if(this.data)
+        o.data = this.data;
+
+    if(Object.keys(HttpResponse.Imported_Templates).length)
+        o.imported_templates = HttpResponse.Imported_Templates;
 }
 
 HttpResponse.prototype.tick = function(agent, dt, info) {
@@ -1852,8 +1847,8 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
     }
 
     var response = this.parseResponse(info.data);
-
-    // do something with the response
+    response = this.extractData(response);
+    
     console.log(response);    
     // ...
     if(response.status == this.properties.code){
@@ -1943,6 +1938,38 @@ HttpResponse.prototype.parseResponse = function (data) {
     return { status : xhr.status, data : response};
 }
 
+HttpResponse.prototype.extractData = function (response) {
+
+    var res = response.data;
+
+    function __evaluate(r, d){
+
+        for(var k in r){
+            if(!d[k])
+                delete r[k];
+            else{
+                if(r[k].constructor == Object)
+                    return __evaluate(r[k], d[k]);
+                else
+                    return r[k];
+            }
+                
+        }
+    }
+
+    for(var k in res){
+        if(!this.data[k])
+            delete res[k];
+        else{
+            if(res[k].constructor == Object)
+                res[k] = __evaluate(res[k], this.data[k]);
+        }
+    }
+
+    response.data = res;
+    return response;
+}
+
 HttpResponse.prototype.onDeselected = function () {
 	var parent = this.getInputNode(0);
 	if(parent)
@@ -1951,6 +1978,17 @@ HttpResponse.prototype.onDeselected = function () {
 
 HttpResponse.prototype.onShowNodePanel = function( event, pos, graphcanvas ){
     return true; //return true is the event was used by your node, to block other behaviours
+}
+
+HttpResponse.getTemplate = HttpRequest.getTemplate;
+
+HttpResponse.Imported_Templates = {
+
+};
+
+HttpResponse.RAO_Templates = {
+
+    
 }
 
 LiteGraph.registerNodeType("btree/HttpResponse", HttpResponse );
