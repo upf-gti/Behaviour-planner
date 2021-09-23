@@ -301,7 +301,13 @@ class BehaviourPlanner{
                 if(this.agent && this.hbt_graph){
                     let context = this.context;
 
-                    if(context.last_event_node == null || context.last_event_node == undefined){
+                    if(context.running_nodes && context.running_nodes.length){
+                        var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, context.running_nodes[0]);
+                        this.accumulate_time = 0; //runBehaviour expects time between calls
+                        if(this.onBehaviours) this.onBehaviours(behaviours);
+                        this.processBehaviours(behaviours);
+                    }
+                    else if(context.last_event_node == null || context.last_event_node == undefined){
                         var behaviours = this.hbt_graph.runBehaviour(this.agent, context, this.accumulate_time);
                         this.accumulate_time = 0; //runBehaviour expects time between calls
 

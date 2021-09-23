@@ -132,6 +132,38 @@ HBTContext.prototype._ctor = function()
 	this.list_of_graphs[hbtgraph.uid] = hbtgraph;
 }
 
+HBTContext.prototype.isRunningNode = function(node)
+{
+	if(!this.running_nodes)
+		return false;
+
+	var index = this.running_nodes.findIndex( n => n.id == node.id);
+	return index > -1;
+}
+
+HBTContext.prototype.addRunningNode = function(node)
+{
+	if(!this.running_nodes)
+		this.running_nodes = [];
+
+	if (!this.isRunningNode(node)) {
+		this.running_nodes.push(node);
+	}
+	
+	return {STATUS: STATUS.running};
+}
+
+HBTContext.prototype.removeRunningNode = function(node)
+{
+	if(!this.running_nodes)
+		return;
+
+	var index = this.running_nodes.findIndex( n => n.id == node.id);
+	if (index > -1) {
+		this.running_nodes.splice(index, 1);
+	}
+}
+
 /*
 * Function to evaluate what to do
 * Returns an object with the status and info about the task to do

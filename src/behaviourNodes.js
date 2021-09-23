@@ -251,14 +251,7 @@ EventNode.prototype.tick = function(agent, dt, info){
         else
             var value = child.tick(agent, dt);
 
-        if(value.constructor == Promise) {
-            value.then(function(result) {
-                value = result;
-             });
-        }
-
-            //  || value.STATUS == STATUS.running
-		if(value && (value.STATUS == STATUS.success)) {
+		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)) {
 
 			if(agent.is_selected)
 				highlightLink(this, child)
@@ -271,9 +264,6 @@ EventNode.prototype.tick = function(agent, dt, info){
 			// 	resetHBTreeProperties(agent)
 
 			return value;
-		} else if(value && (value.STATUS == STATUS.running)) {
-
-			console.warn("RUNNING");
 		}
 	}
     
@@ -1500,6 +1490,7 @@ function HttpRequest()
 
     this.behaviour = new Behaviour();
     this.behaviour.type = B_TYPE.http_request;
+    this.behaviour.STATUS.fail;
 
     this.response = null;
 }
@@ -1550,7 +1541,7 @@ HttpRequest.prototype.isTag = function(value)
     return value.constructor === String && value.length && value[0] == "#";
 }
 
-HttpRequest.prototype.tick = async function(agent, dt, info)
+HttpRequest.prototype.tick = function(agent, dt, info)
 {
     // info:
     // tags: {#PhoneNumber: "6456516516"}
@@ -1576,15 +1567,16 @@ HttpRequest.prototype.tick = async function(agent, dt, info)
         "data": body
     };
 
-    this.send( Object.assign({}, requestParams), agent, dt);
+    if(!this.graph.context.isRunningNode(this))
+        this.send( Object.assign({}, requestParams), agent, dt);
     
     if(this.response) {
         var b = this.response.behaviour;
         this.graph.evaluation_behaviours.push(b);
+        this.graph.context.removeRunningNode(this);
         return b;
     }else{
-        this.behaviour.STATUS = STATUS.running;
-        return this.behaviour;
+        return this.graph.context.addRunningNode(this);
     }
 }
 
@@ -1637,68 +1629,6 @@ HttpRequest.prototype.send = function(params, agent, dt) {
     
     // Do http request here
     UTILS.request(params);
-}
-
-HttpRequest.prototype.sendAsync = async function(params, agent, dt) {
-
-    var that = this;
-
-    return new Promise( (resolve, reject)=> {
-        
-        params.onload = function(request, parameters) {
-
-            function resolveResponse(b){
-                var o = {
-                    request: request,
-                    behaviour: b
-                }
-                resolve(o);
-            }
-
-            var info = {tags: null, data: {
-                req: request,
-                params: parameters
-            }};
-            var children = that.getOutputNodes(0);
-
-            //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
-            if(!children || children.length == 0){
-                that.behaviour.type = B_TYPE.http_request;
-                that.behaviour.STATUS = STATUS.success;
-                return resolve();
-            }
-    
-            for(let n in children){
-                var child = children[n];
-                var value = child.tick(agent, dt, info);
-                if(value && value.STATUS == STATUS.success){
-                    agent.evaluation_trace.push(that.id);
-                    /* MEDUSA Editor stuff, not part of the core */
-                    if(agent.is_selected)
-                        highlightLink(that, child);
-    
-                    return resolveResponse(value);
-                }
-                else if(value && value.STATUS == STATUS.running){
-                    agent.evaluation_trace.push(that.id);
-                    /* MEDUSA Editor stuff, not part of the core */
-                    if(agent.is_selected)
-                        highlightLink(that, child);
-    
-                    return resolveResponse(value);
-                }
-            }
-                   
-            if(that.running_node_in_banch)
-                agent.bt_info.running_node_index = null;
-    
-            that.behaviour.STATUS = STATUS.fail;
-            return resolve();
-        }
-        
-        // Do http request here
-        UTILS.request(params);
-    });
 }
 
 HttpRequest.prototype.onStart = HttpRequest.prototype.onDeselected = function()
