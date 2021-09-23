@@ -1572,7 +1572,16 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     
     if(this.response) {
         var b = this.response.behaviour;
-        this.graph.evaluation_behaviours.push(b);
+
+        // More than one behaviour
+        if(b.data.constructor == Array){
+            for(var _b of b.data){
+                this.graph.evaluation_behaviours.push(_b);
+            }
+        }else{
+            this.graph.evaluation_behaviours.push(b);
+        }
+
         this.graph.context.removeRunningNode(this);
         delete this.response;
         return b;
