@@ -241,7 +241,8 @@ EventNode.prototype.tick = function(agent, dt, info){
     }
 
 	var children = this.getOutputNodes(0);
-	for(var n in children){
+	for(var n in children) {
+
 		var child = children[n];
 		//if(child.constructor.name == "Subgraph")
 		//child = child.subgraph.findNodeByTitle("HBTreeInput");
@@ -250,7 +251,15 @@ EventNode.prototype.tick = function(agent, dt, info){
         else
             var value = child.tick(agent, dt);
 
-		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running)){
+        if(value.constructor == Promise) {
+            value.then(function(result) {
+                value = result;
+             });
+        }
+
+            //  || value.STATUS == STATUS.running
+		if(value && (value.STATUS == STATUS.success)) {
+
 			if(agent.is_selected)
 				highlightLink(this, child)
 			//push the node_id to the evaluation trace
@@ -262,15 +271,19 @@ EventNode.prototype.tick = function(agent, dt, info){
 			// 	resetHBTreeProperties(agent)
 
 			return value;
+		} else if(value && (value.STATUS == STATUS.running)) {
+
+			console.warn("RUNNING");
 		}
-	}if(this.outputs)
+	}
+    
+    if(this.outputs)
     {
         for(var i = 0; i < this.outputs.length; i++)
         {
             if(this.outputs[i][0] == this.properties.type && this.data)
                 this.setOutputData(i, this.data)
         }
-            
     }
 
 	// if(this.running_node_in_banch)
@@ -1487,6 +1500,8 @@ function HttpRequest()
 
     this.behaviour = new Behaviour();
     this.behaviour.type = B_TYPE.http_request;
+
+    this.response = null;
 }
 
 HttpRequest.prototype.onConfigure = function(o)
@@ -1561,20 +1576,70 @@ HttpRequest.prototype.tick = async function(agent, dt, info)
         "data": body
     };
 
-    this.behaviour.setData(requestParams);
-    this.behaviour.STATUS = STATUS.success;
-    this.graph.evaluation_behaviours.push(this.behaviour);
-
-    var httpResponse = await this.send( Object.assign({}, requestParams), agent, dt);
+    this.send( Object.assign({}, requestParams), agent, dt);
     
-    if(httpResponse && httpResponse.behaviour){
-        return httpResponse.behaviour;
+    if(this.response) {
+        var b = this.response.behaviour;
+        this.graph.evaluation_behaviours.push(b);
+        return b;
     }else{
+        this.behaviour.STATUS = STATUS.running;
         return this.behaviour;
     }
 }
 
-HttpRequest.prototype.send = async function(params, agent, dt) {
+HttpRequest.prototype.send = function(params, agent, dt) {
+
+    var that = this;
+
+    params.onload = function(request, parameters) {
+
+        var response = {
+            response: request.response, 
+            behaviour: null
+        };;
+
+        var info = {tags: null, data: {
+            req: request,
+            params: parameters
+        }};
+        var children = that.getOutputNodes(0);
+
+        //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+        if(!children || children.length == 0){
+            that.behaviour.type = B_TYPE.http_request;
+            that.behaviour.STATUS = STATUS.success;
+            that.response = Object.assign({}, response);
+            return;
+        }
+
+        for(let n in children){
+            var child = children[n];
+            var value = child.tick(agent, dt, info);
+            if(value && value.STATUS == STATUS.success){
+                agent.evaluation_trace.push(that.id);
+                /* MEDUSA Editor stuff, not part of the core */
+                if(agent.is_selected)
+                    highlightLink(that, child);
+
+                that.response = Object.assign({}, response);
+                that.response.behaviour = value;
+                return;
+            }
+        }
+               
+        if(that.running_node_in_banch)
+            agent.bt_info.running_node_index = null;
+
+        that.behaviour.STATUS = STATUS.fail;
+        that.response = Object.assign({}, response);
+    }
+    
+    // Do http request here
+    UTILS.request(params);
+}
+
+HttpRequest.prototype.sendAsync = async function(params, agent, dt) {
 
     var that = this;
 
