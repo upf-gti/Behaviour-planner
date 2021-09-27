@@ -1647,7 +1647,7 @@ function AudioClip()
 	this.duration = 1;
 	this.volume = 0.5;
 	this.offset_time = 0;
-	this.properties = {url:"", test_string:""}
+	this.properties = {url:"", text:""}
 	this.position = new Float32Array(2);
 	this.scale = new Float32Array([1,1]);
 	this.clip_color = "#7c0022";
@@ -1721,6 +1721,7 @@ AudioClip.prototype.fromJSON = function(json)
 	this.start = json.start;
 	this.duration = json.duration;
 	this.properties.url = json.url;
+	this.properties.text = json.text;
 	if(json.audioId)
 		this.audioId = json.audioId;
 }

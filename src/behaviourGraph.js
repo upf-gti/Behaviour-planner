@@ -104,7 +104,7 @@ HBTGraph.prototype.getEvaluationBehaviours = function(){
 //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
 HBTGraph.prototype.runBehaviour = function(character, ctx, dt, starting_node){
 	this.graph.character_evaluated = character;
-	this.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+	//this.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
 	this.graph.context = ctx;
 	ctx.agent_evaluated = character;
 	//to know the previous execution trace of the character

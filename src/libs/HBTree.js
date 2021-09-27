@@ -2575,11 +2575,12 @@ function SetProperty()
             "skip"
         ]
     });
+	this.addProperty("value", 1.0, "number");
+	this.addProperty("property_to_compare", "", "string");
     this.editable = { property:"value", type:"number" };
-      this.widgets_up = true;
+	this.widgets_up = true;
     this.horizontal = true;
-      this.properties = {value:1.0, property_to_compare:""};
-      var that = this;
+	var that = this;
     this.dynamic = null;
     this.widget_type = "number";
     this.target_type = "agent";

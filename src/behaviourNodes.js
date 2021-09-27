@@ -64,7 +64,8 @@ ParseCompare.prototype.tick = function(agent, dt, info){
     }
     if((!text || text == "") && info && info.text)
         text = info.text
-        var training_phrases = this.phrases;
+    var training_phrases = this.phrases;
+    text = text.toString();
 
     var found = this.compare(text, training_phrases);
     if(!found){
@@ -851,7 +852,6 @@ Intent.prototype.intent = function(agent, info){
 	this.behaviour.STATUS = STATUS.success;
 	this.behaviour.setData(behaviour);
 	//this.behaviour.priority = this.properties.priority;
-	console.log(this.behaviour)
 	agent.evaluation_trace.push(this.id);
 	this.graph.evaluation_behaviours.push(this.behaviour);
 	return this.behaviour;
@@ -1572,9 +1572,14 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     
     if(this.response) {
         var b = this.response.behaviour;
-
+        if(!b)
+        {
+            delete this.response;
+            return;
+        }
+            
         // More than one behaviour
-        if(b.data.constructor == Array){
+        if(b.data && b.data.constructor == Array){
             for(var _b of b.data){
                 this.graph.evaluation_behaviours.push(_b);
             }
@@ -1861,7 +1866,17 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
     console.log(response);    
     // ...
     if(response.status == this.properties.code){
+        var info = {data: response.data}
         //this.description = this.properties.property_to_compare + ' property passes the threshold';
+        if(this.outputs)
+            {
+                for(var o in this.outputs){
+                    var output = this.outputs[o];
+                    if( response.data[output.name]){
+                    this.setOutputData(o, response.data[output.name]);
+                    }
+                }
+            }
         var children = this.getOutputNodes(0);
         //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
         if(children.length == 0){
@@ -1869,7 +1884,8 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
             this.behaviour.STATUS = STATUS.success;
             return this.behaviour;
         }
-        var info = {data: response.data}
+        
+        
         for(let n in children){
             var child = children[n];
             var value = child.tick(agent, dt, info);
@@ -1879,6 +1895,7 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
                 if(agent.is_selected)
                     highlightLink(this, child);
 
+                
                 return value;
             }
             else if(value && value.STATUS == STATUS.running){
@@ -1999,7 +2016,14 @@ HttpResponse.RAO_Templates = {
 
     
 }
-
+HttpResponse.prototype.onGetOutputs = function(){
+    var outputs = [];
+    for(var i in this.data)
+    {
+        outputs.push([i, typeof(this.data[i])]);
+    }
+    return outputs;
+}
 LiteGraph.registerNodeType("btree/HttpResponse", HttpResponse );
 
 //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
@@ -2194,7 +2218,186 @@ Parallel.prototype.tick = function(agent, dt, info){
 			return value;
 	}
 }
+Conditional.prototype.tick = function(agent, dt, info )
+{
+    if(info&&info.tags)
+    {
+        for(var i in info.tags)
+        {
+            this.properties.limit_value = info.tags[i];
+        }
+    }
+	//condition not passed
+	if(this.evaluateCondition && !this.evaluateCondition())
+	{
+		//some of its children of the branch is still on execution, we break that execution (se weh we enter again, it starts form the beginning)
+		// if(this.running_node_in_banch)
+		// 	agent.bt_info.running_node_index = null;
 
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+	else if(this.evaluateCondition && this.evaluateCondition())
+	{               
+		//this.description = this.properties.property_to_compare + ' property passes the threshold';
+		var children = this.getOutputNodes(0);
+		//Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+		if(children.length == 0){
+			this.behaviour.type = B_TYPE.conditional;
+			this.behaviour.STATUS = STATUS.success; 
+			return this.behaviour;
+		}
+    
+		for(let n in children)
+		{
+			var child = children[n];
+			var value = child.tick(agent, dt);
+			if(value && value.STATUS == STATUS.success)
+			{
+				agent.evaluation_trace.push(this.id);
+				/* MEDUSA Editor stuff, not part of the core */
+				if(agent.is_selected)
+					highlightLink(this, child);
+
+				return value;
+			}
+			else if(value && value.STATUS == STATUS.running)
+			{
+				agent.evaluation_trace.push(this.id);
+				/* MEDUSA Editor stuff, not part of the core */
+				if(agent.is_selected)
+					highlightLink(this, child)
+
+				return value;
+			}
+		}
+
+		//if this is reached, means that has failed
+		
+		if(this.running_node_in_banch)
+			agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+}
+//lack of type choice --> on progress
+function SetProperty()
+{
+    this.shape = 2;
+    this.color = "#2e542e"
+    this.bgcolor = "#496b49";
+    this.boxcolor = "#999";
+    this.size = [200,80];
+    this.addInput("","path", {pos:[200*0.5,-LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+    this.addInput("name","", {pos:[0,35], dir:LiteGraph.LEFT});
+    this.addInput("root","", {pos:[0,55], dir:LiteGraph.LEFT});
+    this.addProperty("priority", "append", "enum", {
+        values: [
+            "append",
+            "overwrite",
+            "mix",
+            "skip"
+        ]
+    });
+	this.addProperty("value", 1.0, "number");
+	this.addProperty("property_to_compare", "", "string");
+    this.addProperty("on", "execute", "enum", {values: ["tick", "execute"]})
+    this.editable = { property:"value", type:"number" };
+    this.widgets_up = true;
+    this.horizontal = true;     
+    var that = this;
+    this.dynamic = null;
+    this.widget_type = "number";
+    this.target_type = "agent";
+    this.dynamic = this.addWidget("string","name", "", function(v){ that.properties.property_to_compare = v; }, this.properties );
+    this.dynamic = this.addWidget("string","value", 5, function(v){ that.properties.value = v; }, this.properties );
+    this.tmp_data = {};
+    this.facade = null;
+    this.behaviour = new Behaviour();
+    this.serialize_widgets = true;
+
+}
+SetProperty.prototype.onExecute = function()
+{
+	var data = this.getInputData(1);
+	var root = this.getInputData(2);
+    if(data)
+        this.properties.property_to_compare = data;
+	
+	if(!this.graph.character_evaluated) return;
+	/*if(this.graph.character_evaluated.properties[data])
+	{	
+		this.target_type = "agent";
+	}
+	else if(blackboard[data])
+	{
+		this.target_type = "global";
+	}*/
+	if(this.inputs.length==4)
+	{
+		var value = this.getInputData(3);
+		this.properties.value = value;
+		
+	}
+	this.target_type = root;
+}
+SetProperty.prototype.onGetInputs = function()
+{
+	this.size[1] +=30;
+	return [["value", "",{dir:LiteGraph.LEFT, pos: [0, this.size[1]-30]}]];
+}
+
+SetProperty.prototype.tick = function(agent, dt)
+{
+    if(this.properties.on == "tick")
+    {
+        this.onExecute();
+    }
+	if(this.facade == null)
+		this.facade = this.graph.context.facade;
+
+	agent.evaluation_trace.push(this.id);
+	// the property has to increment or decrement
+	if(this.properties.value[0] == "-" || this.properties.value[0] == "+")
+	{
+		if(this.target_type == "agent")
+		{
+			var f_value = this.facade.getEntityPropertyValue(this.properties.property_to_compare, agent);
+			f_value += parseFloat(this.properties.value);
+			this.tmp_data = {type:"setProperty", name: this.properties.property_to_compare, value:f_value}
+		}
+		else
+			this.tmp_data = {type:"setProperty", name: this.properties.property_to_compare, value:this.properties.value}
+	}
+	//just set the property to the value
+	else{
+		var final_value = this.properties.value;
+		if(this.properties.value == "true" || this.properties.value == "false")
+		{
+			final_value = this.properties.value == "true" ? true : false;
+		}
+		else if(!isNaN(parseFloat(this.properties.value)))
+			final_value = parseFloat(this.properties.value);
+
+
+		if(this.target_type == "agent")
+		{
+			this.tmp_data = {type:"setProperty", name: this.properties.property_to_compare, value:final_value, type: this.target_type}
+		}
+		else
+			this.tmp_data = {type:"setProperty", name: this.properties.property_to_compare, value:final_value, type: this.target_type}
+	}
+
+	this.behaviour.type = B_TYPE.setProperty;
+	this.behaviour.setData(this.tmp_data);
+	this.behaviour.STATUS = STATUS.success; 
+	this.behaviour.priority = this.properties.priority; 
+	this.graph.evaluation_behaviours.push(this.behaviour);
+	return this.behaviour;
+}
+
+LiteGraph.registerNodeType("btree/SetProperty", SetProperty);
 //-----------------------BASIC NODES------------------------------------//
 /**
  * Property

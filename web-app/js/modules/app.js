@@ -246,7 +246,7 @@ class App{
                 
                 if(m.type == "behaviours"){
                     for(var b of m.data){
-                        if(b.type == "speech"){
+                        if(b.type == "speech" || b.type == "lg"){
                             this.chat.showMessage(b.text, "me");
                         }
                     }

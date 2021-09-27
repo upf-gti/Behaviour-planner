@@ -39,6 +39,7 @@ var EntitiesManager = {
         var doc = nlp(text)
         if(entity == "#PhoneNumber")
         {
+            text = text.replace(" ", "");
             var text = doc.match("#NumericValue").text();
             return this.checkPhoneFormatValidity(text)
         }

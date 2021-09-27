@@ -291,6 +291,7 @@ class BehaviourPlanner{
     stop(){
         this.state = BP_STATE.STOP;
         this.context.last_event_node = null;
+        this.context.running_nodes = null
     }
 
     update(dt){
@@ -306,6 +307,8 @@ class BehaviourPlanner{
                         this.accumulate_time = 0; //runBehaviour expects time between calls
                         if(this.onBehaviours) this.onBehaviours(behaviours);
                         this.processBehaviours(behaviours);
+                        if(!context.running_nodes || !context.running_nodes[0])
+                            this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
                     }
                     else if(context.last_event_node == null || context.last_event_node == undefined){
                         var behaviours = this.hbt_graph.runBehaviour(this.agent, context, this.accumulate_time);
@@ -313,6 +316,7 @@ class BehaviourPlanner{
 
                         if(this.onBehaviours) this.onBehaviours(behaviours);
                         this.processBehaviours(behaviours);
+                        this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
                     }
                 }
             }
@@ -328,6 +332,7 @@ class BehaviourPlanner{
 
                 if(this.onBehaviours) this.onBehaviours(behaviours);
                 this.processBehaviours(behaviours);
+                this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
             }
         }
     }
