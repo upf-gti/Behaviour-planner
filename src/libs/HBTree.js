@@ -609,7 +609,7 @@ Conditional.prototype.evaluateCondition = function()
 	var value = null;
 	//if the input is a number, the limit value must be converted to a number
 	if(typeof(this.properties.value_to_compare) == "number")
-		value = isNaN(parseInt(this.properties.limit_value)) ? this.properties.limit_valu :parseInt(this.properties.limit_value) ;
+		value = isNaN(parseFloat(this.properties.limit_value)) ? this.properties.limit_valu :parseFloat(this.properties.limit_value) ;
 	// if the input is a string, leave the limit value as a string
 	else 
 		value = this.properties.limit_value;

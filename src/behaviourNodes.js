@@ -87,11 +87,15 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 }
             }
             this.graph.context.blackboard.apply({entities:values})
-            if(info & info.tags)
+            if(info){
+                if(!info.tags)
+                    info.tags = {};
                 for(var i in values){
                     info.tags[i] = values[i];
                 }
-            //var info = {tags: values, text: info.text}
+            }
+            else
+                info = {tags: values, text: info.text}
             
             //this.description = this.properties.property_to_compare + ' property passes the threshold';
             var children = this.getOutputNodes(0);
@@ -1836,7 +1840,7 @@ HttpRequest.prototype.addProperty = function(name, value, is_header)
 
 HttpRequest.prototype.propagate = function(name, value)
 {
-    var special_cases = ["#apikey", "url"];
+    var special_cases = ["#apikey"]//, "url"];
 
     if(special_cases.indexOf(name) < 0)
     return;
