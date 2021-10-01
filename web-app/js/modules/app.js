@@ -274,8 +274,9 @@ class App{
                 }
                 if(data.img) //TODO this should be stored as data.img.user if then is saved into user
                 {
-                    var img = new Image();
-                    img.src = data.img;
+                    
+                    /*var img = new Image();
+                    img.src = data.img.content;
                     if(!img.width)
                         img.width = 200;
                     if(!img.height)
@@ -284,9 +285,12 @@ class App{
                     var ctx = canvas.getContext('2d')
 
                     ctx.drawImage(img,0,0);
-                    this.chat.log_container.appendChild(img)
-                    data.user.imageTaken = true;
-                    this.bp.blackboard.user.update(data.user); //TODO bp.onData should be enought to handle this
+                    this.chat.log_container.appendChild(img)*/
+                    if(!data.user) 
+                        data.user = {};
+                    data.user[data.img.type] = data.img.content;
+                   // this.bp.blackboard.apply(data);
+                   // this.bp.blackboard.user.update(data.user); //TODO bp.onData should be enought to handle this
                     //this.placeholderData.faceMatching = true;
                 }
                 if(data.agent){
@@ -592,6 +596,11 @@ class App{
             case "InfoCert_faceMatching":
                 placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
                 break;
+            default:
+                for(var i in params)
+                    placeholderResponse.data[i] = params[i];
+                break;
+            
         }
 
         this.onDataReceived(placeholderResponse);

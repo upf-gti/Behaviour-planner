@@ -10020,7 +10020,7 @@ Inspector.prototype.addArray = function( name, value, options )
 				v = value[i];
 			var row = document.createElement("div");
 			row.className = "array-row";
-			row.innerHTML = "<span class='row-index'>" + i + "</span><span class='row-cell'></span><button style='width: 30px;' class='litebutton single row-trash'><img src='imgs/mini-icon-trash.png'/></button>";
+			row.innerHTML = "<span class='row-index'>" + i + "</span><span class='row-cell'></span><button style='width: 30px;' class='litebutton single row-trash'><img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'/></button>";
 			container.appendChild(row);
 
 			var widget_row_container = row.querySelector('.row-cell');

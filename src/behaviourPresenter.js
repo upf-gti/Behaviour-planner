@@ -887,21 +887,35 @@ HttpRequest.prototype.onInspectObject = function(inspector, o)
         var func = this.onInspectProperty(o, inspector, key, value);
 
         if(func){
-            inspector.widgets_per_row = 3;
-            inspector.addString(null, key, {width: "35%", callback: function(v){
-                var prev_value = o[key];
-                delete o[key];
-                o[v] = prev_value;
-                that.onInspect(inspector);
-            }});
-            var domEl = func(null, value, {width: "55%", callback: function(v){
-                o[key] = v;
-            }});
-            inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
-                delete o[key];
-                that.onInspect(inspector);
-            }});
-            inspector.widgets_per_row = 1;
+            if(value.constructor == Array){
+                inspector.widgets_per_row = 2;
+                var domEl = func(null, value, {callback: function(v){
+                    o[key] = v;
+                    that.onInspect(inspector);
+                }});
+                inspector.addSeparator();
+                inspector.widgets_per_row = 1;
+            }
+            else
+            {
+                inspector.widgets_per_row = 3;
+                inspector.addString(null, key, {width: "35%", callback: function(v){
+                    var prev_value = o[key];
+                    delete o[key];
+                    o[v] = prev_value;
+                    that.onInspect(inspector);
+                }});
+                var domEl = func(null, value, {width: "55%", callback: function(v){
+                    o[key] = v;
+                    that.onInspect(inspector);
+                }});
+                inspector.addButton(null, "<img src='https://webglstudio.org/latest/imgs/mini-icon-trash.png'>", {width: "10%", micro: true, callback: function(){
+                    delete o[key];
+                    that.onInspect(inspector);
+                }});
+                inspector.widgets_per_row = 1;
+            }
+    
         }
     }
 }
@@ -971,15 +985,22 @@ HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value
                     }}
                 ], { event: e});
             });
-
-            for(var i = 0; i < value.length; ++i){
-                if(i != 0)
-                    inspector.addSeparator();
+            var arr = [];
+            /*for(var i = 0; i < value.length; ++i){
+                //if(i != 0)
+                  
                 if(value[i].constructor == Array)
                     continue;
-                this.onInspectProperty(object, inspector, key, value[i], true);
-            }
-            return null;
+                //func = this.onInspectProperty(object, inspector, key, value[i], true);
+               // this.onInspectObject(inspector, {[i] :value[i]});
+                inspector.addSeparator();
+               
+            }*/
+            func = inspector.addArray.bind(inspector);
+            
+            //return null;
+            //return f;
+         
             break;
     }
 

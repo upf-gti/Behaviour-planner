@@ -96,7 +96,7 @@ var AgentManager = {
                             widget = inspector.addNumber( p, properties[p], { pretitle: pretitle, key: p, step:1, width:"calc(100% - 45px)", callback: function(v){ properties[this.options.key] = v } } );
                             inspector.addButton(null, delete_html, { width:40, name_width:"0%",callback: e => {
                                 console.log(p);
-                                that.deleteProperty(p, properties[p].constructor.name );
+                                AgentManager.deleteProperty(p, properties[p].constructor.name );
                                 inspector.refresh();
 
                             }});
@@ -110,7 +110,7 @@ var AgentManager = {
                                 widget = inspector.addCheckbox( p, value, { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
                                 inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
                                     console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    AgentManager.deleteProperty(p, properties[p].constructor.name );
                                     inspector.refresh();
                                 }});
                             }else{
@@ -125,7 +125,7 @@ var AgentManager = {
                                     if(p == "name")
                                         return;
                                     console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    AgentManager.deleteProperty(p, properties[p].constructor.name );
                                     inspector.refresh();
                                 }});
                             }
@@ -135,7 +135,7 @@ var AgentManager = {
                             widget = inspector.addCheckbox( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
                             inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
                                 console.log(p);
-                                that.deleteProperty(p, properties[p].constructor.name );
+                                AgentManager.deleteProperty(p, properties[p].constructor.name );
                             }});
                             break;
 

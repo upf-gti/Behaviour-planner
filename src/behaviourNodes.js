@@ -87,7 +87,11 @@ ParseCompare.prototype.tick = function(agent, dt, info){
                 }
             }
             this.graph.context.blackboard.apply({entities:values})
-            var info = {tags: values, text: info.text}
+            if(info & info.tags)
+                for(var i in values){
+                    info.tags[i] = values[i];
+                }
+            //var info = {tags: values, text: info.text}
             
             //this.description = this.properties.property_to_compare + ' property passes the threshold';
             var children = this.getOutputNodes(0);
@@ -132,16 +136,23 @@ ParseCompare.prototype.tick = function(agent, dt, info){
 }
 
 ParseCompare.prototype.compare = function (inputString, vocabulary){
-    var found = false;
+    
+    var data = {tags:[]};
     for (var i in vocabulary){
+        var found = false;
         var currentVocab = vocabulary[i]
         var currentText = currentVocab.text;
         found = new RegExp(currentVocab.toCompare.toLowerCase()).test(inputString.toLowerCase());
 
-        if (found)
-            return currentVocab;
+        if (found){
+            if(currentVocab.tags.length)
+                for(var t=0; t<currentVocab.tags.length; t++)
+                    data.tags.push(currentVocab.tags[t]);
+            else return currentVocab;
+        }
+            //return currentVocab;
     }
-    return found;
+    return data.tags.length? data : false;
 }
 ParseCompare.prototype.extractEntities = function(string, tags){
     var info = {};
@@ -149,7 +160,7 @@ ParseCompare.prototype.extractEntities = function(string, tags){
         var tag = tags[j];
         var value = EntitiesManager.getEntity(string, tag);
         if(!value)
-            return false;
+            continue;
         info[tag] = value;
     }
     return info;
@@ -247,8 +258,22 @@ EventNode.prototype.tick = function(agent, dt, info){
 		var child = children[n];
 		//if(child.constructor.name == "Subgraph")
 		//child = child.subgraph.findNodeByTitle("HBTreeInput");
+        
         if(this.data)
-            var value = child.tick(agent, dt, this.data);
+        {
+            if(info){
+            
+                for(var i in this.data)
+                {
+                    info[i] = this.data[i];
+                }
+                
+            }
+            else if(this.data)
+                info = Object.assign({},this.data);
+        
+            value = child.tick(agent, dt, info);
+        }
         else
             var value = child.tick(agent, dt);
 
@@ -311,8 +336,16 @@ EventNode.prototype.onStart = EventNode.prototype.onDeselected = function(){
 }
 EventNode.prototype.onGetOutputs = function()
 {
-    return [[this.properties.type,"*"]]
+    return [[this.properties.type,"*", {dir:LiteGraph.LEFT}]]
 }
+/*EventNode.prototype.onGetOutputs = function(){
+    var outputs = [];
+    for(var i in this.data)
+    {
+        outputs.push([i, typeof(this.data[i])]);
+    }
+    return outputs;
+}*/
 
 LiteGraph.registerNodeType("btree/Event", EventNode);
 
@@ -1548,28 +1581,58 @@ HttpRequest.prototype.tick = function(agent, dt, info)
     // text: "cosas y/o 645651655"
     
     // Clone so changes on values if there is any tag doesn't change original one
-    var body = Object.assign({}, this.data); 
-    if(info && info.tags) {
-        for(var p in body) {
-            var value = body[p];
+  /*  var body = Object.assign({}, this.data); 
+    var bb = this.graph.context.blackboard;
+    this.findPlaceholders(body, info, bb)
+    /*for(var p in body) {
+        var value = body[p];
+        if(!this.isTag(body[p]) )
+            continue;
+        var found = false;
+        if(info && info.tags) {
             // Try to match a tag from info
-            if(this.isTag(value) && info.tags[value]){ 
+            if(info.tags[value]){ 
                 body[p] = info.tags[value];
-            }else if(info[p] != undefined){
+                found = true;
+            }
+            else if(info[p] != undefined){
                 body[p] = info[p];
             }
         }
-    }
+        var found = false;
+        var bb = this.graph.context.blackboard;
+        var keys = Object.keys(bb);
+        for(var i in keys)
+        {
+            var key = keys[i];
+            if(!bb[key])
+                continue;
+            var properties =  {};
+            if(bb[key].properties)
+                properties = Object.assign({},bb[key].properties);
+            else
+                properties = Object.assign({},bb[key]);
+            this.findProperty(body, p, properties )
+            
+        }
+        
+    }*/
 
-    var requestParams = {
-        "parameters": this.properties,
-        "headers": this.headers,
-        "data": body
-    };
+   
 
     if(!this.graph.context.isRunningNode(this))
+    {
+        var body = JSON.parse(JSON.stringify(this.data)); 
+        var bb = this.graph.context.blackboard;
+        this.findPlaceholders(body, info, bb)
+        var requestParams = {
+            "parameters": this.properties,
+            "headers": this.headers,
+            "data": body
+        };
         this.send( Object.assign({}, requestParams), agent, dt);
-    
+    }
+        
     if(this.response) {
         var b = this.response.behaviour;
         if(!b)
@@ -1594,6 +1657,63 @@ HttpRequest.prototype.tick = function(agent, dt, info)
         return this.graph.context.addRunningNode(this);
     }
 }
+HttpRequest.prototype.findPlaceholders = function(body, info, blackboard) 
+{
+    for(var p in body) {
+        var value = body[p];
+        if(value.constructor == Object)
+            this.findPlaceholders(body[p], info, blackboard);
+        if(info && info.tags) {
+            // Try to match a tag from info
+            if(this.isTag(body[p])&& info.tags[value]){ 
+                body[p] = info.tags[value];
+                continue;
+            }
+            else if(info[p] != undefined){
+                body[p] = info[p];
+                continue;
+            }
+        }
+       
+        var keys = Object.keys(blackboard);
+        for(var i in keys)
+        {
+            var key = keys[i];
+            if(!blackboard[key])
+                continue;
+            var properties =  {};
+            if(blackboard[key].properties)
+                properties = Object.assign({},blackboard[key].properties);
+            else
+                properties = Object.assign({},blackboard[key]);
+            this.findProperty(body, p, properties )
+            
+        }
+        
+    }
+
+}
+HttpRequest.prototype.findProperty = function(body, p, obj) 
+{
+    var value = body[p]
+    for(var prop in obj)
+    {    
+        if(!obj[prop]) continue;
+        if(obj[prop].constructor == Object)
+        {
+            var found = this.findProperty(body, p, obj[prop] )
+           if(found) return true;
+        }
+        else if(this.isTag(value) && value == prop)
+        {
+            body[p] = obj[value];
+            return true;
+        }
+       
+    } 
+    return false;  
+}
+
 
 HttpRequest.prototype.send = function(params, agent, dt) {
 
@@ -1673,7 +1793,12 @@ HttpRequest.prototype.onGetInputs = function()
         }
         if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
     }
-
+    for(var p in this.data){
+        for(var i of this.inputs){
+            if(i.name == p) added = true;
+        }
+        if(!added) inputs.push([p, "", {dir:LiteGraph.LEFT}]);
+    }
     return inputs;
 }
 
@@ -1872,9 +1997,8 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
             {
                 for(var o in this.outputs){
                     var output = this.outputs[o];
-                    if( response.data[output.name]){
-                    this.setOutputData(o, response.data[output.name]);
-                    }
+                    this.setOutputsFromObject(response.data, output,o)
+                    
                 }
             }
         var children = this.getOutputNodes(0);
@@ -2018,11 +2142,31 @@ HttpResponse.RAO_Templates = {
 }
 HttpResponse.prototype.onGetOutputs = function(){
     var outputs = [];
-    for(var i in this.data)
-    {
-        outputs.push([i, typeof(this.data[i])]);
-    }
+    this.addOutputsFromObject(this.data, outputs) 
     return outputs;
+}
+HttpResponse.prototype.addOutputsFromObject = function(data, outputs) 
+{
+    for(var i in data)
+    {
+        if(data[i].constructor == Array || data[i].constructor == Object)
+            this.addOutputsFromObject(data[i], outputs)      
+        else
+            outputs.push([i, typeof(data[i])]);
+    }
+}
+HttpResponse.prototype.setOutputsFromObject = function(data, output, o) 
+{
+    for(var i in data)
+    {
+        if(data[output.name]!=undefined)
+        {
+            this.setOutputData(o, data[output.name]);
+            continue;
+        }
+        else if(data[i].constructor == Array || data[i].constructor == Object)
+            this.setOutputsFromObject(data[i], output, o)        
+    }
 }
 LiteGraph.registerNodeType("btree/HttpResponse", HttpResponse );
 

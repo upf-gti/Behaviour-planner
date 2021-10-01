@@ -67,7 +67,7 @@ var UserManager = {
                         case "Number":
                             widget = inspector.addNumber( p, properties[p], { pretitle: pretitle, key: p, step:1, width:"calc(100% - 45px)", callback: function(v){ properties[this.options.key] = v } } );
                             inspector.addButton(null, delete_html, { width:40, name_width:"0%",callback: e => {
-                                that.deleteProperty(p, properties[p].constructor.name );
+                                UserManager.deleteProperty(p, properties[p].constructor.name );
                                 inspector.refresh();
                             }});
                             break;
@@ -78,7 +78,7 @@ var UserManager = {
                                 widget = inspector.addCheckbox( p, value, { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
                                 inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
                                     console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    UserManager.deleteProperty(p, properties[p].constructor.name );
                                     inspector.refresh();
                                 }});
                             }else{
@@ -93,7 +93,7 @@ var UserManager = {
                                 inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
                                     if(p == "name") return;
                                     console.log(p);
-                                    that.deleteProperty(p, properties[p].constructor.name );
+                                    UserManager.deleteProperty(p, properties[p].constructor.name );
                                     inspector.refresh();
                                 }});
                             }
@@ -102,7 +102,7 @@ var UserManager = {
                             widget = inspector.addCheckbox( p, properties[p], { pretitle: pretitle, key: p, width:"calc(100% - 45px)",callback: function(v){ properties[this.options.key] = v } } );
                             inspector.addButton(null, delete_html, {  width:40, name_width:"0%",callback: e => {
                                 console.log(p);
-                                that.deleteProperty(p, properties[p].constructor.name );
+                                UserManager.deleteProperty(p, properties[p].constructor.name );
                                 inspector.refresh();
                             }});
                             break;
