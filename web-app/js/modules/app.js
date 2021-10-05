@@ -46,7 +46,8 @@ class App{
 
 	    this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
 	    this.streamer.onDataReceived = this.onDataReceived.bind(this);
-			this.streamer.onConnect = this.onWSconnected.bind(this);
+			
+        this.streamer.onConnect = this.onWSconnected.bind(this);
 
 	    this.chat = new Chat();
 		this.iframe =   CORE.Interface.iframe;
