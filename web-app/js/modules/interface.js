@@ -290,7 +290,7 @@ class Interface {
     }
 
     preInit() {
-
+        var that = this;
         LiteGUI.init();
 
        this.createMenuBar();
@@ -331,7 +331,7 @@ class Interface {
             CORE.App.onPlayClicked();
         }});*/
         var show_btn = this.addButton("", {title: "Show scene", id: "show-btn", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
-            iframeWindow = window.open("iframe.html", "otherWindow");
+            iframeWindow = window.open("iframe.html?url=" + CORE["Interface"].lastLoadedFile.relativepath,'_blank');
         }});
 
         div.append(clear_btn);
@@ -388,7 +388,7 @@ class Interface {
         this.tabsRefresh();
 
         // assign drop area -> only once
-        let that = this;
+        
         var FS = CORE["FileSystem"];
         var canvas = document.getElementsByClassName("graph-content");
         LiteGUI.createDropArea( canvas[0], FS.onDrop.bind(FS, function(file){
@@ -1139,7 +1139,9 @@ class Interface {
                         CORE["Interface"].importFromURL( fullpath );
                         CORE["Interface"].lastLoadedFile = {
                             filename: file_selected.filename.split(".").shift(),
-                            path: folder_selected + "/"
+                            path: folder_selected + "/",
+                            fullpath: fullpath,
+                            relativepath: folder_selected + "/" + file_selected.filename
                         };
                     } });
                 }
