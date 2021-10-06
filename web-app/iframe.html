@@ -3,46 +3,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Dialogue Manager</title>
-    <link rel="stylesheet" type="text/css" href="css/libs/litegraph.css">
-    <link rel="stylesheet" type="text/css" href="css/libs/litegui_mod.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/chat.css">
+    <title>Behaviour Planner Player</title>
+    <style type='text/css'>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+	</style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body >
     <!--Behaviour planner core and its de dependencies-->
-    <script src="../src/libs/gl-matrix-min.js"></script>
+    <script src="../src/libs/gl-matrix-min-2_8.js"></script>
+    <script src="./js/libs/litegl.js"></script>
     <script src="../src/libs/litegraph.js"></script>
     <script src="../src/libs/HBTree.js"></script>
-    <script src="../src/HBTfacade.js"></script>
-    <script src="../src/graphNodes.js"></script>
-    <script src="../web-app/js/streamer.js"></script>
-
+    <script src="../src/libs/extra/onecore.js"></script>
+    <script src="../src/libs/extra/Canvas2DtoWebGL.js"></script>
     <!--Web app dependencies-->
-    <script src="js/libs/litegui.js"></script>
+    <!--<script src="js/libs/litegui.js"></script>
     <script src="js/libs/HBTEditor.js"></script>
-    <script src="js/libs/timeline.js"></script>
+    <script src="js/libs/litegraph.js"></script>-->
 
     <!--Web app core-->
-    <script src="js/globals.js"></script>
-    <script src="js/graphManager.js"></script>
-    <script src="js/graphWidget.js"></script>
-
-    <script src="js/modules/agent.js"></script>
-    <script src="js/modules/user.js"></script>
-    <script src="js/modules/gestureMap.js"></script>
-    <script src="js/modules/chat.js"></script>
-    <script src="js/modules/interface.js"></script>
-    <script src="js/modules/entity.js"></script>
-    <script src="js/modules/app.js"></script>
-
-    <div>
-        <iframe id="iframe-character" src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json"></iframe>
-      <!--<iframe id="iframe-character" src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FLatestBehavourPlanner.scene.json"></iframe>-->
-       <!-- src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FVirtualClerk.scene.json"></iframe>--> <!--BehaviourPlanner-->
-       <!-- src="https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"></iframe>--> <!--VirtualClerk-->
-    </div>
-
+    <script src="../src/behaviourNodes.js"></script>
+    <script src="../src/behaviourGraph.js"></script>
+    <script src="../src/behaviourPlanner.js"></script>
+    <script src="../src/behaviourPresenter.js"></script>
+    <script src="../src/timeline_node.js"></script>
+    <script src="../src/utils.js"></script>
+    <script src="./js/streamer.js"></script>
+    
+    <script>
+        var settings = {
+		alpha: false, //enables to have alpha in the canvas to blend with background
+		stencil: true,
+		redraw: true, //force to redraw
+		autoplay: Boolean(LS.queryString["autoplay"]),
+		resources: "https://webglstudio.org/fileserver/",
+		autoresize: true, //resize the 3D window if the browser window is resized
+		loadingbar: true, //shows loading bar progress
+		proxy: "https://webglstudio.org/projects/present/repository/files/" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+	};
+        var BP = new BehaviourPlanner.Loader(settings)//new BehaviourPlanner(null,settings);
+        var query_string = LS.queryString;
+        if( query_string["session"] )
+            player.setScene( JSON.parse( localStorage.getItem( query_tring["session"] ) ) );
+        else if( (query_string["url"] && query_string["url"].indexOf("://") == -1) ) //for safety measures
+            BP.loadPlanner( query_string["url"], BP.loadScene ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
+        else if( query_string["preview"] === undefined )
+            BP.loadConfig("config_BPplayer.json", BP.loadPlanner);
+        BP.animate();
+    </script>
+   
     </body>
 </html>
