@@ -439,7 +439,7 @@ class BehaviourPlanner{
 
         if(actions.length) this.onActions(actions);
     }
-
+    
     //Process data message following protocol
     onData(msg){
         var type = msg.type;
@@ -612,7 +612,7 @@ class BehaviourPlanner{
                 url = url.replace("https://webglstudio.org/latest/player.html?url=", "https://webglstudio.org/")
                 if(url.indexOf("https")==-1)
                     url = "https://webglstudio.org/"+ url;
-                    on_complete(url)
+                    on_complete(url,response.env.token)
             }   
 
             if( response.constructor !== Object )
@@ -654,8 +654,7 @@ class BehaviourPlanner{
 			that.streamer.onConnect = function(){
                 that.streamer.createRoom(response.env.token);
             }
-           
-            that.play();
+
 
 
         /*    if(on_complete)
@@ -683,7 +682,7 @@ function Loader(options)
     options = options || {};
     this.options = options;
     this.bp = new BehaviourPlanner() ;
-
+    this.bp.onActions = this.onActions;
     this.debug = false;
     this.autoplay = false;
     this.skip_play_button = false;
@@ -762,7 +761,7 @@ Loader.prototype.loadPlanner = function(url, on_complete, on_progress)
 
     }
 }
-Loader.prototype.loadScene = function(url)
+Loader.prototype.loadScene = function(url, room)
 {
     //LiteSCENE CODE *************************
 	var settings = {
@@ -798,24 +797,46 @@ Loader.prototype.loadScene = function(url)
 		enableWebGLCanvas( gl.canvas );
 	
 	//this code defines which scene to load, in case you are loading an specific scene replce it by player.loadScene( scene_url )
-	player.loadScene( url );
+	player.loadScene( url, inner_scene_loaded.bind(room, this) );
+    function inner_scene_loaded(bpLoader, a){
+        that.room = this.toString();
+        
+        bpLoader.animate(that);
+    }
    
 	/*else if( allow_remote_scenes || url && url.indexOf("://") == -1) //for safety measures
 		player.loadScene( url ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
 	else 
 		player.loadConfig("config_BPplayer.json",player.loadScene);*/
 }
-Loader.prototype.animate = function(){
+Loader.prototype.animate = function(player){
     var that = this;
-    requestAnimationFrame(that.animate.bind(that));
+    if(player.ws.readyState == player.ws.OPEN && that.bp.state == BP_STATE.STOP)
+        that.bp.play();
+
     that.last = that.now;
     that.now = performance.now();
     dt = (that.now - that.last) * 0.001;
     that.bp.update(dt);
+    requestAnimationFrame(that.animate.bind(that, player));
 }
 Loader.prototype.update = function(dt)
 {
     //BP  
     this.bp.update(dt);
+}
+Loader.prototype.onActions = function(actions){
+    //console.log(actions);
+
+    //Send messages through streamer
+    if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+        for(var m of actions){
+            this.streamer.sendMessage(m.type, m.data);
+            
+            /*if(m.type == "custom_action"){ //Placeholder stuff
+                this.placeholderProcessRequest(m);
+            }*/
+        }
+    }
 }
 BehaviourPlanner.Loader = Loader;

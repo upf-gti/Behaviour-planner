@@ -53,7 +53,7 @@ Session.prototype.connect = function(io_client){
     
     io_client.session = this;
     this.io_clients.push(io_client);
-    sendInfo(io_client, "Info: connected to session with token '" + this.token + ".");
+    sendInfo(io_client, "Info: connected to session with token '" + this.token + "'.");
   }
 }
 
@@ -69,7 +69,7 @@ Session.prototype.disconnect = function(client){
 }
 
 Session.prototype.sendToBP = function(message){
-  if(this.bp_client) this.bp_client.send(message);
+  if(this.bp_client) {this.bp_client.send(message); console.log("Sending message to BP "+ message)}
 }
 
 Session.prototype.sendToIO = function(message){

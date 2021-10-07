@@ -52,10 +52,10 @@
         if( query_string["session"] )
             player.setScene( JSON.parse( localStorage.getItem( query_tring["session"] ) ) );
         else if( (query_string["url"] && query_string["url"].indexOf("://") == -1) ) //for safety measures
-            BP.loadPlanner( query_string["url"], BP.loadScene ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
+            BP.loadPlanner( query_string["url"], BP.loadScene.bind(BP) ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
         else if( query_string["preview"] === undefined )
             BP.loadConfig("config_BPplayer.json", BP.loadPlanner);
-        BP.animate();
+      //  BP.animate();
     </script>
    
     </body>
