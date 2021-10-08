@@ -889,11 +889,25 @@ HttpRequest.prototype.onInspectObject = function(inspector, o)
         if(func){
             if(value.constructor == Array){
                 inspector.widgets_per_row = 2;
-                var domEl = func(null, value, {callback: function(v){
-                    o[key] = v;
+                for(var i = 0; i < value.length; ++i){
+                    //if(i != 0)
+                      
+                    //if(value[i].constructor == Array)
+                     //   continue;
+                    //func = this.onInspectProperty(object, inspector, key, value[i], true);
+                    this.onInspectObject(inspector, {[i] :value[i]});
+                }
+                    inspector.addSeparator();
+                   
+                
+                /*var domEl = func(null, value, {callback: function(v){
+                    if(v.constructor == Object)
+                        this.onInspectProperty(o, inspector, key, v);
+                    else
+                        o[key] = v;
                     that.onInspect(inspector);
-                }});
-                inspector.addSeparator();
+                }});*/
+                //inspector.addSeparator();
                 inspector.widgets_per_row = 1;
             }
             else
@@ -947,7 +961,7 @@ HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value
                     new LiteGraph.ContextMenu( [
                         {title: key, disabled: true}, null,
                         {title: "Add key", callback: function(){
-                            value["new_key"] = "";
+                            value["new_key"] = "value";
                             that.onInspect(inspector);
                         }}, null,
                         {title: "Remove", callback: function(){
@@ -975,7 +989,7 @@ HttpRequest.prototype.onInspectProperty = function(object, inspector, key, value
                     }},
                     {title: "Add key", callback: function(){
                         for(var i = 0; i < value.length; ++i){
-                           value[i]["new_key"] = "";
+                           value[i]["new_key"] = "value";
                         }
                         that.onInspect(inspector);
                     }}, null,
@@ -1079,10 +1093,15 @@ HttpResponse.prototype.onInspect = function(inspector)
                     that.onInspect(inspector);
                 }
             });
+               
         }
 
         new LiteGraph.ContextMenu(options, {event: e});
 
+    }});
+    var editTemplate = inspector.addButton(null, "Edit template", {callback: function(value, e){
+
+        e.preventDefault();
     }});
 }
 

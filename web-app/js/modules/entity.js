@@ -39,7 +39,8 @@ var EntitiesManager = {
         var doc = nlp(text)
         if(entity == "#PhoneNumber")
         {
-            text = text.replace(" ", "");
+            //text = text.replaceAll(" ", "");
+            text = text.replaceAll("-", "");
             var text = doc.match("#NumericValue").text();
             return this.checkPhoneFormatValidity(text)
         }
@@ -66,9 +67,10 @@ var EntitiesManager = {
     },
     checkPhoneFormatValidity(text)
     {
+        text = text.replaceAll(" ", "");
         if(text.length >= 7 && text.length <= 12 ) //9 + 2 numbers for extension   
         {
-            if(text[0] == '3')
+            if(text[0] != '+')
                 text = '+'+text;
             return text
         }
