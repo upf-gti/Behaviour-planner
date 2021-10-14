@@ -123,13 +123,16 @@ class Interface {
                     that.contentTabs.show();
                     that.sidepanel.add( that.contentTabs );
                 }
-                that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
+                that.iframe.contentWindow.onload = function(){ 
+                    that.iframe.contentWindow.player.skip_play_button = true
+               
+                }
 			},
 			callback_leave: function(tab_id) {
                 that.contentTabs.hide();
 			}
 		});
-
+        
         this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"",
 			callback: function(tab_id){
 
@@ -159,7 +162,7 @@ class Interface {
         var docked = new LiteGUI.Panel("side_panel", {title:'Panel'});
         this.sidepanel = docked;
         sidepanel.add(docked);
-
+       
         //close button
         var close_button = new LiteGUI.Button( LiteGUI.special_codes.close , function() {  });
         close_button.root.style.float = "right";
@@ -347,7 +350,7 @@ class Interface {
 
         /*IFRAME*/
         this.iframearea = new LiteGUI.Area({id :"", content_id:"iframe-area", autoresize: true, inmediateResize: true});
-
+       
         var div2 = document.createElement("DIV");
 
         div2.className+= " litetabs buttons right";
@@ -379,7 +382,6 @@ class Interface {
         if(this.iframe.contentWindow)
             this.iframe.contentWindow.player.skip_play_button=true
         iframeWindow = this.iframearea
-
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -1566,6 +1568,8 @@ class Interface {
                   CORE.App.env_tree.token = v;
                   that.tree.tree.token = v;
                   CORE.App.streamer.createRoom(v);
+                  LS.Globals.room = v;
+                  LS.Globals.ws.send(JSON.stringify({type: "session", data: { token: v, action: "connect"}}));
                   inspector.refresh();
                   /*TO DO*/
                   //update token to STREAMER

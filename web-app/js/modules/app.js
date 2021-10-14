@@ -139,7 +139,10 @@ class App{
             CORE.App.state = PLAYING;
             CORE.App.bp.play();
             if(this.iframe.contentWindow)//LS.Player from iframe
+            {
+                LS.Globals.room = this.env_tree.token;
                 this.iframe.contentWindow.player.play();
+            }
         }else{
             CORE.App.state = STOP;
             CORE.App.bp.stop();
@@ -489,7 +492,11 @@ class App{
             this.iframe.src = env.iframe;
             CORE.Interface.iframe.src = env.iframe;
             if(this.iframe.contentWindow)
-                this.iframe.contentWindow.onload = function(){ this.iframe.contentWindow.player.skip_play_button = true}.bind(this)         
+                this.iframe.contentWindow.onload = function(){ 
+                    this.iframe.contentWindow.player.skip_play_button = true;
+                    LS.Globals.room = this.env.token;
+                
+                }.bind(this)         
         }
     }
 
