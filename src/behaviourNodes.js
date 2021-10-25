@@ -1998,13 +1998,24 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
         var info = {data: response.data}
         //this.description = this.properties.property_to_compare + ' property passes the threshold';
         if(this.outputs)
-            {
-                for(var o in this.outputs){
-                    var output = this.outputs[o];
-                    this.setOutputsFromObject(response.data, output,o)
-                    
+        {
+            for(var o in this.outputs){
+                var output = this.outputs[o];
+                if(output.name == "")
+                    continue;
+                if(output.dataPath){
+                    var path = output.dataPath.join(".");
+                    var dd = Object.byString(response.data, path)
+                    if(dd!=undefined && dd[output.name]!=undefined){    
+                        this.setOutputData(o, dd[output.name]);
+                        continue;
+                    }
+                
                 }
+                this.setOutputsFromObject(response.data, output,o)
+                
             }
+        }
         var children = this.getOutputNodes(0);
         //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
         if(children.length == 0){
@@ -2146,17 +2157,26 @@ HttpResponse.RAO_Templates = {
 }
 HttpResponse.prototype.onGetOutputs = function(){
     var outputs = [];
-    this.addOutputsFromObject(this.data, outputs) 
+    this.addOutputsFromObject(this.data, outputs, []) 
     return outputs;
 }
-HttpResponse.prototype.addOutputsFromObject = function(data, outputs) 
+HttpResponse.prototype.addOutputsFromObject = function(data, outputs, path) 
 {
+   
     for(var i in data)
     {
         if(data[i].constructor == Array || data[i].constructor == Object)
-            this.addOutputsFromObject(data[i], outputs)      
+        {
+            var p = [...path];
+            p.push(i)
+            this.addOutputsFromObject(data[i], outputs, p)      
+        }
         else
-            outputs.push([i, typeof(data[i])]);
+        {
+            outputs.push([i, typeof(data[i]), {"dataPath":path}]);
+           
+        }
+        
     }
 }
 HttpResponse.prototype.setOutputsFromObject = function(data, output, o) 
@@ -2168,7 +2188,7 @@ HttpResponse.prototype.setOutputsFromObject = function(data, output, o)
             this.setOutputData(o, data[output.name]);
             continue;
         }
-        else if(data[i].constructor == Array || data[i].constructor == Object)
+        else if(data[i]!=undefined && (data[i].constructor == Array || data[i].constructor == Object))
             this.setOutputsFromObject(data[i], output, o)        
     }
 }
@@ -2507,7 +2527,8 @@ SetProperty.prototype.tick = function(agent, dt)
 
 	agent.evaluation_trace.push(this.id);
 	// the property has to increment or decrement
-	if(this.properties.value[0] == "-" || this.properties.value[0] == "+")
+   
+	if(this.properties.value.constructor == Array && (this.properties.value[0] == "-" || this.properties.value[0] == "+"))
 	{
 		if(this.target_type == "agent")
 		{
