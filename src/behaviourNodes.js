@@ -2002,24 +2002,24 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
         var info = {data: response.data}
         //this.description = this.properties.property_to_compare + ' property passes the threshold';
         if(this.outputs)
-        {
-            for(var o in this.outputs){
-                var output = this.outputs[o];
-                if(output.name == "")
-                    continue;
-                if(output.dataPath){
-                    var path = output.dataPath.join(".");
-                    var dd = Object.byString(response.data, path)
-                    if(dd!=undefined && dd[output.name]!=undefined){    
-                        this.setOutputData(o, dd[output.name]);
+            {
+                for(var o in this.outputs){
+                    var output = this.outputs[o];
+                    if(output.name == "")
                         continue;
+                    if(output.dataPath){
+                        var path = output.dataPath.join(".");
+                        var dd = Object.byString(response.data, path)
+                        if(dd!=undefined && dd[output.name]!=undefined){    
+                            this.setOutputData(o, dd[output.name]);
+                            continue;
                     }
                 
                 }
-                this.setOutputsFromObject(response.data, output,o)
-                
+                    this.setOutputsFromObject(response.data, output,o)
+                    
+                }
             }
-        }
         var children = this.getOutputNodes(0);
         //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
         if(children.length == 0){
@@ -2531,7 +2531,6 @@ SetProperty.prototype.tick = function(agent, dt)
 
 	agent.evaluation_trace.push(this.id);
 	// the property has to increment or decrement
-   
 	if(this.properties.value.constructor == Array && (this.properties.value[0] == "-" || this.properties.value[0] == "+"))
 	{
 		if(this.target_type == "agent")
@@ -2692,6 +2691,7 @@ HBTproperty.prototype.onExecute = function(){
 	this.setOutputData(2,type);
 }
 
+
 function NodeScript() {
     this.size = [60, 30];
     this.addProperty("onExecute", "return A;");
@@ -2720,7 +2720,7 @@ function NodeScript() {
 }
 
 NodeScript.prototype.onConfigure = function(o) {
-    debugger;
+    // debugger;
     if (o.properties.onExecute && LiteGraph.allow_scripts)
         this.compileCode(o.properties.onExecute);
     else
@@ -2743,7 +2743,7 @@ NodeScript.prototype.onPropertyChanged = function(name, value) {
 
 NodeScript.prototype.compileCode = function(code) {
     this._func = null;
-    if (code.length > 512) {
+    if (code.length > 1024) {
         console.warn("Script too long, max 256 chars");
     } else {
         var code_low = code.toLowerCase();
@@ -2753,7 +2753,7 @@ NodeScript.prototype.compileCode = function(code) {
             "document",
             "eval",
             "nodescript",
-            "function" 
+            "function"
         ]; //bad security solution
         for (var i = 0; i < forbidden_words.length; ++i) {
             if (code_low.indexOf(forbidden_words[i]) != -1) {

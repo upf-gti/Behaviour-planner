@@ -8,7 +8,8 @@
  *  graphManager
  *  utils
  */
-function _behaviourPlanner(global){
+function _behaviourPlanner(global)
+{
     
     class Agent{
 
