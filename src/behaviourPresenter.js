@@ -1,4 +1,4 @@
-
+LiteGraph.allow_scripts = true;
 //-----------------------GRAPH EDITOR------------------------------------//
 function GraphEditor(data){
     if(this.constructor !== GraphEditor)
@@ -1107,6 +1107,41 @@ HttpResponse.prototype.onInspect = function(inspector)
 
 HttpResponse.prototype.onInspectObject = HttpRequest.prototype.onInspectObject;
 HttpResponse.prototype.onInspectProperty = HttpRequest.prototype.onInspectProperty;
+
+NodeScript.prototype.onInspect = function(inspector)
+{
+    component = this;
+    inspector.clear();
+    inspector.widgets_per_row = 1;
+    console.log(this.properties["onExecute"])
+    inspector.addSection("CODE");
+    inspector.addCombo("script", component.properties.prefab_code_key, {values: Object.keys(component.properties.sample_codes), callback:function(v){
+        component.properties.prefab_code_value =  component.properties.sample_codes[v];
+        component.properties.prefab_code_key =  v;
+
+        component.onInspect(inspector);
+    }})
+    inspector.addTextarea(null, component.properties.prefab_code_value, { width: "100%",
+    callback: function(v){
+        component.properties["temp_code"] = v;
+        
+        
+    }});
+    inspector.addButton(null, "Compile", {callback:function(){
+        if(component.properties["prefab_code_key"] == "custom")
+        {
+            component.properties["onExecute"] = component.properties["temp_code"]
+        }
+        else
+            component.properties["onExecute"] = component.properties["prefab_code_value"]
+        
+        component.compileCode(component.properties["onExecute"]);
+
+    }})
+    // inspector.addInfo("Code executed")
+    // inspector.addCode("Function","return A;")
+}
+
 
 //TODO ParseEvent not updated to new events!
 /*

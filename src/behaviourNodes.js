@@ -566,7 +566,10 @@ function TriggerNode(){
 }
 
 TriggerNode.prototype.tick = function(agent, dt, info){
-    this.graph.context.last_event_node = this.properties.node_id
+    if(this.graph._is_subgraph)
+        this.graph._subgraph_node.graph.context.last_event_node = this.properties.node_id;
+    else
+        this.graph.context.last_event_node = this.properties.node_id;
     return {STATUS : STATUS.success};
 }
 
@@ -610,11 +613,12 @@ HBTreeInput.prototype.onAdded = function(){
     }
 }
 
-HBTreeInput.prototype.tick = function(agent, dt){
+HBTreeInput.prototype.tick = function(agent, dt, info){
+
 	var children = this.getOutputNodes(0);
 	for(var n in children){
 		var child = children[n];
-		var value = child.tick(agent, dt);
+		var value = child.tick(agent, dt, info);
 		if(value && value.STATUS == STATUS.success){
 			if(agent.is_selected)
 				highlightLink(this,child)
@@ -2687,3 +2691,105 @@ HBTproperty.prototype.onExecute = function(){
 	this.setOutputData(1,name);
 	this.setOutputData(2,type);
 }
+
+function NodeScript() {
+    this.size = [60, 30];
+    this.addProperty("onExecute", "return A;");
+    this.addProperty("temp_code", "");
+    this.addProperty("prefab_code_key", "custom");
+    this.addProperty("prefab_code_value", "");
+    this.addInput("A", "");
+    this.addInput("B", "");
+    this.addOutput("out", "");
+    this.properties.sample_codes = {
+        custom:"",
+        string_to_date: `var today = new Date();
+        var birthDate = new Date(A);
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;`, 
+        count_vowels: `var m = A.match(/[aeiou]/gi);
+        return m === null ? 0 : m.length;`
+
+    }
+    this._func = null;
+    this.data = {};
+}
+
+NodeScript.prototype.onConfigure = function(o) {
+    debugger;
+    if (o.properties.onExecute && LiteGraph.allow_scripts)
+        this.compileCode(o.properties.onExecute);
+    else
+        console.warn("Script not compiled, LiteGraph.allow_scripts is false");
+};
+
+NodeScript.title = "ScriptNode";
+NodeScript.desc = "executes a code (max 512 characters)";
+
+NodeScript.widgets_info = {
+    onExecute: { type: "code" }
+};
+
+NodeScript.prototype.onPropertyChanged = function(name, value) {
+    if (name == "onExecute" && LiteGraph.allow_scripts)
+        this.compileCode(value);
+    else
+        console.warn("Script not compiled, LiteGraph.allow_scripts is false");
+};
+
+NodeScript.prototype.compileCode = function(code) {
+    this._func = null;
+    if (code.length > 512) {
+        console.warn("Script too long, max 256 chars");
+    } else {
+        var code_low = code.toLowerCase();
+        var forbidden_words = [
+            "script",
+            "body",
+            "document",
+            "eval",
+            "nodescript",
+            "function" 
+        ]; //bad security solution
+        for (var i = 0; i < forbidden_words.length; ++i) {
+            if (code_low.indexOf(forbidden_words[i]) != -1) {
+                console.warn("invalid script");
+                return;
+            }
+        }
+        try {
+            this._func = new Function("A", "B", "C", "DATA", "node", code);
+            console.log("FUNCION ADDED");
+        } catch (err) {
+            console.error("Error parsing script");
+            console.error(err);
+        }
+    }
+};
+
+NodeScript.prototype.onExecute = function() {
+    if (!this._func) {
+        return;
+    }
+
+    try {
+        var A = this.getInputData(0);
+        var B = this.getInputData(1);
+        var C = this.getInputData(2);
+        this.setOutputData(0, this._func(A, B, C, this.data, this));
+    } catch (err) {
+        console.error("Error in script");
+        console.error(err);
+    }
+};
+
+NodeScript.prototype.onGetOutputs = function() {
+    return [["C", ""]];
+};
+
+
+LiteGraph.registerNodeType("basic/script", NodeScript);
