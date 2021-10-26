@@ -190,8 +190,5 @@ function feach(w) {
             n = n + g * x
             g = 0;
         }
-        else { 
-            alert("Unknown number: "+w); 
-        }
     }
 }

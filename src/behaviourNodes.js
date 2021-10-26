@@ -2121,17 +2121,17 @@ HttpResponse.prototype.extractData = function (response) {
                     return __evaluate(r[k], d[k]);
                 else
                     return r[k];
-            }
-                
+            }           
         }
     }
-
-    for(var k in res){
-        if(!this.data[k])
-            delete res[k];
-        else{
-            if(res[k].constructor == Object)
-                res[k] = __evaluate(res[k], this.data[k]);
+    if(this.data || this.data != {}){
+        for(var k in res){
+            if(!this.data[k])
+                delete res[k];
+            else{
+                if(res[k].constructor == Object)
+                    res[k] = __evaluate(res[k], this.data[k]);
+            }
         }
     }
 
