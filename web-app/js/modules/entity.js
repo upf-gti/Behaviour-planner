@@ -50,14 +50,10 @@ var EntitiesManager = {
         }
         
         var text = doc.match(entity).text();
-        if(entity == "#Value")
-        {
-            //text = text.replaceAll(" ", "");
-            text = text.toUpperCase()
-           
-        }
+        
         if(entity == "#TextValue" || entity == "#Value"){
             text = text2num(text.toLowerCase()).toString()
+            text = text.toUpperCase()
         }
         if(text!="")
             return text;

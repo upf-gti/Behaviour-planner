@@ -1121,7 +1121,7 @@ NodeScript.prototype.onInspect = function(inspector)
 
         component.onInspect(inspector);
     }})
-    inspector.addTextarea(null, component.properties.prefab_code_value, { width: "100%",
+    inspector.addTextarea(null, component.properties.prefab_code_value, { width: "100%", height:"40vh",
     callback: function(v){
         component.properties["temp_code"] = v;
         

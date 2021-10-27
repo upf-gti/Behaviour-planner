@@ -2812,6 +2812,7 @@ function TriggerSubtree()
 
     this.widgets_up = true;
     this.size = [w,h];
+    this.serialize_widgets = true;
     this.behaviour = new Behaviour();
     
 }
@@ -2834,7 +2835,7 @@ TriggerSubtree.prototype.tick = function(agent, dt, info)
         //Editor stuff [highlight trace]
         if(agent.is_selected)
             highlightLink(this, child);
-        
+        return value;
     } 
     if(this.behaviour.STATUS == STATUS.fail)
         return value;

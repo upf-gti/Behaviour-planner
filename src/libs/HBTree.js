@@ -507,7 +507,7 @@ function Conditional()
       	comparison_type : ">"
     };
   	this.combo = this.addWidget("combo","Type:", ">", function(v){that.properties.comparison_type = v;}, { values:function(widget, node){
-        return [">","<","==", "!=", "<=", ">="];
+        return [">","<","==", "!=", "<=", ">=", "includes"];
     }} ); 
     this.slider = this.addWidget("string","Threshold", this.properties.limit_value, function(v){ that.properties.limit_value = v; }, this.properties  );
 
@@ -611,6 +611,11 @@ Conditional.prototype.evaluateCondition = function()
 	if(typeof(this.properties.value_to_compare) == "number")
 		value = isNaN(parseFloat(this.properties.limit_value)) ? this.properties.limit_valu :parseFloat(this.properties.limit_value) ;
 	// if the input is a string, leave the limit value as a string
+	else if(typeof(this.properties.value_to_compare) == "string"){
+		this.properties.value_to_compare = this.properties.value_to_compare.toUpperCase()
+		value = this.properties.limit_value.toUpperCase();
+
+	}
 	else 
 		value = this.properties.limit_value;
 
@@ -635,7 +640,11 @@ Conditional.prototype.evaluateCondition = function()
 		case ">=":
 			result = this.properties.value_to_compare >= value;
 			break;
-		}
+		case "includes":
+			result = this.properties.value_to_compare.includes(value);
+			break;
+	}
+
 	return result;
 }
 
