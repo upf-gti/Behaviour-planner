@@ -56,8 +56,8 @@ var EntitiesManager = {
             text = text.toUpperCase()
            
         }
-        else if(entity == "#TextValue"){
-            text = text2num(text).toString()
+        if(entity == "#TextValue" || entity == "#Value"){
+            text = text2num(text.toLowerCase()).toString()
         }
         if(text!="")
             return text;
@@ -193,6 +193,10 @@ function feach(w) {
         if (x != null) {
             n = n + g * x
             g = 0;
+        }
+        else{
+            n = w;
+            g = "";
         }
     }
 }

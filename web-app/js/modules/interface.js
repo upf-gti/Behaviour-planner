@@ -1565,8 +1565,12 @@ class Interface {
                   that.tree.tree.token = v;
                   CORE.App.streamer.createRoom(v);
                   inspector.refresh();
+                  
                   /*TO DO*/
                   //update token to STREAMER
+                  if(LS && LS.Globals)
+                    LS.Globals.room = v;
+                    
                 }})
               /*  var btn = inspector.addButton(null, "Add Agent", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
                 btn.getElementsByTagName("button")[0].className = "btn btn-str";
