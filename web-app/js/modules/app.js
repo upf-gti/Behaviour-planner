@@ -513,8 +513,9 @@ class App{
                         obj.env.agents.push(agent);
                     }else if(item.type == "user"){
                         var user = UserManager.getUserById(item.id);
-                        user = user.serialize();
-                        obj.env.user = user;
+                        var clean_user = user.cleanUserProperties();
+                        clean_user = clean_user.serialize();
+                        obj.env.user = clean_user;
                     }else if(item.type == "gesture"){
                         var gest = GestureManager.serialize();
                         obj.env.gestures = gest;

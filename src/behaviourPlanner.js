@@ -53,6 +53,18 @@ class User{
         o.properties = this.properties;
         return o;
     }
+    // Delete "#" properties to discard unnecessary data
+    cleanUserProperties()
+    {
+        var clean_user = Object.assign({}, this);
+        for(var i in clean_user.properties)
+            if(i.includes("#"))
+                clean_user.properties[i] = "";
+        // Shallow copy does not keep the methods, so I need to add it
+        clean_user.serialize = this.serialize;
+        return clean_user;
+        
+    }
 }
 
 class Agent{
