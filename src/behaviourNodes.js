@@ -2793,3 +2793,135 @@ NodeScript.prototype.onGetOutputs = function() {
 
 
 LiteGraph.registerNodeType("basic/script", NodeScript);
+
+
+function TriggerSubtree()
+{
+    this.shape = 2;
+    this.color = "#1E1E1E"
+    this.boxcolor = "#999";
+    var w = 150;
+    var h= 40;
+
+    this.properties = {target_id:null};
+    this.addProperty("target_id", "");
+    
+    this.addInput("","path", {pos:[w*0.5,-LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+    var that = this;
+    this.widget = this.addWidget("string","target_id", this.properties.target_id, function(v){v = v.replace("Event ", ""); that.properties.target_id = v;});
+
+    this.widgets_up = true;
+    this.size = [w,h];
+    this.behaviour = new Behaviour();
+    
+}
+
+
+TriggerSubtree.prototype.tick = function(agent, dt, info)
+{
+    var child = this.graph.getNodeById(this.properties.target_id);
+    if(!child)
+    {
+        var obj = {STATUS:STATUS.fail}
+        return obj;
+    } 
+    var value = child.tick(agent, dt);
+
+    if(value && (value.STATUS == STATUS.running || value.STATUS == STATUS.success))
+    {
+        agent.evaluation_trace.push(this.id);
+        this.behaviour.STATUS = STATUS.success;
+        //Editor stuff [highlight trace]
+        if(agent.is_selected)
+            highlightLink(this, child);
+        
+    } 
+    if(this.behaviour.STATUS == STATUS.fail)
+        return value;
+	
+}
+
+TriggerSubtree.prototype.onConfigure = function(info){
+    onConfig(info, this.graph);
+}
+
+LiteGraph.registerNodeType("btree/TriggerSubtree", TriggerSubtree);
+
+function SubRoot()
+{
+    this.shape = 2;
+    this.color = "#1E1E1E"
+    this.boxcolor = "#999";
+    this.addOutput("","path");
+	this.properties = {};
+    this.horizontal = true;
+	this.widgets_up = true;
+
+	this.behaviour = new Behaviour();
+}
+SubRoot.prototype.onAdded = function(){
+    this.title = "SubRoot "+this.id;
+}
+
+SubRoot.prototype.tick = function(agent, dt)
+{
+	var children = this.getOutputNodes(0);
+	for(var n in children)
+	{
+		var child = children[n];
+		// if(child.constructor.name == "Subgraph")
+		// 	child = child.subgraph.findNodeByTitle("HBTreeInput");
+		var value = child.tick(agent, dt);
+		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running))
+		{
+			if(agent.is_selected)
+				highlightLink(this, child)
+			//push the node_id to the evaluation trace
+			agent.evaluation_trace.push(this.id);
+
+			//know if bt_info params must be reset
+			//if the node was not in the previous 
+			// if(!nodePreviouslyEvaluated(agent, this.id))
+			// 	resetHBTreeProperties(agent)
+
+			return value;
+		}
+	}
+
+	// if(this.running_node_in_banch)
+	// 	agent.bt_info.running_node_index = null;
+
+	this.behaviour.STATUS = STATUS.fail;
+	return this.behaviour;
+}
+
+SubRoot.prototype.onConfigure = function(info)
+{
+    onConfig(info, this.graph);
+	this.graph.root_node =  this;
+}
+
+// SubRoot.title = "Root";
+// SubRoot.desc = "Start node of the Hybrid Behaviour Tree";
+
+//reorder the links
+SubRoot.prototype.onStart = SubRoot.prototype.onDeselected = function()
+{
+	var children = this.getOutputNodes(0);
+	if(!children) return;
+	children.sort(function(a,b)
+	{
+		if(a.pos[0] > b.pos[0])
+		  return 1;
+		
+		if(a.pos[0] < b.pos[0])
+		  return -1;
+		
+	});
+
+	this.outputs[0].links = [];
+	for(var i in children)
+		this.outputs[0].links.push(children[i].inputs[0].link);
+}
+
+LiteGraph.registerNodeType("btree/SubRoot", SubRoot);
