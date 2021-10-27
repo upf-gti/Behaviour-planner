@@ -36,6 +36,10 @@ var EntitiesManager = {
     },
 	getEntity(text, entity)
     {
+        if(entity == "#Value")
+        {
+            text = text.toLowerCase();
+        }
         var doc = nlp(text)
         if(entity == "#PhoneNumber")
         {
