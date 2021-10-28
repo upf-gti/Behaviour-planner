@@ -77,8 +77,10 @@ ParseCompare.prototype.tick = function(agent, dt, info){
         return this.behaviour;
 	}
 	else{
-        var values = this.extractEntities(text, found.tags);
-        if(values){
+        var values = found;
+        if(found.tags.length)
+            values = this.extractEntities(text, found.tags);
+        if(Object.keys(values).length){
             //Set tag outputs if any
             for(var o in this.outputs){
                 var output = this.outputs[o];

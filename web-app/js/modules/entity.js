@@ -10,8 +10,11 @@ var EntitiesManager = {
         compromise.src = "https://unpkg.com/compromise";
         var compromise_numbers = document.createElement('script');
         compromise_numbers.src = "https://unpkg.com/compromise-numbers";
+        var compromise_dates = document.createElement('script');
+        compromise_dates.src = "https://unpkg.com/compromise-dates";
         document.head.appendChild(compromise);
         document.head.appendChild(compromise_numbers);
+        document.head.appendChild(compromise_dates);
         compromise.onload = this.initData.bind(this);
 
     },
@@ -24,12 +27,14 @@ var EntitiesManager = {
             {
                 intents.push(data[i].intent);
             }*/
-        if(!compromiseNumbers)
-        {
-          setTimeout(this.initData, 1000);
-          return;
+        if(!compromiseNumbers ||!compromiseDates)
+        {   
+            setTimeout(this.initData, 1000);
+            return;
         }
+
         nlp.extend(compromiseNumbers)
+        nlp.extend(compromiseDates);
 
         for(var i in nlp.world().tags)
             this.entities.push("#"+i);
@@ -40,15 +45,33 @@ var EntitiesManager = {
         {
             text = text.toLowerCase();
         }
-        var doc = nlp(text)
-        if(entity == "#PhoneNumber")
+        
+        if(entity == "#PhoneNumber" || entity == "#NumericValue")
         {
             //text = text.replaceAll(" ", "");
             text = text.replaceAll("-", "");
-            var text = doc.match("#NumericValue").text();
-            return this.checkPhoneFormatValidity(text)
+            var numbers = text.split(" ");
+            for(var i=0; i< numbers.length; i++)
+            { 
+                var n = nlp(numbers[i]).match("#NumericValue").text();
+                if(n=="") numbers.splice(i,1);
+            }
+            
+            text = numbers.join("");
+            if(entity == "#PhoneNumber")
+                return this.checkPhoneFormatValidity(text)
         }
-        
+        if(entity == "#Date")
+        {
+            text = nlp(text).dates().format("{month-number} {date}").text()
+            if(text=="") return false;
+            else return text;
+            /*
+            var date = text.split(" ");
+            date[0] = (parseInt(date[0])+1).toString()
+            text = date.joint("-");*/
+        }
+        var doc = nlp(text)
         var text = doc.match(entity).text();
         
         if(entity == "#TextValue" || entity == "#Value"){
