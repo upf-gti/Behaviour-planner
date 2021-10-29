@@ -50,13 +50,15 @@ var EntitiesManager = {
         {
             //text = text.replaceAll(" ", "");
             text = text.replaceAll("-", "");
-            var numbers = text.split(" ");
-            for(var i=0; i< numbers.length; i++)
+            var text_split = text.split(" ");
+            var numbers = [];
+            for(var i=0; i< text_split.length; i++)
             { 
-                var n = nlp(numbers[i]).match("#NumericValue").text();
-                if(n=="") numbers.splice(i,1);
+                var n = nlp(text_split[i]).match("#NumericValue").text();
+                if(n!="") numbers.push(n);
             }
-            
+            if(!numbers.length)
+                return false;
             text = numbers.join("");
             if(entity == "#PhoneNumber")
                 return this.checkPhoneFormatValidity(text)

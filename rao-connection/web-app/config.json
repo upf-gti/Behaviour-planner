@@ -1,0 +1,30 @@
+{
+    "nocache": false,
+
+    "imports" : [
+        "../src/libs/gl-matrix-min.js",
+        "../src/libs/litegraph.js",
+        "../src/libs/HBTree.js",
+        "../src/HBTfacade.js",
+        "../src/graphNodes.js",
+        "../src/timeline_node.js",
+        "../src/utils.js",
+
+        "js/libs/litefileserver.js",
+        "js/libs/HBTEditor.js",
+        "js/libs/timeline.js",
+        "js/graphManager.js",
+        "js/graphWidget.js",
+        "js/streamer.js",
+        "js/animed.js",
+        "js/modules/agent.js",
+        "js/modules/user.js",
+        "js/modules/gestureMap.js",
+        "js/modules/chat.js",
+        "js/modules/filesystem.js",
+        "js/modules/drive.js",
+        "js/modules/interface.js",
+        "js/modules/entity.js",
+        "js/modules/app.js"
+    ]
+}

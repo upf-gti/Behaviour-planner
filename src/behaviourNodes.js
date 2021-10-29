@@ -1671,7 +1671,7 @@ HttpRequest.prototype.findPlaceholders = function(body, info, blackboard)
 {
     for(var p in body) {
         var value = body[p];
-        if(value.constructor == Object)
+        if(value.constructor == Object || value.constructor == Array)
             this.findPlaceholders(body[p], info, blackboard);
         if(info && info.tags) {
             // Try to match a tag from info
