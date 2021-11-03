@@ -810,7 +810,7 @@ BoolConditional.prototype.tick = function(agent, dt )
 BoolConditional.prototype.evaluateCondition = function()
 {
 	if(this.properties.value_to_compare == this.properties.bool_state)
-    return true;
+    	return true;
  	return false;
 }
 

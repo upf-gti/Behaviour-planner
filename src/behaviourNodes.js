@@ -2455,6 +2455,69 @@ Conditional.prototype.tick = function(agent, dt, info )
 		return this.behaviour;
 	}
 }
+
+BoolConditional.prototype.tick = function(agent, dt, info )
+{
+    if(info&&info.tags)
+    {
+        for(var i in info.tags)
+        {
+            this.properties.bool_state = Boolean(info.tags[i]);
+        }
+    }
+	if(this.evaluateCondition && !this.evaluateCondition())
+	{
+		if(this.running_node_in_banch)
+			agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+
+	else if(this.evaluateCondition && this.evaluateCondition())
+	{   
+		this.description = this.properties.property_to_compare + ' property is true';
+		var children = this.getOutputNodes(0);
+
+		if(children.length == 0)
+		{
+			console.warn("BoolConditional Node has no children");
+			return STATUS.success;
+		}
+		for(let n in children)
+		{
+			var child = children[n];
+			var value = child.tick(agent, dt);
+
+			if(value && value.STATUS == STATUS.success)
+			{
+				agent.evaluation_trace.push(this.id);
+
+				if(agent.is_selected)
+					highlightLink(this, child);
+
+				return value;
+			}
+			else if(value && value.STATUS == STATUS.running)
+			{
+				agent.evaluation_trace.push(this.id);
+
+				if(agent.is_selected)
+					highlightLink(this, child);
+
+				return value;
+			}
+		}
+
+		//if this is reached, means that has failed
+		
+		if(this.running_node_in_banch)
+			agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+}
 //lack of type choice --> on progress
 function SetProperty()
 {
