@@ -77,8 +77,10 @@ ParseCompare.prototype.tick = function(agent, dt, info){
         return this.behaviour;
 	}
 	else{
-        var values = this.extractEntities(text, found.tags);
-        if(values){
+        var values = found;
+        if(found.tags.length)
+            values = this.extractEntities(text, found.tags);
+        if(Object.keys(values).length){
             //Set tag outputs if any
             for(var o in this.outputs){
                 var output = this.outputs[o];
@@ -566,7 +568,10 @@ function TriggerNode(){
 }
 
 TriggerNode.prototype.tick = function(agent, dt, info){
-    this.graph.context.last_event_node = this.properties.node_id
+    if(this.graph._is_subgraph)
+        this.graph._subgraph_node.graph.context.last_event_node = this.properties.node_id;
+    else
+        this.graph.context.last_event_node = this.properties.node_id;
     return {STATUS : STATUS.success};
 }
 
@@ -610,11 +615,12 @@ HBTreeInput.prototype.onAdded = function(){
     }
 }
 
-HBTreeInput.prototype.tick = function(agent, dt){
+HBTreeInput.prototype.tick = function(agent, dt, info){
+
 	var children = this.getOutputNodes(0);
 	for(var n in children){
 		var child = children[n];
-		var value = child.tick(agent, dt);
+		var value = child.tick(agent, dt, info);
 		if(value && value.STATUS == STATUS.success){
 			if(agent.is_selected)
 				highlightLink(this,child)
@@ -1665,7 +1671,7 @@ HttpRequest.prototype.findPlaceholders = function(body, info, blackboard)
 {
     for(var p in body) {
         var value = body[p];
-        if(value.constructor == Object)
+        if(value.constructor == Object || value.constructor == Array)
             this.findPlaceholders(body[p], info, blackboard);
         if(info && info.tags) {
             // Try to match a tag from info
@@ -2001,6 +2007,17 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
             {
                 for(var o in this.outputs){
                     var output = this.outputs[o];
+                    if(output.name == "")
+                        continue;
+                    if(output.dataPath){
+                        var path = output.dataPath.join(".");
+                        var dd = Object.byString(response.data, path)
+                        if(dd!=undefined && dd[output.name]!=undefined){    
+                            this.setOutputData(o, dd[output.name]);
+                            continue;
+                    }
+                
+                }
                     this.setOutputsFromObject(response.data, output,o)
                     
                 }
@@ -2106,17 +2123,17 @@ HttpResponse.prototype.extractData = function (response) {
                     return __evaluate(r[k], d[k]);
                 else
                     return r[k];
-            }
-                
+            }           
         }
     }
-
-    for(var k in res){
-        if(!this.data[k])
-            delete res[k];
-        else{
-            if(res[k].constructor == Object)
-                res[k] = __evaluate(res[k], this.data[k]);
+    if(this.data || this.data != {}){
+        for(var k in res){
+            if(!this.data[k])
+                delete res[k];
+            else{
+                if(res[k].constructor == Object)
+                    res[k] = __evaluate(res[k], this.data[k]);
+            }
         }
     }
 
@@ -2146,17 +2163,26 @@ HttpResponse.RAO_Templates = {
 }
 HttpResponse.prototype.onGetOutputs = function(){
     var outputs = [];
-    this.addOutputsFromObject(this.data, outputs) 
+    this.addOutputsFromObject(this.data, outputs, []) 
     return outputs;
 }
-HttpResponse.prototype.addOutputsFromObject = function(data, outputs) 
+HttpResponse.prototype.addOutputsFromObject = function(data, outputs, path) 
 {
+   
     for(var i in data)
     {
         if(data[i].constructor == Array || data[i].constructor == Object)
-            this.addOutputsFromObject(data[i], outputs)      
+        {
+            var p = [...path];
+            p.push(i)
+            this.addOutputsFromObject(data[i], outputs, p)      
+        }
         else
-            outputs.push([i, typeof(data[i])]);
+        {
+            outputs.push([i, typeof(data[i]), {"dataPath":path}]);
+           
+        }
+        
     }
 }
 HttpResponse.prototype.setOutputsFromObject = function(data, output, o) 
@@ -2168,7 +2194,7 @@ HttpResponse.prototype.setOutputsFromObject = function(data, output, o)
             this.setOutputData(o, data[output.name]);
             continue;
         }
-        else if(data[i].constructor == Array || data[i].constructor == Object)
+        else if(data[i]!=undefined && (data[i].constructor == Array || data[i].constructor == Object))
             this.setOutputsFromObject(data[i], output, o)        
     }
 }
@@ -2429,6 +2455,69 @@ Conditional.prototype.tick = function(agent, dt, info )
 		return this.behaviour;
 	}
 }
+
+BoolConditional.prototype.tick = function(agent, dt, info )
+{
+    if(info&&info.tags)
+    {
+        for(var i in info.tags)
+        {
+            this.properties.bool_state = Boolean(info.tags[i]);
+        }
+    }
+	if(this.evaluateCondition && !this.evaluateCondition())
+	{
+		if(this.running_node_in_banch)
+			agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+
+	else if(this.evaluateCondition && this.evaluateCondition())
+	{   
+		this.description = this.properties.property_to_compare + ' property is true';
+		var children = this.getOutputNodes(0);
+
+		if(children.length == 0)
+		{
+			console.warn("BoolConditional Node has no children");
+			return STATUS.success;
+		}
+		for(let n in children)
+		{
+			var child = children[n];
+			var value = child.tick(agent, dt);
+
+			if(value && value.STATUS == STATUS.success)
+			{
+				agent.evaluation_trace.push(this.id);
+
+				if(agent.is_selected)
+					highlightLink(this, child);
+
+				return value;
+			}
+			else if(value && value.STATUS == STATUS.running)
+			{
+				agent.evaluation_trace.push(this.id);
+
+				if(agent.is_selected)
+					highlightLink(this, child);
+
+				return value;
+			}
+		}
+
+		//if this is reached, means that has failed
+		
+		if(this.running_node_in_banch)
+			agent.bt_info.running_node_index = null;
+
+		this.behaviour.STATUS = STATUS.fail;
+		return this.behaviour;
+	}
+}
 //lack of type choice --> on progress
 function SetProperty()
 {
@@ -2507,7 +2596,7 @@ SetProperty.prototype.tick = function(agent, dt)
 
 	agent.evaluation_trace.push(this.id);
 	// the property has to increment or decrement
-	if(this.properties.value[0] == "-" || this.properties.value[0] == "+")
+	if(this.properties.value.constructor == Array && (this.properties.value[0] == "-" || this.properties.value[0] == "+"))
 	{
 		if(this.target_type == "agent")
 		{
@@ -2666,3 +2755,239 @@ HBTproperty.prototype.onExecute = function(){
 	this.setOutputData(1,name);
 	this.setOutputData(2,type);
 }
+
+
+function NodeScript() {
+    this.size = [60, 30];
+    this.addProperty("onExecute", "return A;");
+    this.addProperty("temp_code", "");
+    this.addProperty("prefab_code_key", "custom");
+    this.addProperty("prefab_code_value", "");
+    this.addInput("A", "");
+    this.addInput("B", "");
+    this.addOutput("out", "");
+    this.properties.sample_codes = {
+        custom:"",
+        string_to_date: `var today = new Date();
+        var birthDate = new Date(A);
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;`, 
+        count_vowels: `var m = A.match(/[aeiou]/gi);
+        return m === null ? 0 : m.length;`
+
+    }
+    this._func = null;
+    this.data = {};
+}
+
+NodeScript.prototype.onConfigure = function(o) {
+    // debugger;
+    if (o.properties.onExecute && LiteGraph.allow_scripts)
+        this.compileCode(o.properties.onExecute);
+    else
+        console.warn("Script not compiled, LiteGraph.allow_scripts is false");
+};
+
+NodeScript.title = "ScriptNode";
+NodeScript.desc = "executes a code (max 512 characters)";
+
+NodeScript.widgets_info = {
+    onExecute: { type: "code" }
+};
+
+NodeScript.prototype.onPropertyChanged = function(name, value) {
+    if (name == "onExecute" && LiteGraph.allow_scripts)
+        this.compileCode(value);
+    else
+        console.warn("Script not compiled, LiteGraph.allow_scripts is false");
+};
+
+NodeScript.prototype.compileCode = function(code) {
+    this._func = null;
+    if (code.length > 1024) {
+        console.warn("Script too long, max 256 chars");
+    } else {
+        var code_low = code.toLowerCase();
+        var forbidden_words = [
+            "script",
+            "body",
+            "document",
+            "eval",
+            "nodescript",
+            "function"
+        ]; //bad security solution
+        for (var i = 0; i < forbidden_words.length; ++i) {
+            if (code_low.indexOf(forbidden_words[i]) != -1) {
+                console.warn("invalid script");
+                return;
+            }
+        }
+        try {
+            this._func = new Function("A", "B", "C", "DATA", "node", code);
+            console.log("FUNCION ADDED");
+        } catch (err) {
+            console.error("Error parsing script");
+            console.error(err);
+        }
+    }
+};
+
+NodeScript.prototype.onExecute = function() {
+    if (!this._func) {
+        return;
+    }
+
+    try {
+        var A = this.getInputData(0);
+        var B = this.getInputData(1);
+        var C = this.getInputData(2);
+        this.setOutputData(0, this._func(A, B, C, this.data, this));
+    } catch (err) {
+        console.error("Error in script");
+        console.error(err);
+    }
+};
+
+NodeScript.prototype.onGetOutputs = function() {
+    return [["C", ""]];
+};
+
+
+LiteGraph.registerNodeType("basic/script", NodeScript);
+
+
+function TriggerSubtree()
+{
+    this.shape = 2;
+    this.color = "#1E1E1E"
+    this.boxcolor = "#999";
+    var w = 150;
+    var h= 40;
+
+    this.properties = {target_id:null};
+    this.addProperty("target_id", "");
+    
+    this.addInput("","path", {pos:[w*0.5,-LiteGraph.NODE_TITLE_HEIGHT], dir:LiteGraph.UP});
+    var that = this;
+    this.widget = this.addWidget("string","target_id", this.properties.target_id, function(v){v = v.replace("Event ", ""); that.properties.target_id = v;});
+
+    this.widgets_up = true;
+    this.size = [w,h];
+    this.serialize_widgets = true;
+    this.behaviour = new Behaviour();
+    
+}
+
+
+TriggerSubtree.prototype.tick = function(agent, dt, info)
+{
+    var child = this.graph.getNodeById(this.properties.target_id);
+    if(!child)
+    {
+        var obj = {STATUS:STATUS.fail}
+        return obj;
+    } 
+    var value = child.tick(agent, dt);
+
+    if(value && (value.STATUS == STATUS.running || value.STATUS == STATUS.success))
+    {
+        agent.evaluation_trace.push(this.id);
+        this.behaviour.STATUS = STATUS.success;
+        //Editor stuff [highlight trace]
+        if(agent.is_selected)
+            highlightLink(this, child);
+        return value;
+    } 
+    if(this.behaviour.STATUS == STATUS.fail)
+        return value;
+	
+}
+
+TriggerSubtree.prototype.onConfigure = function(info){
+    onConfig(info, this.graph);
+}
+
+LiteGraph.registerNodeType("btree/TriggerSubtree", TriggerSubtree);
+
+function SubRoot()
+{
+    this.shape = 2;
+    this.color = "#1E1E1E"
+    this.boxcolor = "#999";
+    this.addOutput("","path");
+	this.properties = {};
+    this.horizontal = true;
+	this.widgets_up = true;
+
+	this.behaviour = new Behaviour();
+}
+SubRoot.prototype.onAdded = function(){
+    this.title = "SubRoot "+this.id;
+}
+
+SubRoot.prototype.tick = function(agent, dt)
+{
+	var children = this.getOutputNodes(0);
+	for(var n in children)
+	{
+		var child = children[n];
+		// if(child.constructor.name == "Subgraph")
+		// 	child = child.subgraph.findNodeByTitle("HBTreeInput");
+		var value = child.tick(agent, dt);
+		if(value && (value.STATUS == STATUS.success || value.STATUS == STATUS.running))
+		{
+			if(agent.is_selected)
+				highlightLink(this, child)
+			//push the node_id to the evaluation trace
+			agent.evaluation_trace.push(this.id);
+
+			//know if bt_info params must be reset
+			//if the node was not in the previous 
+			// if(!nodePreviouslyEvaluated(agent, this.id))
+			// 	resetHBTreeProperties(agent)
+
+			return value;
+		}
+	}
+
+	// if(this.running_node_in_banch)
+	// 	agent.bt_info.running_node_index = null;
+
+	this.behaviour.STATUS = STATUS.fail;
+	return this.behaviour;
+}
+
+SubRoot.prototype.onConfigure = function(info)
+{
+    onConfig(info, this.graph);
+	this.graph.root_node =  this;
+}
+
+// SubRoot.title = "Root";
+// SubRoot.desc = "Start node of the Hybrid Behaviour Tree";
+
+//reorder the links
+SubRoot.prototype.onStart = SubRoot.prototype.onDeselected = function()
+{
+	var children = this.getOutputNodes(0);
+	if(!children) return;
+	children.sort(function(a,b)
+	{
+		if(a.pos[0] > b.pos[0])
+		  return 1;
+		
+		if(a.pos[0] < b.pos[0])
+		  return -1;
+		
+	});
+
+	this.outputs[0].links = [];
+	for(var i in children)
+		this.outputs[0].links.push(children[i].inputs[0].link);
+}
+
+LiteGraph.registerNodeType("btree/SubRoot", SubRoot);

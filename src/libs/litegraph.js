@@ -6201,29 +6201,7 @@ LGraphNode.prototype.executeAction = function(action)
             if (e.keyCode == 32) {
                 this.dragging_canvas = false;
             }
-            if (e.code == "KeyC" && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-                //copy
-                if (this.selected_nodes) {
-                    this.copyToClipboard();
-                    block_default = true;
-                }
-            }
 
-            if (e.code == "KeyV" && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-                //paste
-                this.pasteFromClipboard();
-            }
-
-            //delete or backspace
-            if (e.keyCode == 46 || e.keyCode == 8) {
-                if (
-                    e.target.localName != "input" &&
-                    e.target.localName != "textarea"
-                ) {
-                    this.deleteSelectedNodes();
-                    block_default = true;
-                }
-            }
             if (this.selected_nodes) {
                 for (var i in this.selected_nodes) {
                     if (this.selected_nodes[i].onKeyUp) {
