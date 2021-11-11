@@ -13,8 +13,40 @@
 		}
 	</style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./css/player.css"></link>
 </head>
 <body >
+    <div class="menu-container">
+        <div id="menu" class="menu-button"><svg width="28" height="28" fill="none" data-testid="menu-icon" class="menu-icon"><circle cx="14" cy="14" r="14" fill="#fff"></circle><path d="M14 10.667c.917 0 1.667-.75 1.667-1.667s-.75-1.667-1.666-1.667c-.917 0-1.667.75-1.667 1.667s.75 1.667 1.667 1.667zm0 1.666c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667zm0 5c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667z" fill="#000"></path></svg></div>
+        <div id="options" class="menu-options">
+            <a href="#chat">Show chat</a>
+            <a href="#settings">Settings</a>
+            <a href="#about">About</a>
+        </div>
+    </div>
+    <div class="bottom-bar">
+        <div class="text"></div>
+        <div class="user-input"></div>
+        <div class="bottom-bar-center">
+            <div class="bottom-center">
+                <div class="input-container">
+                    <div></div>
+                    <div class="input-text">
+                        <div><input type="text" id="chat" placeholder="Type something" class="" value=""></div>
+                    </div>
+                    <div class="input-button">
+                        <button id="mic" class="MuiButtonBase-root MuiIconButton-root" tabindex="0" type="button" aria-label="add" style="cursor: pointer; color: rgb(255, 255, 255); margin-right: 12px; transition: border-radius 0.25s ease 0s; opacity: 1; border-radius: 0px; background-color: rgba(255, 255, 255, 0);"><span class="MuiIconButton-label">
+                            <svg class="MuiSvgIcon-root" focusable="false"xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                            <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/>
+                            <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+                        </svg></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right"></div>
+    </div>
     <!--Behaviour planner core and its de dependencies-->
     <script src="../src/libs/gl-matrix-min-2_8.js"></script>
     <script src="./js/libs/litegl.js"></script>
@@ -37,16 +69,17 @@
     <script src="./js/streamer.js"></script>
     
     <script>
+     /*------------------------------------- LOAD ENVIRONMENT -------------------------------------*/
         var settings = {
-		alpha: false, //enables to have alpha in the canvas to blend with background
-		stencil: true,
-		redraw: true, //force to redraw
-		autoplay: Boolean(LS.queryString["autoplay"]),
-		resources: "https://webglstudio.org/fileserver/",
-		autoresize: true, //resize the 3D window if the browser window is resized
-		loadingbar: true, //shows loading bar progress
-		proxy: "https://webglstudio.org/projects/present/repository/files/" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
-	};
+            alpha: false, //enables to have alpha in the canvas to blend with background
+            stencil: true,
+            redraw: true, //force to redraw
+            autoplay: Boolean(LS.queryString["autoplay"]),
+            resources: "https://webglstudio.org/fileserver/",
+            autoresize: true, //resize the 3D window if the browser window is resized
+            loadingbar: true, //shows loading bar progress
+            proxy: "https://webglstudio.org/projects/present/repository/files/" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+        };
         var BP = new BehaviourPlanner.Loader(settings)//new BehaviourPlanner(null,settings);
         var query_string = LS.queryString;
         if( query_string["session"] )
@@ -54,9 +87,70 @@
         else if( (query_string["url"] && query_string["url"].indexOf("://") == -1) ) //for safety measures
             BP.loadPlanner( query_string["url"], BP.loadScene.bind(BP) ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
         else if( query_string["preview"] === undefined )
-            BP.loadConfig("config_BPplayer.json", BP.loadPlanner);
+            BP.loadConfig("config_BPplayer.json", BP.loadPlanner.bind(BP));
       //  BP.animate();
+
+     /*------------------------------------- USER INTERACTION -------------------------------------*/
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+        var recognition = new SpeechRecognition();
+        var mouseDown = false;
+        var micBtn = document.getElementById("mic");
+        micBtn.addEventListener("mousedown", startSpeech)
+        micBtn.addEventListener("mouseup",stopSpeech)
+        document.body.onkeydown = function(e){
+            if(e.keyCode == 32) startSpeech(e)
+        }
+        document.body.onkeyup = function(e){
+            if(e.keyCode == 32) stopSpeech(e)
+        }
+        function startSpeech(e){
+            micBtn.classList.add("active")
+            e.preventDefault()
+            console.log("enter")
+            if(!mouseDown)
+                recognition.start();
+            mouseDown = true;
+        }
+        function stopSpeech(e){
+            micBtn.classList.remove("active")
+            if(mouseDown)
+                recognition.stop();
+            mouseDown = false;
+        }
+
+        recognition.onresult = function(event) {
+            var transcription = event.results[0][0].transcript;
+            if(event.results[0].isFinal){
+                var msg = {
+                    type:"data",
+                    data:{ user: {text: transcription}}
+                }
+                BP.bp.onData(msg)
+            }
+                
+            console.log(transcription)
+            console.log('Confidence: ' + event.results[0][0].confidence);
+        }
+     /*MENU*/
+     var menuBtn = document.getElementById("menu");
+     menuBtn.addEventListener("click", function(e){
+        document.getElementById("options").classList.toggle("show");
+        e.stopPropagation()
+     })
+     
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+    if (!event.target.matches('#menu')) {
+        var options = document.getElementsByClassName("menu-options");
+        var i;
+        for (i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.classList.contains('show')) {
+            option.classList.remove('show');
+        }
+        }
+    }
+    }
     </script>
-   
     </body>
 </html>

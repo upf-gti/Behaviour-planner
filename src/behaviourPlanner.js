@@ -454,6 +454,9 @@ class BehaviourPlanner{
     
     //Process data message following protocol
     onData(msg){
+        if(typeof(msg)=="string")
+            msg = JSON.parse(msg);
+            
         var type = msg.type;
         var data = msg.data;
 
@@ -661,13 +664,14 @@ class BehaviourPlanner{
             */
             
             //Start WebSocket connection
-            that.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
+           /* that.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
 	        that.streamer.onDataReceived = that.onData.bind(that);
 			that.streamer.onConnect = function(){
                 that.streamer.createRoom(response.env.token);
-            }
+            }*/
 
-
+            if(LS)
+                LS.Globals.sendMsg = that.onData.bind(that)
 
         /*    if(on_complete)
                 on_complete(that, url);*/
@@ -812,7 +816,8 @@ Loader.prototype.loadScene = function(url, room)
 	player.loadScene( url, inner_scene_loaded.bind(room, this) );
     function inner_scene_loaded(bpLoader, a){
         that.room = this.toString();
-        
+        if(LS)
+                LS.Globals.sendMsg = bpLoader.bp.onData.bind(bpLoader.bp)
         bpLoader.animate(that);
     }
    
@@ -823,7 +828,8 @@ Loader.prototype.loadScene = function(url, room)
 }
 Loader.prototype.animate = function(player){
     var that = this;
-    if(player.ws.readyState == player.ws.OPEN && that.bp.state == BP_STATE.STOP)
+    player.ws = LS.Globals.ws = null;
+   // if(player.ws.readyState == player.ws.OPEN && that.bp.state == BP_STATE.STOP)
         that.bp.play();
 
     that.last = that.now;
@@ -841,13 +847,18 @@ Loader.prototype.onActions = function(actions){
     //console.log(actions);
 
     //Send messages through streamer
-    if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+    /*if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
         for(var m of actions){
             this.streamer.sendMessage(m.type, m.data);
             
             /*if(m.type == "custom_action"){ //Placeholder stuff
                 this.placeholderProcessRequest(m);
             }*/
+    /*    }
+    }*/
+    if(LS && LS.Globals.processMsg){
+        for(var m of actions){
+            LS.Globals.processMsg(JSON.stringify(m),false)
         }
     }
 }
