@@ -93,6 +93,7 @@
      /*------------------------------------- USER INTERACTION -------------------------------------*/
         var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
         var recognition = new SpeechRecognition();
+        recognition.lang = 'en-GB';
         var mouseDown = false;
         var micBtn = document.getElementById("mic");
         micBtn.addEventListener("mousedown", startSpeech)

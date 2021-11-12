@@ -11,6 +11,7 @@
         "../src/timeline_node.js",
         "../src/behaviourPlanner.js",
         "../src/utils.js",
+        "../src/entitiesManager.js",
 
         "js/libs/litefileserver.js",
         "js/libs/HBTEditor.js",
@@ -26,7 +27,6 @@
         "js/modules/filesystem.js",
         "js/modules/drive.js",
         "js/modules/interface.js",
-        "js/modules/entity.js",
         "js/modules/json_formatter.js",
         "js/modules/app.js"
     ]
