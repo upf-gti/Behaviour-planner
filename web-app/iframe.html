@@ -107,10 +107,14 @@
         function startSpeech(e){
             micBtn.classList.add("active")
             e.preventDefault()
-            console.log("enter")
             if(!mouseDown)
                 recognition.start();
             mouseDown = true;
+            var msg = {
+                type:"behaviours",
+                data:[ {type: "control", control: LS.Globals.LISTENING, start:0, end:1}]
+            }
+            BP.bp.onActions(msg)
         }
         function stopSpeech(e){
             micBtn.classList.remove("active")
@@ -131,27 +135,27 @@
                 
             console.log(transcription)
             console.log('Confidence: ' + event.results[0][0].confidence);
+            }
+        /*MENU*/
+        var menuBtn = document.getElementById("menu");
+        menuBtn.addEventListener("click", function(e){
+            document.getElementById("options").classList.toggle("show");
+            e.stopPropagation()
+        })
+        
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('#menu')) {
+                var options = document.getElementsByClassName("menu-options");
+                var i;
+                for (i = 0; i < options.length; i++) {
+                    var option = options[i];
+                    if (option.classList.contains('show')) {
+                        option.classList.remove('show');
+                    }
+                }
+            }
         }
-     /*MENU*/
-     var menuBtn = document.getElementById("menu");
-     menuBtn.addEventListener("click", function(e){
-        document.getElementById("options").classList.toggle("show");
-        e.stopPropagation()
-     })
-     
-    // Close the dropdown if the user clicks outside of it
-    window.onclick = function(event) {
-    if (!event.target.matches('#menu')) {
-        var options = document.getElementsByClassName("menu-options");
-        var i;
-        for (i = 0; i < options.length; i++) {
-        var option = options[i];
-        if (option.classList.contains('show')) {
-            option.classList.remove('show');
-        }
-        }
-    }
-    }
     </script>
     </body>
 </html>
