@@ -1,4 +1,5 @@
 var compromiseNumbers;
+var compromiseDates;
 var EntitiesManager = {
     name : "EntitiesManager",
 	properties_log : {},
