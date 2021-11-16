@@ -60,13 +60,14 @@
     <script src="js/libs/litegraph.js"></script>-->
 
     <!--Web app core-->
+    <script src="../src/entitiesManager.js"></script>
     <script src="../src/behaviourNodes.js"></script>
     <script src="../src/behaviourGraph.js"></script>
     <script src="../src/behaviourPlanner.js"></script>
     <script src="../src/behaviourPresenter.js"></script>
     <script src="../src/timeline_node.js"></script>
     <script src="../src/utils.js"></script>
-    <script src="./js/streamer.js"></script>
+ 
     
     <script>
      /*------------------------------------- LOAD ENVIRONMENT -------------------------------------*/
@@ -108,13 +109,15 @@
             micBtn.classList.add("active")
             e.preventDefault()
             if(!mouseDown)
+            {
                 recognition.start();
-            mouseDown = true;
-            var msg = {
-                type:"behaviours",
-                data:[ {type: "control", control: LS.Globals.LISTENING, start:0, end:1}]
+                var msg =  [ {type: "control", state: "LISTENING", start:0, end:10,  composition: "OVERWRITE"}]
+
+                BP.bp.onActions(msg)
             }
-            BP.bp.onActions(msg)
+                
+            mouseDown = true;
+            
         }
         function stopSpeech(e){
             micBtn.classList.remove("active")

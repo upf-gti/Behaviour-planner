@@ -337,7 +337,7 @@ class App{
         GraphManager.removeAllGraphs();
 
         //Graphs
-        for(var i in env.graphs){
+      /*  for(var i in env.graphs){
             var graph = env.graphs[i];
             if(graph.behaviour){
                 this.loadBehaviour(graph);
@@ -413,7 +413,8 @@ class App{
             for(var tag in env.entities){
                 EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
             }
-        }
+        }*/
+        this.bp.loadEnvironment(data)
         if(env.iframe)
         {
             

@@ -272,7 +272,10 @@ class Interface {
             LiteGUI.menubar.add("Project/Export/Environment", { id: "download-env", callback: this.showDownloadDialog.bind(this)});
             LiteGUI.menubar.add("Project/Export/Graph", { id: "download-graph", callback: this.showDownloadDialog.bind(this)});
             // Other
-            LiteGUI.menubar.add("Project/Publish"); // load behaviour tree to the server and execute it permanently
+            LiteGUI.menubar.add("Project/Publish", {callback: function openOther() {
+                iframeWindow = window.open("iframe.html?url=" + CORE["Interface"].lastLoadedFile.relativepath,'_blank');
+            }}); // load behaviour tree to the server and execute it permanently
+            
             // LiteGUI.menubar.add("Actions");
             LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
             LiteGUI.menubar.add("Edit/Scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)

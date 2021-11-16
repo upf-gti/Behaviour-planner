@@ -285,6 +285,7 @@ class BehaviourPlanner{
     init(){
         this.user = new User();
         this.agent = new Agent();
+        this.entitiesManager = entitiesManager;
         this.state = BP_STATE.STOP;
         this.accumulate_time = 0;
         this.execution_t = 1;
@@ -496,88 +497,92 @@ class BehaviourPlanner{
     }
     loadPlanner(url, on_complete){
         var that = this;
-        this.load( url, inner_start, null, null, null );
-        function inner_start(data)
-        {
-            var env = data.env;
-            
-            //Graphs
-            for(var i in env.graphs){
-                var graph = env.graphs[i];
+        this.load( url, loadEnvironment.bind(this), null, null, null );
+        
+    }
+    loadEnvironment(data)
+    {
+        var env = data.env;
+        
+        //Graphs
+        for(var i in env.graphs){
+            var graph = env.graphs[i];
+            if(graph.behaviour){
                 if(graph.behaviour){
-                    that.loadBehaviour(graph);
-                }else{
-                    var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
-                    graph.name =i;
-                    g.graph.configure(graph);
+                    let hbt_graph = this.loadGraph(graph.behaviour);
+                    GraphManager.addGraph(hbt_graph);
+                }
+            }else{
+                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
+                graph.name =i;
+                g.graph.configure(graph);
 
-                    for(var j in graph.nodes){
-                        var node = graph.nodes[j];
-                        if(node.type == "network/sillyclient"){
-                            var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
+                for(var j in graph.nodes){
+                    var node = graph.nodes[j];
+                    if(node.type == "network/sillyclient"){
+                        var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
 
-                            node.connectSocket();
-                            this.streamer.ws = node._server;
-                            node._server.onReady = this.streamer.onReady;
-                            this.streamer.is_connected = node._server.is_connected;
-                        }
+                        node.connectSocket();
+                        this.streamer.ws = node._server;
+                        node._server.onReady = this.streamer.onReady;
+                        this.streamer.is_connected = node._server.is_connected;
                     }
-
                 }
+
             }
+        }
 
-            //Agent
-            let agent = null;
-            for(var i in env.agents){
-                var data = env.agents[i];
-                agent = new Agent(data);
-                this.env_tree.children.push({id:agent.uid, type: "agent"});
-                this.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
-            }
+        //Agent
+        let agent = null;
+        for(var i in env.agents){
+            var data = env.agents[i];
+            agent = new Agent(data);
+           /* this.env_tree.children.push({id:agent.uid, type: "agent"});
+            this.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
+        */}
 
-            if(agent){
-                agent.is_selected = true;
-                this.bp.agent = agent;
+        if(agent){
+            agent.is_selected = true;
+            this.agent = agent;
 
-                AgentManager.agents[agent.uid] = agent;
-                AgentManager.addPropertiesToLog(agent.properties);
-                AgentManager.agent_selected = agent;
-            }
+            AgentManager.agents[agent.uid] = agent;
+            AgentManager.addPropertiesToLog(agent.properties);
+            AgentManager.agent_selected = agent;
+        }
 
-            //User
-            if(env.user){
-                let user = new User(env.user);
-                this.env_tree.children.push({id:user.uid, type: "user"});
-                this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
-                
-                this.bp.user = user;
+        //User
+        if(env.user){
+            let user = new User(env.user);
+            /*this.env_tree.children.push({id:user.uid, type: "user"});
+            this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
+            */
+            this.user = user;
 
-                UserManager.users[user.uid] = user;
-                UserManager.addPropertiesToLog(user.properties);
+            UserManager.users[user.uid] = user;
+            UserManager.addPropertiesToLog(user.properties);
 
-                this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
-                    detail: {
-                        data: {
-                            id: this.env_tree.id,
-                            type: this.env_tree.type
-                        }
+            /*this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
+                detail: {
+                    data: {
+                        id: this.env_tree.id,
+                        type: this.env_tree.type
                     }
-                }));
-            }
+                }
+            }));*/
+        }
 
-            //Gestures
-            if(env.gestures){
-                this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
-                for(var i in env.gestures){
-                    GestureManager.createGesture(env.gestures[i]);
-                }
-                GestureManager.createGestureInspector();
+        //Gestures
+        if(env.gestures){
+           /* this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
+           */ for(var i in env.gestures){
+                GestureManager.createGesture(env.gestures[i]);
             }
-            //Entities
-            if(env.entities){
-                for(var tag in env.entities){
-                    EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
-                }
+            GestureManager.createGestureInspector();
+        }
+        //Entities
+        if(env.entities){
+            for(var tag in env.entities){
+                this.entitiesManager.addWordsToWorld(tag,env.entities[tag]);
             }
         }
     }

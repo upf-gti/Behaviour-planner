@@ -9,6 +9,7 @@
  * ParseCompare
  * This node compares the user text from the path with its phrases. If there is a match it continues execution to the child nodes.
  */
+let entitiesManager = new EntitiesManager();
  function ParseCompare(){
     this.shape = 2;
     var w = 150;
@@ -30,6 +31,8 @@
     this.behaviour = new Behaviour();
 
     this.tags_outputs = {};
+
+    this.EntitiesManager = entitiesManager;
 }
 
 //mapping must has the form [vocabulary array, mapped word]
@@ -164,7 +167,7 @@ ParseCompare.prototype.extractEntities = function(string, tags){
     var info = {};
     for(var j = 0; j<tags.length; j++){
         var tag = tags[j];
-        var value = EntitiesManager.getEntity(string, tag);
+        var value = this.EntitiesManager.getEntity(string, tag);
         if(!value)
             continue;
         info[tag] = value;
