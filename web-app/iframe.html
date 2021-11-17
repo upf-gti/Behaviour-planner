@@ -92,18 +92,30 @@
       //  BP.animate();
 
      /*------------------------------------- USER INTERACTION -------------------------------------*/
+     
         var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
         var recognition = new SpeechRecognition();
         recognition.lang = 'en-GB';
+        
         var mouseDown = false;
         var micBtn = document.getElementById("mic");
         micBtn.addEventListener("mousedown", startSpeech)
         micBtn.addEventListener("mouseup",stopSpeech)
         document.body.onkeydown = function(e){
-            if(e.keyCode == 32) startSpeech(e)
+            if(e.keyCode == 32) startSpeech(e);
         }
         document.body.onkeyup = function(e){
             if(e.keyCode == 32) stopSpeech(e)
+            if(e.keyCode == 13) onUserText(e)
+        }
+        function onUserText(){
+            var value = document.getElementById("chat").value;
+            var msg = {
+                type:"data",
+                data:{ user: {text: value}}
+            }
+            BP.bp.onData(msg)
+            value = "";
         }
         function startSpeech(e){
             micBtn.classList.add("active")

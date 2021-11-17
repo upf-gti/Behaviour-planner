@@ -654,8 +654,10 @@ class BehaviourPlanner{
 
             that.init();
             //Configure Behaviour Planner
-            that.user.configure(response.env.user);
-            that.agent.configure(response.env.agents[0])
+            if(response.env.user)
+                that.user.configure(response.env.user);
+            if(response.env.agents[0])
+             that.agent.configure(response.env.agents[0])
             that.loadGraph(response.env.graphs[0].behaviour)
             //var hbt_graph = new HBTGraph(response.env.graphs[0].behaviour.name);
             //hbt_graph.graph = response.env.graphs[0].behaviour;

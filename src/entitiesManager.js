@@ -114,7 +114,7 @@ class EntitiesManager{
     checkPhoneFormatValidity(text)
     {
         text = text.replaceAll(" ", "");
-        if(text.length >= 7 && text.length <= 12 ) //9 + 2 numbers for extension   
+        if(text.length >= 5 && text.length <= 15 ) //9 + 2 numbers for extension   
         {
             if(text[0] != '+')
                 text = '+'+text;
