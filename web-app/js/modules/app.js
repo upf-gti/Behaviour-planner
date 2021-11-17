@@ -241,9 +241,9 @@ class App{
                   m.control = LS.Globals.SPEAKING;
                   LS.Globals.processMsg(JSON.stringify(m.data), true);
                 }
-                if(m.type == "custom_action"){ //Placeholder stuff
+                /*if(m.type == "custom_action"){ //Placeholder stuff
                     this.placeholderProcessRequest(m);
-                }
+                }*/
                 
                 if(m.type == "behaviours"){
                     for(var b of m.data){
