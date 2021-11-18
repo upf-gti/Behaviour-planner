@@ -116,7 +116,10 @@ class App{
     }
 
     postInit() {
-        CORE["Interface"].showLoginDialog();
+        CORE.Interface.checkExistingSession(function(session){
+            CORE.modules["FileSystem"].session = session;
+            LiteGUI.menubar.refresh();
+        })
     }
 
 	onWSconnected(){

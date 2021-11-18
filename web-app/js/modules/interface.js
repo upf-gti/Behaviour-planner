@@ -123,16 +123,17 @@ class Interface {
                     that.contentTabs.show();
                     that.sidepanel.add( that.contentTabs );
                 }
-                that.iframe.contentWindow.onload = function(){ 
+               /* that.iframe.contentWindow.onload = function(){ 
                     that.iframe.contentWindow.player.skip_play_button = true
                
-                }
+                }*/
 			},
 			callback_leave: function(tab_id) {
                 that.contentTabs.hide();
 			}
 		});
-        
+        document.getElementById('_playertab').click();
+        document.getElementById('_graphtab').click()
         this._drive_tab = LiteGUI.main_tabs.addTab( "Drive", {id:"_drivetab", bigicon: "https://webglstudio.org/latest/imgs/tabicon-drive.png", size: "full", content:"",
 			callback: function(tab_id){
 
@@ -242,8 +243,7 @@ class Interface {
             // Clean first
             LiteGUI.menubar.clear();
             
-            var session = CORE.modules["FileSystem"].session;
-
+           var session = CORE.modules["FileSystem"].session;
             if(!session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
@@ -294,12 +294,56 @@ class Interface {
         LiteGUI.menubar.refresh();
 
     }
+    checkExistingSession( on_complete )
+	{
+		var old_token = localStorage.getItem( LiteFileServer.TOKEN_NAME );
+		if(!old_token)
+		{
+			if(on_complete)
+				on_complete(null);
+			return;
+		}
 
+		return LiteFileServer.request( LiteFileServer.server_url,{action: "user/checkToken", token: old_token}, function(resp){
+			if(!resp.user)
+				localStorage.removeItem( LiteFileServer.TOKEN_NAME );
+
+			if(!on_complete)
+				return;
+
+			if(resp.user)
+			{
+				var session = new LiteFileServer.Session();
+				session.server_url = LiteFileServer.server_url;
+				session.status = LiteFileServer.LOGGED;
+				session.user = resp.user;
+				session.token = old_token;
+				on_complete(session);
+				if(LFS.onNewSession)
+					LFS.onNewSession(session);
+			}
+			else
+				on_complete(null);
+		});
+	}
+    reloadEditor( keep_scene )
+	{
+		if(keep_scene && LS && LS.GlobalScene)
+			localStorage.setItem("_refresh_scene", JSON.stringify( LS.GlobalScene.serialize() ) );
+        var session = CORE["FileSystem"].getSession();
+        if(session)
+            localStorage.setItem("_session", JSON.stringify(session.user))
+		location.reload();
+	}
     preInit() {
         var that = this;
         LiteGUI.init();
-
-       this.createMenuBar();
+        window.onkeydown = function(e){
+            var keycode = e.keyCode
+            if(keycode == 117) //F6
+                that.reloadEditor(true)
+        }
+        this.createMenuBar();
 
         var mainarea = new LiteGUI.Area({id :"mainarea", content_id:"main-area", autoresize: true, inmediateResize: true});
         mainarea.split("horizontal",[null,300], false);
@@ -310,6 +354,43 @@ class Interface {
         LiteGUI.bind( mainarea, "split_moved", function(e){
 			GraphManager.resize();
 		});
+
+        /*IFRAME*/
+        var div2 = document.createElement("DIV");
+        div2.className+= " litetabs buttons right";
+        div2.style = "width:100%!important"
+        var that = this;    
+        this.iframearea = new LiteGUI.Area({id :"", content_id:"iframe-area", autoresize: true, inmediateResize: true});
+        this.iframearea.add(div2);
+        var loader = document.createElement("div");
+        loader.id = "loader"
+        loader.className="loader"
+        this.iframearea.add(loader)
+        this.iframe = document.createElement("iframe");
+        this.iframe.style.height = "calc(100% - 3px)"
+        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json";
+        this.iframe.id="iframe-character";
+        this.iframe.loading = "eager"
+        this.iframearea.add(this.iframe)
+
+        this.iframe.onload = function(){
+            this.contentWindow.player.skip_play_button=true;
+            this.contentWindow.player.onDrawLoading = function(){
+                document.getElementById("loader").classList.add("loader")            
+            }
+            this.contentWindow.player.onPreDraw = function(){
+                document.getElementById("loader").classList.remove("loader")              
+            }
+        }
+        if(this.iframe.contentWindow)
+        {
+            var that = this;
+            this.iframe.contentWindow.onload = function(){
+                that.iframe.contentWindow.player.skip_play_button=true
+            }
+        }
+            
+        iframeWindow = this.iframearea
 
         this.createTabs();
         this.createSidePanel();
@@ -336,14 +417,11 @@ class Interface {
         /*var play_btn = this.addButton("", {title: "Play graphs", id: "play-btn", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});*/
-        var show_btn = this.addButton("", {title: "Show scene", id: "show-btn", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
-            iframeWindow = window.open("iframe.html?url=" + CORE["Interface"].lastLoadedFile.relativepath,'_blank');
-        }});
+    
 
         div.append(clear_btn);
         //div.append(play_btn);
         //div.append(stream_btn);
-        div.append(show_btn);
 
 
         var div_area = graph_area.add(div);
@@ -351,13 +429,7 @@ class Interface {
         graph_area.content.className+= " graph-content";
         graph_area.onResize = GraphManager.resize.bind(this);
 
-        /*IFRAME*/
-        this.iframearea = new LiteGUI.Area({id :"", content_id:"iframe-area", autoresize: true, inmediateResize: true});
-       
-        var div2 = document.createElement("DIV");
-
-        div2.className+= " litetabs buttons right";
-        div2.style = "width:100%!important"
+    
        /* var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
             CORE.App.onPlayClicked();
         }});*/
@@ -366,25 +438,15 @@ class Interface {
             that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
 
         }});
-        var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
+        /*var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
             iframeWindow = window.open("iframe.html", "otherWindow");
-        }});
+        }});*/
        
 
        // div2.append(play_btn2);
         div2.append(reload_btn2);
-        div2.append(show_btn2);
+       // div2.append(show_btn2);
  
-        this.iframearea.add(div2);
-        this.iframe = document.createElement("iframe");
-        this.iframe.style.height = "calc(100% - 3px)"
-        this.iframe.src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json";
-        this.iframe.id="iframe-character";
-        
-        this.iframearea.add(this.iframe)
-        if(this.iframe.contentWindow)
-            this.iframe.contentWindow.player.skip_play_button=true
-        iframeWindow = this.iframearea
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -1571,14 +1633,15 @@ class Interface {
                   CORE.App.env_tree.token = v;
                   that.tree.tree.token = v;
                   CORE.App.streamer.createRoom(v);
-                  LS.Globals.room = v;
-                  LS.Globals.ws.send(JSON.stringify({type: "session", data: { token: v, action: "connect"}}));
-                  inspector.refresh();
-                  
-                  /*TO DO*/
+   
                   //update token to STREAMER
                   if(LS && LS.Globals)
+                  {
                     LS.Globals.room = v;
+                    if(LS.Globals.streamer)
+                        LS.Globals.streamer.connectRoom(v)//LS.Globals.ws.send(JSON.stringify({type: "session", data: { token: v, action: "connect"}}));
+                  }
+                  inspector.refresh();
                     
                 }})
               /*  var btn = inspector.addButton(null, "Add Agent", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
@@ -1717,7 +1780,7 @@ class Interface {
         function(data){
             var dialog = new LiteGUI.Dialog({ title:"About the application", width: 800, closable: true });
             var inspector = new LiteGUI.Inspector();
-            inspector.root.innerHTML =marked(data);
+            inspector.root.innerHTML =marked.parse(data);
             dialog.add(inspector)
             dialog.show()
             
