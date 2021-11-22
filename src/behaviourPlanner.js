@@ -850,23 +850,5 @@ Loader.prototype.update = function(dt)
     //BP  
     this.bp.update(dt);
 }
-Loader.prototype.onActions = function(actions){
-    //console.log(actions);
 
-    //Send messages through streamer
-    /*if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
-        for(var m of actions){
-            this.streamer.sendMessage(m.type, m.data);
-            
-            /*if(m.type == "custom_action"){ //Placeholder stuff
-                this.placeholderProcessRequest(m);
-            }*/
-    /*    }
-    }*/
-    if(LS && LS.Globals.processMsg){
-        for(var m of actions){
-            LS.Globals.processMsg(JSON.stringify(m),false)
-        }
-    }
-}
 BehaviourPlanner.Loader = Loader;

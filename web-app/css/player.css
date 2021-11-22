@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 *,
 *:before,
 *:after {
@@ -6,6 +7,7 @@
   box-sizing: border-box;
   user-select: none; /* disable selection/Copy of UIWebView */
   -webkit-touch-callout: none; /* disable the IOS popup when long-press on a link */
+  font-family: "Varela Round", system-ui, sans-serif;
 }
 .container{
   box-sizing: border-box;
@@ -79,10 +81,11 @@
     -webkit-box-pack: center;
     justify-content: center;
     margin-top: 12px;
-    max-width: 300px;
-    border-bottom: 1px solid white;
+   /* max-width: 310px;*/
+    border-bottom: 1px solid #4d4d50;
     min-height: 50px;
     margin-bottom: 0px;
+    /*backdrop-filter: blur(3px) brightness(0.95);*/
 }
 .input-container {
     -webkit-box-align: center;
@@ -92,6 +95,7 @@
     margin: 0px;
     min-width: 0px;
     display: flex;
+    border-radius: 0px 22px;
 }
 .input-text {
     display: flex;
@@ -122,7 +126,7 @@ input{
     transition: width 0.5s ease 0s;
     font-family: "Varela Round", system-ui, sans-serif;
     border: none;
-    font-size: 16px;
+    font-size: 18px;
     width: 100%;
 }
 input:focus{
@@ -139,7 +143,7 @@ input:focus{
   margin: 0px;
   min-width: 0px;
   flex: 1 1 0%;
-  padding: 14px;
+  padding: 18px;
   -webkit-box-align: center;
   align-items: center;
   -webkit-box-pack: end;
@@ -182,7 +186,7 @@ input:focus{
   will-change: transform; 
   top: -40px; left: -80px; 
   transform: translate3d(999px, 809px, 0px);
- transform: none; transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, transform 133ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transform: none; transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, transform 133ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   color: #fff;
   padding: 4px 8px;
   font-size: 0.625rem;
@@ -476,6 +480,7 @@ input:focus{
   top: 14px;
   min-width: 160px;
   border-radius: 12px;
+  cursor:pointer;
 }
 .menu-options div{
   color: black!important;
@@ -487,10 +492,12 @@ input:focus{
 
 /*Chat*/
 .transcript-container {
-  /*right: 24px;*/
-  height: 85%;
+  /*right: 24px;
+  top: 24px;*/
+
+  max-width: 30%;
   opacity:0;
-  /*transform: translate(0px, 0px);*/
+  transform: translate(40px, 40px);
   position:absolute;
 }
 .show-chat{
@@ -508,10 +515,11 @@ input:focus{
   height: 100%;
   z-index: 3;
   color: rgb(35, 34, 54);
-  background-color: rgb(246, 246, 246);
+  background-color: rgb(246 246 246 / 68%);
   /*position: absolute;*/
   flex-direction: column;
   display: flex;
+  max-height: 90vh;
 }
 .transcript-container-header{
   box-sizing: border-box;
@@ -536,6 +544,9 @@ input:focus{
   background-color: rgb(255, 255, 255);
   color: rgb(35, 34, 54);
   z-index: 10;
+}
+.transcript-header:focus,.transcript-header:hover{
+  cursor: grab;
 }
 .download-button {
   box-sizing: border-box;
@@ -590,12 +601,13 @@ input:focus{
   padding: 62px 10px 53px;
   box-sizing: border-box;
   margin: 0px;
-  min-width: 0px;
+  min-width: 400px;
   flex: 1 1 0%;
   overflow: auto;
   -webkit-box-pack: end;
   justify-content: flex-end;
   display: flex;
+  min-height: 300px;
 }
 .transcript-chat{
   box-sizing: border-box;
@@ -611,23 +623,23 @@ input:focus{
 .avatar-message{
   margin-top: auto !important;
   box-sizing: border-box;
-  margin: 10px auto 0px 0px;
+  margin: 10px auto 2px 2px;
   background-color: white;
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   min-width: 0%;
-  max-width: 75%;
+  max-width: 55%;
   font-size: 12px;
   line-height: 19px;
 }
 .user-message{
   box-sizing: border-box;
-  margin: 10px 0px 0px auto;
+  margin: 10px 0px 2px auto;
   background-color: rgb(221, 221, 221);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   min-width: 0%;
-  max-width: 75%;
+  max-width: 55%;
   font-size: 12px;
   line-height: 19px;
 }
@@ -635,4 +647,42 @@ input:focus{
   box-sizing: border-box;
   margin: 0px;
   min-width: 0px;
+}
+.transcript-footer{
+  bottom: auto;
+  position: static;
+  box-sizing: border-box;
+  margin: 0px;
+  min-width: 0px;
+  height: 45px;
+  position: fixed;
+  min-height: 45px;
+  bottom: 0px;
+  background-color: white;
+  width: 100%;
+  padding: 8px;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  align-items: center;
+  display: flex;
+}
+.transcript-footer input{
+  font-size: 14px;
+  border-radius: 0px;
+  margin-left: 0px;
+  background: transparent;
+  box-sizing: border-box;
+  margin: 0px 0px 0px 10px;
+  min-width: 0px;
+  display: block;
+  padding: 8px;
+  appearance: none;
+  line-height: inherit;
+  color: inherit;
+  border: none;
+  width: 86%;
+  height: 48px;
+  z-index: 1;
+  font-family: "Varela Round", system-ui, sans-serif;
 }
