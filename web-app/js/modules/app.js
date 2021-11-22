@@ -417,7 +417,17 @@ class App{
                 EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
             }
         }*/
-        this.bp.loadEnvironment(data)
+        this.bp.loadEnvironment(data);
+        if(this.bp._agent)
+        {
+            this.env_tree.children.push({id:this.bp._agent.uid, type: "agent"});
+            this.interface.tree.insertItem({id:this.bp._agent.uid, type: "agent"},"Environment");
+        }
+        if(this.bp._user)
+        {
+            this.env_tree.children.push({id:this.bp._user.uid, type: "user"});
+            this.interface.tree.insertItem({id:this.bp._user.uid, type: "user"},"Environment");
+        }
         if(env.iframe)
         {
             

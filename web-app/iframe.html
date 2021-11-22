@@ -22,9 +22,9 @@
         <div class="menu-container">
             <div id="menu" class="menu-button"><svg width="28" height="28" fill="none" data-testid="menu-icon" class="menu-icon"><circle cx="14" cy="14" r="14" fill="#fff"></circle><path d="M14 10.667c.917 0 1.667-.75 1.667-1.667s-.75-1.667-1.666-1.667c-.917 0-1.667.75-1.667 1.667s.75 1.667 1.667 1.667zm0 1.666c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667zm0 5c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667z" fill="#000"></path></svg></div>
             <div id="options" class="menu-options">
-                <a href="#chat">Show chat</a>
-                <a href="#settings">Settings</a>
-                <a href="#about">About</a>
+                <div id="option-chat" onclick="selectedOption('chat')">Show chat</div>
+                <div id="option-debugger" onclick="selectedOption('debugger')">Debugger</div>
+                <div id="option-about" onclick="selectedOption('about')">About</div>
             </div>
         </div>
         <div class="bottom-bar">
@@ -190,9 +190,22 @@
             document.getElementById("options").classList.toggle("show");
             e.stopPropagation()
         })
-        
+        function selectedOption(option){
+            switch(option){
+                case "chat":
+                    document.getElementsByClassName("transcript-container")[0].classList.add("show-chat");
+                    break;
+                case "debugger":
+                    if(LS && LS.Globals&& LS.Globals.showDebugger != undefined);
+                        LS.Globals.showDebugger = !LS.Globals.showDebugger;
+
+                    break;                    
+            } 
+        }
         // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
+        document.onclick = function(event) {
+            event.preventDefault()
+            
             if (!event.target.matches('#menu')) {
                 var options = document.getElementsByClassName("menu-options");
                 for(var i = 0; i < options.length; i++) {
@@ -202,21 +215,29 @@
                     }
                 }
             }
-            if(event.target.parentNode.className == "close-button"){
+            if(event.target.parentNode.className == "close-icon"){
                 window.location.hash = "";
                 document.getElementsByClassName("transcript-container")[0].classList.remove("show-chat")
             }
             else if (event.target.parentNode.className == "download-button"){
                 
             }
+           
         }
-        window.addEventListener('hashchange', function(event){
+       /* window.addEventListener('hashchange', function(event){
             var hash = window.location.hash;
-            if(hash == "#chat")
-                document.getElementsByClassName("transcript-container")[0].classList.add("show-chat");
-            else
-                document.getElementsByClassName("transcript-container")[0].classList.remove("show-chat")
-        })
+            switch(hash){
+                case "#chat":
+                    document.getElementsByClassName("transcript-container")[0].classList.add("show-chat");
+                    break;
+                case "#debugger":
+                    if(LS && LS.Globals&& LS.Globals.showDebugger != undefined);
+                        LS.Globals.showDebugger = !LS.Globals.showDebugger;
+
+                    break;                    
+            } 
+                
+        })*/
 
         function showUserMessage(text){
             var chat = document.getElementsByClassName("transcript-chat")[0];
