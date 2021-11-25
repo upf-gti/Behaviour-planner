@@ -183,7 +183,7 @@
             if(!mouseDown)
             {
                 recognition.start();
-                var msg =  [ {type: "control", state: LS.Globals.LISTENING, start:0, end:10,  composition: "OVERWRITE"}]
+                var msg =  [ {type: "control", state: LS.Globals.LISTENING, start:0, end:1,  composition: "MERGE"}]
                 BP.bp.onActions(msg)
             }
                 
