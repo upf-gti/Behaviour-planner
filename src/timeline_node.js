@@ -65,7 +65,7 @@ ANIM.LOCOMOTION = 10;
 ANIM.CUSTOM = 11;
 
 ANIM.clip_types = [ SpeechClip, AudioClip, FaceLexemeClip, FaceFACSClip, FaceEmotionClip, GazeClip, GestureClip, HeadClip, HeadDirectionShiftClip, PostureClip] ;
-ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip, FaceFACSClip], "Face": [FaceLexemeClip, FaceFACSClip, FaceEmotionClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
+ANIM.track_types = {"Speech": [ SpeechClip, AudioClip], "FaceShift": [FaceLexemeClip/*, FaceFACSClip*/], "Face": [FaceLexemeClip, FaceFACSClip, FaceEmotionClip], "Gaze": [GazeClip],"GazeShift": [GazeClip], "Gesture":[GestureClip], "Head": [HeadClip],"HeadDirectionShift": [HeadDirectionShiftClip], "Posture": [PostureClip], "PostureShift": [PostureClip] };
 ANIM.registerClipType = function(ctor)
 {
 	var name = ctor.name;
@@ -264,10 +264,18 @@ Track.prototype.toJSON = function()
 	};
 	for(var i = 0; i < this.clips.length; ++i)
 	{
+		var shift = false;
+		
+		if(this.name.includes("Shift"))
+			shift = true;
 		var clip = this.clips[i];
 		var data = ANIM.clipToJSON( clip );
 		if(data)
+		{
+			data.shift = shift;
 			json.clips.push( data );
+		}
+			
 	}
 
 	return json;
@@ -570,7 +578,7 @@ function FaceLexemeClip()
 		amount : 0.5,
 		attackPeak : 0.25,
 		relax : 0.75,
-		lexeme : "",
+		lexeme : FaceLexemeClip.lexemes[0]
 		/*permanent : false,*/
 	}
 
@@ -653,6 +661,11 @@ FaceLexemeClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i == "start"){
+								var dt = v - this.properties[i];
+								this.properties.attackPeak += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
@@ -775,6 +788,11 @@ FaceFACSClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i == "start"){
+								var dt = v - this.properties[i];
+								this.properties.attackPeak += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
@@ -890,6 +908,11 @@ FaceEmotionClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i == "start"){
+								var dt = v - this.properties[i];
+								this.properties.attackPeak += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
@@ -927,7 +950,7 @@ function GazeClip()
 		target : "",
 		ready : 0.25, //if it's not permanent
 		relax : 0.75, //if it's not permanent
-		influence : "", //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
+		influence : "EYES", //[EYES, HEAD, SHOULDER, WAIST, WHOLE](optional)
 		offsetAngle : 0.0, //(optional)
 		offsetDirection : "RIGHT", //[RIGHT, LEFT, UP, DOWN, UPRIGHT, UPLEFT, DOWNLEFT, DOWNRIGHT](optional)
 		base : false
@@ -1024,6 +1047,11 @@ GazeClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i == "start"){
+								var dt = v - this.properties[i];
+								this.properties.ready += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
@@ -1147,6 +1175,14 @@ GestureClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i == "start"){
+								var dt = v - this.properties[i];
+								this.properties.ready += dt;
+								this.properties.strokeStart += dt;
+								this.properties.stroke += dt;
+								this.properties.strokeEnd += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}
@@ -1181,7 +1217,7 @@ function HeadClip()
 	this._width = 0;
 
 	this.properties = {
-		lexeme : "", //[NOD,SHAKE, TILD...]
+		lexeme : HeadClip.lexemes[0], //[NOD,SHAKE, TILD...]
 		repetition : 1, //[1,*] (optional)
 		amount : 1, //[0,1]
 		ready : 0.15,
@@ -1270,6 +1306,15 @@ HeadClip.prototype.showInfo = function(panel)
 					else{
 						panel.addNumber(i, property, {callback: function(i,v)
 						{
+							if(i=="start")
+							{
+								var dt = v - this.properties[i];
+								this.properties.ready += dt;
+								this.properties.strokeStart += dt;
+								this.properties.stroke += dt;
+								this.properties.strokeEnd += dt;
+								this.properties.relax += dt;
+							}
 							this.properties[i] = v;
 						}.bind(this,i)});
 					}

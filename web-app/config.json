@@ -5,6 +5,7 @@
         "../src/libs/gl-matrix-min.js",
         "../src/libs/litegraph.js",
         "../src/libs/HBTree.js",
+        "../src/entitiesManager.js",
         "../src/behaviourGraph.js",
         "../src/behaviourNodes.js",
         "../src/behaviourPresenter.js",
@@ -26,7 +27,6 @@
         "js/modules/filesystem.js",
         "js/modules/drive.js",
         "js/modules/interface.js",
-        "js/modules/entity.js",
         "js/modules/json_formatter.js",
         "js/modules/app.js"
     ]

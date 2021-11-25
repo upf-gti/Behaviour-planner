@@ -996,7 +996,18 @@ getClipAtTimelinePosition: function( e, reverse, margin )
   		panel.addSection("Time");
   		panel.addNumber("Start", clip.start, {min:0, callback: function(v)
       {
+		
+		/*var dt = v - this.clip_in_panel.start;
+		if(clip.properties.ready) clip.properties.ready += dt;
+		if(clip.properties.strokeStart) clip.properties.strokeStart += dt;
+		if(clip.properties.stroke) clip.properties.stroke += dt;
+		if(clip.properties.attackPeak) clip.properties.attackPeak += dt;
+		if(clip.properties.strokeEnd) clip.properties.strokeEnd += dt;
+		if(clip.properties.relax) clip.properties.relax += dt;*/
+		
+	
         this.clip_in_panel.start = v;
+		/*this.showClipInfo(clip)*/
       }.bind(this)})
   		panel.addNumber("Duration", clip.duration, {min:0, callback: function(v)
       {

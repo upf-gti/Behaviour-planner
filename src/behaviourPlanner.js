@@ -197,7 +197,7 @@ var BP_STATE = {
 //AKA model of application
 class BehaviourPlanner{
 
-    constructor(o){
+    constructor(o, options){
         this._user = null;
         this._agent = null;
         this._corpus = null;
@@ -218,6 +218,7 @@ class BehaviourPlanner{
         //Init and configure
         this.init();
         if(o) this.configure(o);
+        if(options) this.options = options;
     }
 
     set user(o){
@@ -284,6 +285,7 @@ class BehaviourPlanner{
     init(){
         this.user = new User();
         this.agent = new Agent();
+        this.entitiesManager = entitiesManager;
         this.state = BP_STATE.STOP;
         this.accumulate_time = 0;
         this.execution_t = 1;
@@ -450,9 +452,12 @@ class BehaviourPlanner{
 
         if(actions.length) this.onActions(actions);
     }
-
+    
     //Process data message following protocol
     onData(msg){
+        if(typeof(msg)=="string")
+            msg = JSON.parse(msg);
+            
         var type = msg.type;
         var data = msg.data;
 
@@ -490,5 +495,360 @@ class BehaviourPlanner{
     toJSON(type, name){
 
     }
+    loadPlanner(url, on_complete){
+        var that = this;
+        this.load( url, loadEnvironment.bind(this), null, null, null );
+        
+    }
+    loadEnvironment(data)
+    {
+        var env = data.env;
+        
+        //Graphs
+        for(var i in env.graphs){
+            var graph = env.graphs[i];
+            if(graph.behaviour){
+                if(graph.behaviour){
+                    let hbt_graph = this.loadGraph(graph.behaviour);
+                    GraphManager.addGraph(hbt_graph);
+                }
+            }else{
+                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
+                graph.name =i;
+                g.graph.configure(graph);
 
+                for(var j in graph.nodes){
+                    var node = graph.nodes[j];
+                    if(node.type == "network/sillyclient"){
+                        var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
+
+                        node.connectSocket();
+                        this.streamer.ws = node._server;
+                        node._server.onReady = this.streamer.onReady;
+                        this.streamer.is_connected = node._server.is_connected;
+                    }
+                }
+
+            }
+        }
+
+        //Agent
+        let agent = null;
+        for(var i in env.agents){
+            var data = env.agents[i];
+            agent = new Agent(data);
+           /* this.env_tree.children.push({id:agent.uid, type: "agent"});
+            this.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
+        */}
+
+        if(agent){
+            agent.is_selected = true;
+            this.agent = agent;
+
+            AgentManager.agents[agent.uid] = agent;
+            AgentManager.addPropertiesToLog(agent.properties);
+            AgentManager.agent_selected = agent;
+        }
+
+        //User
+        if(env.user){
+            let user = new User(env.user);
+            /*this.env_tree.children.push({id:user.uid, type: "user"});
+            this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
+            */
+            this.user = user;
+
+            UserManager.users[user.uid] = user;
+            UserManager.addPropertiesToLog(user.properties);
+
+            /*this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
+                detail: {
+                    data: {
+                        id: this.env_tree.id,
+                        type: this.env_tree.type
+                    }
+                }
+            }));*/
+        }
+
+        //Gestures
+        if(env.gestures){
+           /* this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
+           */ for(var i in env.gestures){
+                GestureManager.createGesture(env.gestures[i]);
+            }
+            GestureManager.createGestureInspector();
+        }
+        //Entities
+        if(env.entities){
+            for(var tag in env.entities){
+                this.entitiesManager.addWordsToWorld(tag,env.entities[tag]);
+            }
+        }
+    }
+    load( url, on_complete, on_error, on_progress, on_resources_loaded, on_loaded )
+    {
+        if(!url)
+            return;
+
+        var that = this;
+
+        var extension = ONE.ResourcesManager.getExtension( url );
+        var format_info = ONE.Formats.getFileFormatInfo( extension );
+        if(!format_info) //hack, to avoid errors
+            format_info = { dataType: "json" };
+        
+        
+        //request scene file using our own library
+        ONE.Network.request({
+            url: url,
+            nocache: true,
+            dataType: extension == "json" ? "json" : (format_info.dataType || "text"), //datatype of json is text...
+            success: extension == "json" ? inner_json_loaded : inner_data_loaded,
+            progress: on_progress,
+            error: inner_error
+        });
+
+        this._state = ONE.LOADING;
+
+        /**
+         * Fired before loading scene
+         * @event beforeLoad
+         */
+       // LEvent.trigger(this,EVENT.BEFORE_LOAD);
+
+        function inner_data_loaded( response )
+        {
+            if(on_complete)
+                on_complete(response)
+        }
+
+
+        function inner_json_loaded( response )
+        {
+            if(on_complete)
+            {
+                var url = decodeURIComponent(response.env.iframe);
+                url = url.replace("https://webglstudio.org/latest/player.html?url=", "https://webglstudio.org/")
+                if(url.indexOf("https")==-1)
+                    url = "https://webglstudio.org/"+ url;
+                    on_complete(url,response.env.token)
+            }   
+
+            if( response.constructor !== Object )
+                throw("response must be object");
+
+            var scripts = ONE.Scene.getScriptsList( response, true );
+
+            //check JSON for special scripts
+            if ( scripts.length )
+                that.loadScripts( scripts, function(){ inner_success(response); }, on_error );
+            else
+                inner_success( response );
+        }
+
+        function inner_success( response )
+        {
+            if(on_loaded)
+                on_loaded(that, url);
+
+            that.init();
+            //Configure Behaviour Planner
+            if(response.env.user)
+                that.user.configure(response.env.user);
+            if(response.env.agents[0])
+             that.agent.configure(response.env.agents[0])
+            that.loadGraph(response.env.graphs[0].behaviour)
+            //var hbt_graph = new HBTGraph(response.env.graphs[0].behaviour.name);
+            //hbt_graph.graph = response.env.graphs[0].behaviour;
+            //that.hbt_graph = hbt_graph;
+            
+            //Set Iframe
+           /* document.getElementById("iframe").src = response.env.iframe;
+            document.getElementById("iframe").contentWindow.onloadeddata = function(){
+                document.getElementById("iframe").contentWindow.LS.Globals.room = response.env.token;
+            };
+            */
+            
+            //Start WebSocket connection
+           /* that.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
+	        that.streamer.onDataReceived = that.onData.bind(that);
+			that.streamer.onConnect = function(){
+                that.streamer.createRoom(response.env.token);
+            }*/
+
+            if(LS)
+                LS.Globals.sendMsg = that.onData.bind(that)
+
+        /*    if(on_complete)
+                on_complete(that, url);*/
+
+           // that.loadResources( inner_all_loaded );
+          //  LEvent.trigger(that, EVENT.LOAD );
+
+           // if(!ONE.ResourcesManager.isLoading())
+            //    inner_all_loaded();
+        }
+
+
+        function inner_error(e)
+        {
+            var err_code = (e && e.target) ? e.target.status : 0;
+            console.warn("Error loading scene: " + url + " -> " + err_code);
+            if(on_error)
+                on_error(url, err_code, e);
+        }
+    }
 }
+function Loader(options)
+{
+    options = options || {};
+    this.options = options;
+    this.bp = new BehaviourPlanner() ;
+    this.bp.onActions = this.onActions;
+    this.debug = false;
+    this.autoplay = false;
+    this.skip_play_button = false;
+
+    this.last = this.now = performance.now();
+    //this will repaint every frame and send events when the mouse clicks objects
+    this.state = BehaviourPlanner.Loader.STOPPED;
+
+    //set options
+    this.configure( options );
+    
+}
+
+/**
+* Loads a config file for the player, it could also load an scene if the config specifies one
+* @method loadConfig
+* @param {String} url url to the JSON file containing the config
+* @param {Function} on_complete callback trigged when the config is loaded
+* @param {Function} on_scene_loaded callback trigged when the scene and the resources are loaded (in case the config contains a scene to load)
+*/
+Loader.prototype.loadConfig = function( url, on_complete, on_scene_loaded )
+{
+    var that = this;
+    ONE.Network.requestJSON( url, inner );
+    function inner( data )
+    {
+        that.configure( data, on_scene_loaded );
+        if(on_complete)
+            on_complete(data);
+    }
+}
+
+Loader.prototype.configure = function( options, on_scene_loaded )
+{
+    var that = this;
+
+    if(options.resources !== undefined)
+        ONE.ResourcesManager.setPath( options.resources );
+
+    if(options.proxy)
+        ONE.ResourcesManager.setProxy( options.proxy );
+    if(options.filesystems)
+    {
+        for(var i in options.filesystems)
+            ONE.ResourcesManager.registerFileSystem( i, options.filesystems[i] );
+    }
+
+    if(options.allow_base_files)
+        ONE.ResourcesManager.allow_base_files = options.allow_base_files;
+
+    /*if(options.scene_url)
+        this.loadScene( options.scene_url, on_scene_loaded );*/
+}
+Loader.STOPPED = 0;
+Loader.PLAYING = 1;
+Loader.PAUSED = 2;
+
+/**
+* Loads an scene and triggers start
+* @method loadPlanner
+* @param {String} url url to the JSON file containing all the behaviour planner info
+* @param {Function} on_complete callback trigged when the behaviour planner and the resources are loaded
+*/
+Loader.prototype.loadPlanner = function(url, on_complete, on_progress)
+{
+	var that = this;
+	var bp = this.bp;
+    if(this.options.proxy)
+        url = ONE.ResourcesManager.proxy + url;
+	bp.load( url, on_complete, null, inner_progress, inner_start );
+
+	function inner_start()
+	{
+    }
+    function inner_progress(){
+
+    }
+}
+Loader.prototype.loadScene = function(url, room)
+{
+    //LiteSCENE CODE *************************
+	var settings = {
+		alpha: false, //enables to have alpha in the canvas to blend with background
+		stencil: true,
+		redraw: true, //force to redraw
+		autoplay: true,
+		resources: "https://webglstudio.org/fileserver/files",
+		autoresize: true, //resize the 3D window if the browser window is resized
+		loadingbar: true, //shows loading bar progress
+		proxy: "https://webglstudio.org/fileserver/files" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+	};
+	/*SETTINGS_SETUP*/
+
+	var player = new LS.Player(settings);
+
+	var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
+
+	//support for external server
+	var data = localStorage.getItem("wgl_user_preferences" );
+	if(data)
+	{
+		var config = JSON.parse(data);
+		if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
+		{
+			allow_remote_scenes = true;
+			LS.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
+		}
+	}
+
+	//allow to use Canvas2D call in the WebGLCanvas (this is not mandatory, just useful)
+	if( window.enableWebGLCanvas )
+		enableWebGLCanvas( gl.canvas );
+	
+	//this code defines which scene to load, in case you are loading an specific scene replce it by player.loadScene( scene_url )
+	player.loadScene( url, inner_scene_loaded.bind(room, this) );
+    function inner_scene_loaded(bpLoader, a){
+        that.room = this.toString();
+        if(LS)
+                LS.Globals.sendMsg = bpLoader.bp.onData.bind(bpLoader.bp)
+        bpLoader.animate(that);
+    }
+   
+	/*else if( allow_remote_scenes || url && url.indexOf("://") == -1) //for safety measures
+		player.loadScene( url ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
+	else 
+		player.loadConfig("config_BPplayer.json",player.loadScene);*/
+}
+Loader.prototype.animate = function(player){
+    var that = this;
+    player.ws = LS.Globals.ws = null;
+   // if(player.ws.readyState == player.ws.OPEN && that.bp.state == BP_STATE.STOP)
+        that.bp.play();
+
+    that.last = that.now;
+    that.now = performance.now();
+    dt = (that.now - that.last) * 0.001;
+    that.bp.update(dt);
+    requestAnimationFrame(that.animate.bind(that, player));
+}
+Loader.prototype.update = function(dt)
+{
+    //BP  
+    this.bp.update(dt);
+}
+
+BehaviourPlanner.Loader = Loader;

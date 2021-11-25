@@ -116,7 +116,10 @@ class App{
     }
 
     postInit() {
-        CORE["Interface"].showLoginDialog();
+        CORE.Interface.checkExistingSession(function(session){
+            CORE.modules["FileSystem"].session = session;
+            LiteGUI.menubar.refresh();
+        })
     }
 
 	onWSconnected(){
@@ -138,7 +141,10 @@ class App{
             CORE.App.state = PLAYING;
             CORE.App.bp.play();
             if(this.iframe.contentWindow)//LS.Player from iframe
+            {
+                LS.Globals.room = this.env_tree.token;
                 this.iframe.contentWindow.player.play();
+            }
         }else{
             CORE.App.state = STOP;
             CORE.App.bp.stop();
@@ -334,7 +340,7 @@ class App{
         GraphManager.removeAllGraphs();
 
         //Graphs
-        for(var i in env.graphs){
+      /*  for(var i in env.graphs){
             var graph = env.graphs[i];
             if(graph.behaviour){
                 this.loadBehaviour(graph);
@@ -410,6 +416,17 @@ class App{
             for(var tag in env.entities){
                 EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
             }
+        }*/
+        this.bp.loadEnvironment(data);
+        if(this.bp._agent)
+        {
+            this.env_tree.children.push({id:this.bp._agent.uid, type: "agent"});
+            this.interface.tree.insertItem({id:this.bp._agent.uid, type: "agent"},"Environment");
+        }
+        if(this.bp._user)
+        {
+            this.env_tree.children.push({id:this.bp._user.uid, type: "user"});
+            this.interface.tree.insertItem({id:this.bp._user.uid, type: "user"},"Environment");
         }
         if(env.iframe)
         {
@@ -489,7 +506,11 @@ class App{
             this.iframe.src = env.iframe;
             CORE.Interface.iframe.src = env.iframe;
             if(this.iframe.contentWindow)
-                this.iframe.contentWindow.onload = function(){ this.iframe.contentWindow.player.skip_play_button = true}.bind(this)         
+                this.iframe.contentWindow.onload = function(){ 
+                    this.iframe.contentWindow.player.skip_play_button = true;
+                    LS.Globals.room = this.env.token;
+                
+                }.bind(this)         
         }
     }
 

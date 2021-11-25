@@ -595,3 +595,25 @@ li.user-name-menubar{
     background-color: #252525 !important;
     resize: none;
 }
+.loader {
+    /*border: 16px solid #f3f3f3; /* Light grey */
+    /*border-top: 16px solid var(--control-brand-foreground-new); /* Blue */
+    /*border-radius: 50%;
+   
+    animation: spin 2s linear infinite;*/
+    position: fixed;
+    width: 300px;
+    height: 120px;
+    left: calc(50% - 75px);
+    top: calc(50% - 60px);
+
+  }
+  .loader::after {
+    font-family: sans-serif;
+    content: "Loading scene...";
+    font-size: x-large;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

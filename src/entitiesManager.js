@@ -1,12 +1,17 @@
 var compromiseNumbers;
 var compromiseDates;
-var EntitiesManager = {
-    name : "EntitiesManager",
-	properties_log : {},
-    entities: [],
-    customEntities : {},
-    preInit(){
 
+class EntitiesManager{
+    constructor(){
+
+    this.name = "EntitiesManager";
+	this.properties_log = {};
+    this.entities= [];
+    this.customEntities = {};
+    this.preInit();
+    }
+    preInit(){
+        var that = this;
         var compromise = document.createElement('script');
         compromise.src = "https://unpkg.com/compromise";
         var compromise_numbers = document.createElement('script');
@@ -16,10 +21,11 @@ var EntitiesManager = {
         document.head.appendChild(compromise);
         document.head.appendChild(compromise_numbers);
         document.head.appendChild(compromise_dates);
-        compromise.onload = this.initData.bind(this);
+        compromise.onload = this.initData.bind(that);
 
-    },
+    }
     initData(){
+        var that = this;
         /*loadJSON(function(response) {
             // Parse JSON string into object
             var actual_JSON = JSON.parse(response);
@@ -30,7 +36,7 @@ var EntitiesManager = {
             }*/
         if(!compromiseNumbers ||!compromiseDates)
         {   
-            setTimeout(this.initData, 1000);
+            setTimeout(this.initData.bind(that), 1000);
             return;
         }
 
@@ -39,7 +45,8 @@ var EntitiesManager = {
 
         for(var i in nlp.world().tags)
             this.entities.push("#"+i);
-    },
+    }
+
 	getEntity(text, entity)
     {
         if(entity == "#Value")
@@ -85,21 +92,25 @@ var EntitiesManager = {
             return text;
         return false;
 
-    },
+    }
+
     getEntityInfo(entity)
     {
         return nlp.world.tags[entity];
-    },
+    }
+
     getEntities()
     {
         if(this.entities.length == 0)
             this.initData()
         return this.entities;
-    },
+    }
+
     getAllEntitiesInfo()
     {
         return nlp.world.tags;
-    },
+    }
+
     checkPhoneFormatValidity(text)
     {
         text = text.replaceAll(" ", "");
@@ -110,7 +121,8 @@ var EntitiesManager = {
             return text
         }
         return false
-    },
+    }
+
     addWordsToWorld(tag, words){
         if(this.entities.length == 0)
             this.initData()
@@ -131,6 +143,7 @@ var EntitiesManager = {
 
     }
 }
+
 function loadJSON(callback) {
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
@@ -145,7 +158,6 @@ function loadJSON(callback) {
     };
     xobj.send(null);
 }
-CORE.registerModule( EntitiesManager );
 
 var Small = {
     'zero': 0,

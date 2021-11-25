@@ -3,46 +3,450 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Dialogue Manager</title>
-    <link rel="stylesheet" type="text/css" href="css/libs/litegraph.css">
-    <link rel="stylesheet" type="text/css" href="css/libs/litegui_mod.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/chat.css">
+    <title>Behaviour Planner Player</title>
+    <style type='text/css'>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+            overflow: hidden;
+            background-color: black;
+		}
+	</style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./css/player.css"></link>
+    <link rel="shortcut icon" href="imgs/favicon.png">
 </head>
 <body >
+    <div class="container">
+        <div class="menu-container">
+            <div id="menu" class="menu-button"><svg width="28" height="28" fill="none" data-testid="menu-icon" class="menu-icon"><circle cx="14" cy="14" r="14" fill="#fff"></circle><path d="M14 10.667c.917 0 1.667-.75 1.667-1.667s-.75-1.667-1.666-1.667c-.917 0-1.667.75-1.667 1.667s.75 1.667 1.667 1.667zm0 1.666c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667zm0 5c-.916 0-1.666.75-1.666 1.667s.75 1.667 1.667 1.667c.916 0 1.666-.75 1.666-1.667s-.75-1.667-1.666-1.667z" fill="#000"></path></svg></div>
+            <div id="options" class="menu-options">
+                <div id="option-chat" onclick="selectedOption('chat')">Show chat</div>
+                <div id="option-debugger" onclick="selectedOption('debugger')">Debugger</div>
+                <div id="option-about" onclick="selectedOption('about')">About</div>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <div class="text"></div>
+            <div class="user-input"></div>
+            <div class="bottom-bar-center">
+                <div class="bottom-center">
+                    <div class="input-container">
+                        <div></div>
+                        <div class="input-text">
+                            <div><input type="text" id="chat" placeholder="Type something" class="" value=""></div>
+                        </div>
+                        <div class="input-button">
+                            <button id="mic" class="MuiButtonBase-root MuiIconButton-root" tabindex="0" type="button" aria-label="add" style="cursor: pointer; color: rgb(77 77 80); margin-right: 12px; transition: border-radius 0.25s ease 0s; opacity: 1; border-radius: 0px; background-color: rgba(255, 255, 255, 0);"><span class="MuiIconButton-label">
+                                <svg class="MuiSvgIcon-root" focusable="false"xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                                <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/>
+                                <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+                            </svg></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="right"></div>
+        </div>
+        <div id = "chat-container" class="transcript-container" >
+            <div class="react-draggable transcript">
+                <div class="transcript-container-header">
+                    <div class="transcript-header">
+                        <div class="download-button" onclick="exportChatData()">
+                            <div class="transcript-tooltip tooltip-right">Download</div>
+                            <svg width="17" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.58 12.72a.658.658 0 010 1.315H1.545a.658.658 0 010-1.316H15.58zM8.546 0a.658.658 0 01.674.641l.203 8.135 3.114-2.491a.658.658 0 01.864.036l.06.066a.658.658 0 01-.102.925l-4.386 3.509a.658.658 0 01-.822 0L3.765 7.312a.658.658 0 11.822-1.027l3.528 2.822-.21-8.433a.658.658 0 01.552-.666L8.546 0z" fill="currentColor"></path></svg>
+                        </div>
+                        <div id= "minimise" class="close-button">
+                            <div class="transcript-tooltip tooltip-left">Minimise Transcript</div>
+                            <div class="close-icon">
+                                <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path d="M4.308 4.308a1.053 1.053 0 011.49 0l6.702 6.703 6.702-6.703c.38-.38.977-.408 1.39-.087l.1.087a1.053 1.053 0 010 1.49L13.989 12.5l6.703 6.702c.38.38.408.977.087 1.39l-.087.1a1.053 1.053 0 01-1.49 0L12.5 13.989l-6.702 6.703c-.38.38-.977.408-1.39.087l-.1-.087a1.053 1.053 0 010-1.49l6.703-6.702-6.703-6.702a1.053 1.053 0 01-.087-1.39z" id="close_svg__a"></path></defs><use fill="currentColor" fill-rule="nonzero" xlink:href="#close_svg__a"></use></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="transcript-content">
+                    <div class="transcript-chat"></div>
+                </div>
+                <div class="transcript-footer">
+                    <input type="text" placeholder="Type your answer here" id="questionInput" class="" value="">
+                    <div class="input-button"> 
+                        <button id="send"  onclick="onSendMsg()" class="MuiButtonBase-root MuiIconButton-root" tabindex="0" type="button" aria-label="add" style="cursor: pointer; color: rgb(77 77 80); padding: 0px; transition: border-radius 0.25s ease 0s; opacity: 1; border-radius: 0px; background-color: rgba(255, 255, 255, 0);">
+                            <span class="MuiIconButton-label">
+                                <svg width="32" height="28" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="15.988" cy="14" rx="15.757" ry="14" fill="lightgray"></ellipse><path d="M8.484 13.999l1.323 1.175 5.243-4.65v10.141h1.876V10.524l5.234 4.658 1.331-1.183-7.503-6.667-7.504 6.667z" fill="#000"></path></svg>
+                                </svg>
+                        </svg></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!--Behaviour planner core and its de dependencies-->
-    <script src="../src/libs/gl-matrix-min.js"></script>
+    <script src="../src/libs/gl-matrix-min-2_8.js"></script>
+    <script src="./js/libs/litegl.js"></script>
     <script src="../src/libs/litegraph.js"></script>
     <script src="../src/libs/HBTree.js"></script>
-    <script src="../src/HBTfacade.js"></script>
-    <script src="../src/graphNodes.js"></script>
-    <script src="../web-app/js/streamer.js"></script>
-
+    <script src="../src/libs/extra/onecore.js"></script>
+    <script src="../src/libs/extra/Canvas2DtoWebGL.js"></script>
     <!--Web app dependencies-->
-    <script src="js/libs/litegui.js"></script>
+    <!--<script src="js/libs/litegui.js"></script>
     <script src="js/libs/HBTEditor.js"></script>
-    <script src="js/libs/timeline.js"></script>
+    <script src="js/libs/litegraph.js"></script>-->
 
     <!--Web app core-->
-    <script src="js/globals.js"></script>
-    <script src="js/graphManager.js"></script>
-    <script src="js/graphWidget.js"></script>
+    <script src="../src/entitiesManager.js"></script>
+    <script src="../src/behaviourNodes.js"></script>
+    <script src="../src/behaviourGraph.js"></script>
+    <script src="../src/behaviourPlanner.js"></script>
+    <script src="../src/behaviourPresenter.js"></script>
+    <script src="../src/timeline_node.js"></script>
+    <script src="../src/utils.js"></script>
 
-    <script src="js/modules/agent.js"></script>
-    <script src="js/modules/user.js"></script>
-    <script src="js/modules/gestureMap.js"></script>
-    <script src="js/modules/chat.js"></script>
-    <script src="js/modules/interface.js"></script>
-    <script src="js/modules/entity.js"></script>
-    <script src="js/modules/app.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 
-    <div>
-        <iframe id="iframe-character" src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FRAO.scene.json"></iframe>
-      <!--<iframe id="iframe-character" src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2FLatestBehavourPlanner.scene.json"></iframe>-->
-       <!-- src = "https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FVirtualClerk.scene.json"></iframe>--> <!--BehaviourPlanner-->
-       <!-- src="https://webglstudio.org/latest/player.html?url=fileserver%2Ffiles%2Fevalls%2Fprojects%2Fscenes%2FBehaviourPlanner.scene.json"></iframe>--> <!--VirtualClerk-->
-    </div>
+ 
+    
+    <script>
+     /*------------------------------------- LOAD ENVIRONMENT -------------------------------------*/
+        var settings = {
+            alpha: false, //enables to have alpha in the canvas to blend with background
+            stencil: true,
+            redraw: true, //force to redraw
+            autoplay: Boolean(LS.queryString["autoplay"]),
+            resources: "https://webglstudio.org/fileserver/",
+            autoresize: true, //resize the 3D window if the browser window is resized
+            loadingbar: true, //shows loading bar progress
+            proxy: "https://webglstudio.org/projects/present/repository/files/" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+        };
+        var BP = new BehaviourPlanner.Loader(settings)//new BehaviourPlanner(null,settings);
+        var query_string = LS.queryString;
+        if( query_string["session"] )
+            player.setScene( JSON.parse( localStorage.getItem( query_tring["session"] ) ) );
+        else if( (query_string["url"] && query_string["url"].indexOf("://") == -1) ) //for safety measures
+            BP.loadPlanner( query_string["url"], BP.loadScene.bind(BP) ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
+        else if( query_string["preview"] === undefined )
+            BP.loadConfig("config_BPplayer.json", BP.loadPlanner.bind(BP));
+      //  BP.animate();
+        let messages = [];
+     /*------------------------------------- USER INTERACTION -------------------------------------*/
+     
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+        var recognition = new SpeechRecognition();
+        recognition.lang = 'en';
+        
+        var mouseDown = false;
+        var micBtn = document.getElementById("mic");
+        micBtn.addEventListener("mousedown", startSpeech)
+        micBtn.addEventListener("mouseup", stopSpeech)
+        var inputText = document.getElementById("chat");
 
+        document.body.onkeydown = function(e){
+            if(e.keyCode == 32) //spacebar
+            {
+                if(e.target != document.getElementById("questionInput") && e.target != document.getElementById("chat"))
+                    startSpeech(e);
+            }   
+        }
+        document.body.onkeyup = function(e){
+            if(e.keyCode == 32) //spacebar
+                stopSpeech(e)
+            if(e.keyCode == 13) //enter
+                onUserText(e)
+        }
+        function onSendMsg(){
+            var value = document.getElementById("questionInput").value;
+            var e = {target: {value : value}};
+            onUserText(e)
+        }
+        function onUserText(e){
+            var value = e.target.value;
+            if(value == "") return;
+
+            var msg = {
+                type:"data",
+                data:{ user: {text: value}}
+            }
+            var time = getCurrentTime();
+            messages.push({"from":"user", "text": value, "time": time});
+            updateChat()
+            //showUserMessage(value)
+            BP.bp.onData(msg)
+            e.target.value = "";
+        }
+        function startSpeech(e){
+            micBtn.classList.add("active");
+            inputText.placeholder = "I'm listening..."
+            e.preventDefault()
+            if(!mouseDown)
+            {
+                recognition.start();
+                var msg =  [ {type: "control", state: LS.Globals.LISTENING, start:0, end:10,  composition: "OVERWRITE"}]
+                BP.bp.onActions(msg)
+            }
+                
+            mouseDown = true;
+            
+        }
+        function stopSpeech(e){
+            micBtn.classList.remove("active");
+            inputText.placeholder = "Type something"
+            if(mouseDown)
+                recognition.stop();
+            mouseDown = false;
+        }
+
+        recognition.onresult = function(event) {
+            var transcription = event.results[0][0].transcript;
+            if(event.results[0].isFinal){
+                var msg = {
+                    type:"data",
+                    data:{ user: {text: transcription}}
+                }
+                var time = getCurrentTime();
+                messages.push({"from":"user", "text":transcription, "time":time})
+                updateChat()
+               // showUserMessage(transcription)
+                BP.bp.onData(msg)
+            }
+                
+            console.log(transcription)
+            console.log('Confidence: ' + event.results[0][0].confidence);
+            }
+            BP.bp.onActions = onActions;
+            function onActions(actions){
+                //console.log(actions);
+
+                //Send messages through streamer
+                /*if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
+                    for(var m of actions){
+                        this.streamer.sendMessage(m.type, m.data);
+                        
+                        /*if(m.type == "custom_action"){ //Placeholder stuff
+                            this.placeholderProcessRequest(m);
+                        }*/
+                /*    }
+                }*/
+                if(LS && LS.Globals.processMsg){
+                    for(var m of actions){
+                        LS.Globals.processMsg(JSON.stringify(m),false);
+                        if(m.type == "behaviours")
+                        {
+                            for(var i=0; i<m.data.length;i++){
+                                if(m.data[i].type == "speech" || m.data[i].type == "lg")
+                                {
+                                    var time = getCurrentTime();
+                                    messages.push({"from":"avatar", "text":m.data[i].text, "time": time})
+                                    updateChat()
+                                    /*if(m.data[i].text.includes("number"))
+                                        recognition.lang = "en-PH"
+                                    else
+                                        recognition.lang = "en-GB"*/
+                                    //showAgentMessage(m.data[i].text)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        /*--------------------------------------------------MENU-------------------------------------------*/
+        var menuBtn = document.getElementById("menu");
+        menuBtn.addEventListener("click", function(e){
+            document.getElementById("options").classList.toggle("show");
+            e.stopPropagation()
+        })
+        function selectedOption(option){
+            switch(option){
+                case "chat":
+                    document.getElementsByClassName("transcript-container")[0].classList.add("show-chat");
+                    break;
+                case "debugger":
+                    if(LS && LS.Globals&& LS.Globals.showDebugger != undefined);
+                        LS.Globals.showDebugger = !LS.Globals.showDebugger;
+
+                    break;                    
+            } 
+        }
+        // Close the dropdown if the user clicks outside of it
+        document.onclick = function(event) {
+            event.preventDefault()
+            if (!event.target.matches('#menu')) {
+                var options = document.getElementsByClassName("menu-options");
+                for(var i = 0; i < options.length; i++) {
+                    var option = options[i];
+                    if (option.classList.contains('show')) {
+                        option.classList.remove('show');
+                    }
+                }
+            }
+            if(event.target.className == "close-icon"){
+                window.location.hash = "";
+                document.getElementsByClassName("transcript-container")[0].classList.remove("show-chat")
+            }
+           
+        }
+       /* window.addEventListener('hashchange', function(event){
+            var hash = window.location.hash;
+            switch(hash){
+                case "#chat":
+                    document.getElementsByClassName("transcript-container")[0].classList.add("show-chat");
+                    break;
+                case "#debugger":
+                    if(LS && LS.Globals&& LS.Globals.showDebugger != undefined);
+                        LS.Globals.showDebugger = !LS.Globals.showDebugger;
+
+                    break;                    
+            } 
+                
+        })*/
+        function updateChat(){
+            var chat = document.getElementsByClassName("transcript-chat")[0];
+            chat.innerHTML = "";
+            for(var i = 0; i < messages.length; i++){
+                var data = messages[i];
+                var msgDiv = document.createElement("div");
+                msgDiv.className = data.from + "-message";
+
+                var msg = document.createElement("div");
+                msg.className = "message";
+                msg.innerText = data.text;
+
+                msgDiv.appendChild(msg);
+                chat.appendChild(msgDiv);
+            }
+            var chatContent = document.getElementsByClassName("transcript-content")[0];
+            chatContent.scroll(0,chatContent.scrollHeight)
+        }
+        function showUserMessage(text){
+            var chat = document.getElementsByClassName("transcript-chat")[0];
+            var msgDiv = document.createElement("div");
+            msgDiv.className = "user-message";
+
+            var msg = document.createElement("div");
+            msg.className = "message";
+            msg.innerText = text;
+
+            msgDiv.appendChild(msg);
+            chat.appendChild(msgDiv);
+        }
+        function showAgentMessage(text){
+            var chat = document.getElementsByClassName("transcript-chat")[0];
+            var msgDiv = document.createElement("div");
+            msgDiv.className = "avatar-message";
+
+            var msg = document.createElement("div");
+            msg.className = "message";
+            msg.innerText = text;
+
+            msgDiv.appendChild(msg);
+            chat.appendChild(msgDiv);
+        }
+        //---------------------- Make the DIV element draggable:
+        dragElement(document.getElementById("chat-container"), document.getElementsByClassName("transcript-header")[0] );
+
+        function dragElement(elmnt, header) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (header) {
+                header.draggable = true;
+                // if present, the header is where you move the DIV from:
+                header.onmousedown = dragMouseDown;
+            } else {
+                // otherwise, move the DIV from anywhere inside the DIV:
+                elmnt.onmousedown = dragMouseDown;
+                elmnt.draggable = true;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+               
+            }
+
+            function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        /*--------------------------------------DOWNLOAD CHAT-----------------------------------*/       
+
+
+        function exportChatData(){
+            var lengthOfPage = 210;
+            const doc = new jspdf.jsPDF();
+            doc.addImage("imgs/bplanner.png", "JPEG", 20, 10, 57,24);
+            doc.addImage("imgs/GTI logo.png", "JPEG", 180, 10, 15,15);
+            var y = 50;
+            for(var i = 0; i < messages.length; i++){
+                var msg = messages[i];
+                var x = 170;
+                var pos = "right";
+                
+                if(msg.from == "avatar")
+                {
+                    pos = "left";
+                    x = 20;
+                }
+                
+                //Time        
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text(msg.from.toUpperCase() + " " + msg.time, x, y, null, null, pos);
+                //Text
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                var splitText = doc.splitTextToSize(msg.text, lengthOfPage-x-10);
+                y+=5;
+                //loop thru each line and output while increasing the vertical space
+                
+                for(var c = 0, stlength = splitText.length ; c < stlength ; c++){
+
+                    doc.text(splitText[c], x, y, null, null, pos);
+                    y+= 5;
+
+                }
+            y+=5;     
+            }
+            var path_params = window.location.search.split("/");
+            var name = path_params[path_params.length-1].replace(".json", "");
+            name = decodeURI(name);
+
+            doc.save("BP Chat-"+name+".pdf"); // will save the file in the current working directory
+        }
+        function addZero(i) {
+            if (i < 10) {i = "0" + i}
+            return i;
+        }
+        function getCurrentTime(){
+            
+            const d = new Date();
+            let h = addZero(d.getHours());
+            let m = addZero(d.getMinutes());
+            let s = addZero(d.getSeconds());
+            return h + ":" + m + ":" + s;
+        }
+        
+    </script>
     </body>
 </html>
