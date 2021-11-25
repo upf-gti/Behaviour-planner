@@ -16,6 +16,7 @@
 	</style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="./css/player.css"></link>
+    <link rel="shortcut icon" href="imgs/favicon.png">
 </head>
 <body >
     <div class="container">
@@ -71,8 +72,8 @@
                 </div>
                 <div class="transcript-footer">
                     <input type="text" placeholder="Type your answer here" id="questionInput" class="" value="">
-                    <div class="input-button">
-                        <button id="send" class="MuiButtonBase-root MuiIconButton-root" tabindex="0" type="button" aria-label="add" style="cursor: pointer; color: rgb(77 77 80); padding: 0px; transition: border-radius 0.25s ease 0s; opacity: 1; border-radius: 0px; background-color: rgba(255, 255, 255, 0);">
+                    <div class="input-button"> 
+                        <button id="send"  onclick="onSendMsg()" class="MuiButtonBase-root MuiIconButton-root" tabindex="0" type="button" aria-label="add" style="cursor: pointer; color: rgb(77 77 80); padding: 0px; transition: border-radius 0.25s ease 0s; opacity: 1; border-radius: 0px; background-color: rgba(255, 255, 255, 0);">
                             <span class="MuiIconButton-label">
                                 <svg width="32" height="28" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="15.988" cy="14" rx="15.757" ry="14" fill="lightgray"></ellipse><path d="M8.484 13.999l1.323 1.175 5.243-4.65v10.141h1.876V10.524l5.234 4.658 1.331-1.183-7.503-6.667-7.504 6.667z" fill="#000"></path></svg>
                                 </svg>
@@ -134,39 +135,55 @@
      
         var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
         var recognition = new SpeechRecognition();
-        recognition.lang = 'en-GB';
+        recognition.lang = 'en';
         
         var mouseDown = false;
         var micBtn = document.getElementById("mic");
         micBtn.addEventListener("mousedown", startSpeech)
-        micBtn.addEventListener("mouseup",stopSpeech)
+        micBtn.addEventListener("mouseup", stopSpeech)
+        var inputText = document.getElementById("chat");
+
         document.body.onkeydown = function(e){
-            if(e.keyCode == 32) startSpeech(e);
+            if(e.keyCode == 32) //spacebar
+            {
+                if(e.target != document.getElementById("questionInput") && e.target != document.getElementById("chat"))
+                    startSpeech(e);
+            }   
         }
         document.body.onkeyup = function(e){
-            if(e.keyCode == 32) stopSpeech(e)
-            if(e.keyCode == 13) onUserText(e)
+            if(e.keyCode == 32) //spacebar
+                stopSpeech(e)
+            if(e.keyCode == 13) //enter
+                onUserText(e)
+        }
+        function onSendMsg(){
+            var value = document.getElementById("questionInput").value;
+            var e = {target: {value : value}};
+            onUserText(e)
         }
         function onUserText(e){
             var value = e.target.value;
+            if(value == "") return;
+
             var msg = {
                 type:"data",
                 data:{ user: {text: value}}
             }
             var time = getCurrentTime();
             messages.push({"from":"user", "text": value, "time": time});
-            uploadChat()
+            updateChat()
             //showUserMessage(value)
             BP.bp.onData(msg)
             e.target.value = "";
         }
         function startSpeech(e){
-            micBtn.classList.add("active")
+            micBtn.classList.add("active");
+            inputText.placeholder = "I'm listening..."
             e.preventDefault()
             if(!mouseDown)
             {
                 recognition.start();
-                var msg =  [ {type: "control", state: "LISTENING", start:0, end:10,  composition: "OVERWRITE"}]
+                var msg =  [ {type: "control", state: LS.Globals.LISTENING, start:0, end:10,  composition: "OVERWRITE"}]
                 BP.bp.onActions(msg)
             }
                 
@@ -174,7 +191,8 @@
             
         }
         function stopSpeech(e){
-            micBtn.classList.remove("active")
+            micBtn.classList.remove("active");
+            inputText.placeholder = "Type something"
             if(mouseDown)
                 recognition.stop();
             mouseDown = false;
@@ -189,7 +207,7 @@
                 }
                 var time = getCurrentTime();
                 messages.push({"from":"user", "text":transcription, "time":time})
-                uploadChat()
+                updateChat()
                // showUserMessage(transcription)
                 BP.bp.onData(msg)
             }
@@ -221,7 +239,11 @@
                                 {
                                     var time = getCurrentTime();
                                     messages.push({"from":"avatar", "text":m.data[i].text, "time": time})
-                                    uploadChat()
+                                    updateChat()
+                                    /*if(m.data[i].text.includes("number"))
+                                        recognition.lang = "en-PH"
+                                    else
+                                        recognition.lang = "en-GB"*/
                                     //showAgentMessage(m.data[i].text)
                                 }
                             }
@@ -250,7 +272,6 @@
         // Close the dropdown if the user clicks outside of it
         document.onclick = function(event) {
             event.preventDefault()
-            
             if (!event.target.matches('#menu')) {
                 var options = document.getElementsByClassName("menu-options");
                 for(var i = 0; i < options.length; i++) {
@@ -260,12 +281,9 @@
                     }
                 }
             }
-            if(event.target.parentNode.className == "close-icon"){
+            if(event.target.className == "close-icon"){
                 window.location.hash = "";
                 document.getElementsByClassName("transcript-container")[0].classList.remove("show-chat")
-            }
-            else if (event.target.parentNode.className == "download-button"){
-                
             }
            
         }
@@ -283,7 +301,7 @@
             } 
                 
         })*/
-        function uploadChat(){
+        function updateChat(){
             var chat = document.getElementsByClassName("transcript-chat")[0];
             chat.innerHTML = "";
             for(var i = 0; i < messages.length; i++){
@@ -298,6 +316,8 @@
                 msgDiv.appendChild(msg);
                 chat.appendChild(msgDiv);
             }
+            var chatContent = document.getElementsByClassName("transcript-content")[0];
+            chatContent.scroll(0,chatContent.scrollHeight)
         }
         function showUserMessage(text){
             var chat = document.getElementsByClassName("transcript-chat")[0];
@@ -373,24 +393,46 @@
 
 
         function exportChatData(){
+            var lengthOfPage = 210;
             const doc = new jspdf.jsPDF();
-
+            doc.addImage("imgs/bplanner.png", "JPEG", 20, 10, 57,24);
+            doc.addImage("imgs/GTI logo.png", "JPEG", 180, 10, 15,15);
+            var y = 50;
             for(var i = 0; i < messages.length; i++){
                 var msg = messages[i];
-                var x = 20;
-                var pos = "left";
+                var x = 170;
+                var pos = "right";
                 
                 if(msg.from == "avatar")
-                    pos = "right"
+                {
+                    pos = "left";
+                    x = 20;
+                }
+                
+                //Time        
                 doc.setFontSize(8);
                 doc.setTextColor(100);
-                doc.text(msg.from.toUpperCase() + " " + msg.time, x, 10*i, null, null, pos);
+                doc.text(msg.from.toUpperCase() + " " + msg.time, x, y, null, null, pos);
+                //Text
                 doc.setFontSize(10);
                 doc.setTextColor(0);
-                doc.text(msg.text, x, 10*i+5, null, null, pos);
+                var splitText = doc.splitTextToSize(msg.text, lengthOfPage-x-10);
+                y+=5;
+                //loop thru each line and output while increasing the vertical space
                 
+                for(var c = 0, stlength = splitText.length ; c < stlength ; c++){
+
+                    doc.text(splitText[c], x, y, null, null, pos);
+                    y+= 5;
+
+                }
+            y+=5;     
             }
-            doc.save("BP-chat-player.pdf"); // will save the file in the current working directory
+            var path_params = window.location.search.split("/");
+            var name = path_params[path_params.length-1].replace(".json", "");
+            name = decodeURI(name);
+
+            doc.save("BP Chat-"+name+".pdf"); // will save the file in the current working directory
         }
         function addZero(i) {
             if (i < 10) {i = "0" + i}

@@ -247,6 +247,7 @@ class Interface {
             if(!session)
             {
                 LiteGUI.menubar.add("Account/Login", {callback: this.showLoginDialog.bind(this)});
+                this.showLoginDialog()
             }else
             {
                 // LiteGUI.menubar.add("Account/Profile", {callback: this.showAccountInfo.bind(this)});
@@ -291,7 +292,7 @@ class Interface {
             LiteGUI.menubar.root.firstElementChild.appendChild(theme_mode)
         }).bind(this);
     
-        LiteGUI.menubar.refresh();
+       // LiteGUI.menubar.refresh();
 
     }
     checkExistingSession( on_complete )

@@ -48,7 +48,7 @@
     margin-top: 12px;
     margin-bottom: 32px;
     max-width: 300px;
-    border-bottom: 1px solid white;
+    /*border-bottom: 1px solid white;*/
 }
 .user-input {
     box-sizing: border-box;
@@ -85,7 +85,8 @@
     border-bottom: 1px solid #4d4d50;
     min-height: 50px;
     margin-bottom: 0px;
-    /*backdrop-filter: blur(3px) brightness(0.95);*/
+    border-radius: 10px 10px 0px 0px;
+    backdrop-filter: blur(3px) brightness(0.95);
 }
 .input-container {
     -webkit-box-align: center;
@@ -115,7 +116,7 @@
 }
 input{
     background-color: transparent;
-    color: rgb(92, 92, 92);
+    color: rgb(77 77 80);
     box-sizing: border-box;
     margin: 0px;
     min-width: 0px;
@@ -499,6 +500,7 @@ input:focus{
   opacity:0;
   transform: translate(40px, 40px);
   position:absolute;
+  z-index: 1000;
 }
 .show-chat{
   opacity: 1!important;
@@ -603,7 +605,7 @@ input:focus{
   margin: 0px;
   min-width: 400px;
   flex: 1 1 0%;
-  overflow: auto;
+  overflow-y:scroll;
   -webkit-box-pack: end;
   justify-content: flex-end;
   display: flex;
@@ -617,7 +619,7 @@ input:focus{
   display: flex;
   max-width: 100%;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: hidden;
   flex-direction: column;
 }
 .avatar-message{
@@ -685,4 +687,29 @@ input:focus{
   height: 48px;
   z-index: 1;
   font-family: "Varela Round", system-ui, sans-serif;
+}
+/*--Scroll--*/
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-color: #d3d3d3;
+  border-radius: 20px;
+  border: 6px solid rgb(246 246 246 / 68%);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a8bbbf;
+}
+svg, span {
+  pointer-events: none;
 }
