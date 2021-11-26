@@ -501,9 +501,13 @@ input:focus{
   transform: translate(40px, 40px);
   position:absolute;
   z-index: 1000;
+  user-select: none;
+  pointer-events: none;
 }
 .show-chat{
   opacity: 1!important;
+  user-select:auto;
+  pointer-events: auto;
 }
 .transcript{
   box-sizing: border-box;
