@@ -2397,7 +2397,7 @@ Parallel.prototype.tick = function(agent, dt, info){
 }
 Conditional.prototype.tick = function(agent, dt, info )
 {
-    if(info&&info.tags)
+    if(this.properties.from_tags&& info&&info.tags)
     {
         for(var i in info.tags)
         {
@@ -2461,8 +2461,7 @@ Conditional.prototype.tick = function(agent, dt, info )
 
 BoolConditional.prototype.tick = function(agent, dt, info )
 {
-    if(info&&info.tags)
-    {
+    if(this.properties.from_tags&& info&&info.tags)    {
         for(var i in info.tags)
         {
             this.properties.bool_state = Boolean(info.tags[i]);
@@ -2893,7 +2892,8 @@ TriggerSubtree.prototype.tick = function(agent, dt, info)
     {
         var obj = {STATUS:STATUS.fail}
         return obj;
-    } 
+    }
+    this.graph.context.last_event_node = null; 
     var value = child.tick(agent, dt);
 
     if(value && (value.STATUS == STATUS.running || value.STATUS == STATUS.success))

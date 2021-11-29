@@ -501,15 +501,17 @@ function Conditional()
         min: 0,
         max: 100,
         text: "threshold",
-				property_to_compare:"", 
-				limit_value: 50, 
-				value_to_compare:null,
-      	comparison_type : ">"
+		property_to_compare:"", 
+		limit_value: 50, 
+		value_to_compare:null,
+      	comparison_type : ">",
+		from_tags: false
     };
   	this.combo = this.addWidget("combo","Type:", ">", function(v){that.properties.comparison_type = v;}, { values:function(widget, node){
         return [">","<","==", "!=", "<=", ">=", "includes"];
     }} ); 
     this.slider = this.addWidget("string","Threshold", this.properties.limit_value, function(v){ that.properties.limit_value = v; }, this.properties  );
+	this.toogle = this.addWidget("toggle", "Use tags data", this.properties.from_tags, function(v){ that.properties.from_tags = v;})
 
     this.editable = { property:"value", type:"number" };
 	this.widgets_up = true;
@@ -709,11 +711,12 @@ function BoolConditional()
         title:"", 
         property_to_compare:"", 
         value_to_compare:null, 
-        bool_state:true
+        bool_state:true,
+		from_tags: false
     };
     // this.size = [80,60];
     this.slider = this.addWidget("toggle","Success if value is:", this.properties.bool_state, function(v){ console.log(v);that.properties.bool_state = v; }, this.properties  );
-
+	this.toogle = this.addWidget("toggle", "Use tags data", this.properties.from_tags, function(v){ that.properties.from_tags = v;})
     this.editable = { property:"value", type:"number" };
     // this.flags = { widgets_up: true };
 	this.widgets_up = true;

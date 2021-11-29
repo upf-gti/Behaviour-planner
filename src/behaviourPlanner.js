@@ -491,10 +491,6 @@ class BehaviourPlanner{
 
         return o;
     }
-
-    toJSON(type, name){
-
-    }
     loadPlanner(url, on_complete){
         var that = this;
         this.load( url, loadEnvironment.bind(this), null, null, null );
@@ -517,18 +513,6 @@ class BehaviourPlanner{
                 graph.name =i;
                 g.graph.configure(graph);
 
-                for(var j in graph.nodes){
-                    var node = graph.nodes[j];
-                    if(node.type == "network/sillyclient"){
-                        var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
-
-                        node.connectSocket();
-                        this.streamer.ws = node._server;
-                        node._server.onReady = this.streamer.onReady;
-                        this.streamer.is_connected = node._server.is_connected;
-                    }
-                }
-
             }
         }
 
@@ -537,9 +521,7 @@ class BehaviourPlanner{
         for(var i in env.agents){
             var data = env.agents[i];
             agent = new Agent(data);
-           /* this.env_tree.children.push({id:agent.uid, type: "agent"});
-            this.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
-        */}
+        }
 
         if(agent){
             agent.is_selected = true;
@@ -553,22 +535,10 @@ class BehaviourPlanner{
         //User
         if(env.user){
             let user = new User(env.user);
-            /*this.env_tree.children.push({id:user.uid, type: "user"});
-            this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
-            */
             this.user = user;
 
             UserManager.users[user.uid] = user;
             UserManager.addPropertiesToLog(user.properties);
-
-            /*this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
-                detail: {
-                    data: {
-                        id: this.env_tree.id,
-                        type: this.env_tree.type
-                    }
-                }
-            }));*/
         }
 
         //Gestures
@@ -659,35 +629,9 @@ class BehaviourPlanner{
             if(response.env.agents[0])
              that.agent.configure(response.env.agents[0])
             that.loadGraph(response.env.graphs[0].behaviour)
-            //var hbt_graph = new HBTGraph(response.env.graphs[0].behaviour.name);
-            //hbt_graph.graph = response.env.graphs[0].behaviour;
-            //that.hbt_graph = hbt_graph;
-            
-            //Set Iframe
-           /* document.getElementById("iframe").src = response.env.iframe;
-            document.getElementById("iframe").contentWindow.onloadeddata = function(){
-                document.getElementById("iframe").contentWindow.LS.Globals.room = response.env.token;
-            };
-            */
-            
-            //Start WebSocket connection
-           /* that.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
-	        that.streamer.onDataReceived = that.onData.bind(that);
-			that.streamer.onConnect = function(){
-                that.streamer.createRoom(response.env.token);
-            }*/
 
             if(LS)
                 LS.Globals.sendMsg = that.onData.bind(that)
-
-        /*    if(on_complete)
-                on_complete(that, url);*/
-
-           // that.loadResources( inner_all_loaded );
-          //  LEvent.trigger(that, EVENT.LOAD );
-
-           // if(!ONE.ResourcesManager.isLoading())
-            //    inner_all_loaded();
         }
 
 
