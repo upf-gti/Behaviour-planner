@@ -393,7 +393,8 @@
 
 
         function exportChatData(){
-            var lengthOfPage = 210;
+            var pageWeight = 210;
+            var pageHeight = 297; 
             const doc = new jspdf.jsPDF();
             doc.addImage("imgs/bplanner.png", "JPEG", 20, 10, 57,24);
             doc.addImage("imgs/GTI logo.png", "JPEG", 180, 10, 15,15);
@@ -412,11 +413,16 @@
                 //Time        
                 doc.setFontSize(8);
                 doc.setTextColor(100);
+                if (y>=pageHeight - 50)
+                {
+                    doc.addPage();
+                    y = 30;
+                }
                 doc.text(msg.from.toUpperCase() + " " + msg.time, x, y, null, null, pos);
                 //Text
                 doc.setFontSize(10);
                 doc.setTextColor(0);
-                var splitText = doc.splitTextToSize(msg.text, lengthOfPage-x-10);
+                var splitText = doc.splitTextToSize(msg.text, pageWeight-x-10);
                 y+=5;
                 //loop thru each line and output while increasing the vertical space
                 
