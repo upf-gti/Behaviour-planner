@@ -762,24 +762,13 @@ class Interface {
                 {
                     if(!data)
                         return;
-                    if(!data.behaviour)
-                    {
-                       /* var graphData = {behaviour : data};
-                        data = graphData;*/
-                        console.log("Basic graph imported")
-
-                    }
-                    else if (data.type) {
-                      console.log(data.type + " imported")
-                    }
-                    else console.log("Behaviour graph imported")
+                    console.log("Behaviour graph imported")
 
                     that.lastLoadedFile = null;
 
                     that.openImportDialog(data);
 
                 };
-                dialog.close();
 		});
 		dialog.add( inspector );
 		dialog.adjustSize(2);
