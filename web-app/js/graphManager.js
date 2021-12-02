@@ -1,3 +1,4 @@
+/* Interface - Graph extension */
 var GraphManager = {
    graphs: {},
    graph_canvas: {},
@@ -28,7 +29,7 @@ var GraphManager = {
                 LGraphCanvas.active_canvas = this.currentCanvas = hbt_canvas;
                 break;
 
-            case this.BASICGRAPH:
+            /*case this.BASICGRAPH:
                 var graph = {}
                 graph.graph = new LGraph(name);
                 graph.type = GraphManager.BASICGRAPH;
@@ -36,7 +37,7 @@ var GraphManager = {
                /* var canvasDOM = document.createElement("CANVAS");
                 canvasDOM.id = "new-canvas-"+GraphManager.graphs.length;*/
 
-                graph.id = "graph-canvas-"+graph.name;
+              /*  graph.id = "graph-canvas-"+graph.name;
                 this.graphs[graph.id] = graph
                 CORE.Interface.newTab(graph)
 
@@ -46,7 +47,7 @@ var GraphManager = {
                 canvas.init(graph);
                 this.currentCanvas = canvas;
                 LGraphCanvas.active_canvas = this.currentCanvas;
-                break;
+                break;*/
         }
 
         return graph;

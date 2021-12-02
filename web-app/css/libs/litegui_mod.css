@@ -910,6 +910,7 @@ div {
 	padding: 4px 10px;
 	font-size: 14px;
 	text-align: justify;
+	height: calc(100% - 61px);
 }
 
 .litepanel, .litedialog {

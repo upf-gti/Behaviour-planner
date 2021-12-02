@@ -1,12 +1,13 @@
 "use strict";
 
-//ANIMATE by Javi Agenjo (@tamat) 2018 and modifyed by Eva Valls (2021)
+//ANIMATE by Javi Agenjo (@tamat) 2018 and modifyed by Eva Valls (2021) to define Agent Behaviors through the time
 //************************************
-//This file contains the code necessary to store and play animations (Project, Tracks and Clips definitions)
-//All the editor features are in ANIMED.js
-
+//This file contains the code necessary to define BEHAVIORS (verbal and non-verbal) based on BML standard (Project, Tracks and Clips definitions)
+//All the editor features are in timelineEditor.js (TIMELINE_EDITOR)
+/*
+*
+*/
 (function(global){
-
 var ANIM = global.ANIM = {};
 
 var DEG2RAD = 0.0174532925;
@@ -377,11 +378,6 @@ Track.prototype.getTempCanvas = function()
 	return this._temp_canvas;
 }
 
-//defined in animate-webgl.js
-Track.prototype.getTempTexture = function()
-{
-	return null;
-}
 
 Track.prototype.add = function( clip, time, duration )
 {
@@ -1872,8 +1868,8 @@ function vec2Length(x,y)
 function replace(target, search, replacement) {
     return target.replace(new RegExp(search, 'g'), replacement);
 };
-
-global.getTime = performance.now.bind(performance);
+if(getTime() == undefined)
+	global.getTime = performance.now.bind(performance);
 
 
 function RGB(r,g,b) { return "rgb(" + Math.floor(Math.clamp(r,0,1)*255) + "," + Math.floor(Math.clamp(g,0,1)*255) + "," + Math.floor(Math.clamp(b,0,1)*255) + ")"; }

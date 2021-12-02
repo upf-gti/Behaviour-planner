@@ -428,26 +428,15 @@ class Interface {
         var div_area = graph_area.add(div);
 
         graph_area.content.className+= " graph-content";
-        graph_area.onResize = GraphManager.resize.bind(this);
+        graph_area.getSection(0).onresize = GraphManager.resize.bind(this);
 
-    
-       /* var play_btn2 = this.addButton("", {title: "Play graphs", id: "", className: "btn btn-icon right play-btn",innerHTML: this.icons.play, callback: function(){
-            CORE.App.onPlayClicked();
-        }});*/
         var reload_btn2 = this.addButton("", {title: "Reload scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.refresh, callback: function () {
             that.iframearea.add(that.iframe)
             that.iframe.contentWindow.onload = function(){ that.iframe.contentWindow.player.skip_play_button = true}
 
         }});
-        /*var show_btn2 = this.addButton("", {title: "Show scene", id: "", className: "btn btn-icon right",innerHTML: this.icons.visibility, callback: function openOther() {
-            iframeWindow = window.open("iframe.html", "otherWindow");
-        }});*/
-       
 
-       // div2.append(play_btn2);
         div2.append(reload_btn2);
-       // div2.append(show_btn2);
- 
         // Drive tab
         CORE["Drive"].createTab();
 
@@ -468,16 +457,16 @@ class Interface {
 
         /*Timeline*/
         this.timeline_section = graph_area.getSection(1);
-
+        this.timeline_section.id = "timeline-section"
         var title = "Timeline Intent "+"<div class='buttons'><button class='litebutton mini-button close-btn'>"+ LiteGUI.special_codes.close +"</button></div>";
-        this.timeline_dialog = new LiteGUI.Dialog('Intent', { title:title,className:"timeline-dialog", autoresize:true, parent: graph_area.getSection(1).root, close: false, minimize: false, width: graph_area.content.clientWidth, height: 250, scroll: false, resizable: false, draggable: false });
+        this.timeline_dialog = new LiteGUI.Dialog('Intent', { title:title,className:"timeline-dialog", autoresize:true, parent: this.timeline_section.content, close: false, minimize: false, width: graph_area.content.clientWidth, height: "100%", scroll: false, resizable: false, draggable: false });
         this.timeline_dialog.close = function(){
           GraphManager.resize();
           graph_area.hideSection(1);
         }
         document.querySelector(".close-btn").addEventListener("click",this.timeline_dialog.close);
         //this.timeline_dialog.addButton(LiteGUI.special_codes.close, {callback: this.timeline_dialog.close, className:"close-btn"})
-        var timeline = ANIMED.init();
+        var timeline = TIMELINE_EDITOR.init();
         this.timeline_dialog.add(timeline);
 
 
@@ -493,19 +482,22 @@ class Interface {
                 height = that.timeline_dialog.root.parentElement.offsetHeight;
             that.timeline_dialog.setSize(that.timeline_dialog.root.parentElement.offsetWidth,height)
             onResize(that.timeline_dialog.content)
-            onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
+            timeline.height = height - 25;
+            document.getElementById("timeline-canvas").height = height - 25;
+            //onResize(document.getElementById("timeline-canvas"), function(w,h){ANIMED.timeline.height=h})
         }
 
         graph_area.hideSection(1);
+        
         this.timeline_section.onresize = this.timeline_dialog.resize.bind(this);
 
-        window.addEventListener('resize', function(e)
+       /* window.addEventListener('resize', function(e)
         {
             GraphManager.resize();
 
             // Call here any other resize
             // ...
-        });
+        });*/
     }
 
     onExpandInspector(area,e) {

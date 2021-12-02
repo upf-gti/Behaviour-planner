@@ -339,94 +339,26 @@ class App{
         UserManager.removeAllUsers();
         GraphManager.removeAllGraphs();
 
-        //Graphs
-      /*  for(var i in env.graphs){
-            var graph = env.graphs[i];
-            if(graph.behaviour){
-                this.loadBehaviour(graph);
-            }else{
-                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
-                graph.name =i;
-                g.graph.configure(graph);
-
-                for(var j in graph.nodes){
-                    var node = graph.nodes[j];
-                    if(node.type == "network/sillyclient"){
-                        var node = LGraphCanvas.active_canvas.graph_canvas.graph.getNodeById(node.id);
-
-                        node.connectSocket();
-                        this.streamer.ws = node._server;
-                        node._server.onReady = this.streamer.onReady;
-                        this.streamer.is_connected = node._server.is_connected;
-                    }
-                }
-
-            }
-        }
-
-        //Agent
-        let agent = null;
-        for(var i in env.agents){
-            var data = env.agents[i];
-            agent = new Agent(data);
-            this.env_tree.children.push({id:agent.uid, type: "agent"});
-            this.interface.tree.insertItem({id:agent.uid, type: "agent"},"Environment");
-        }
-
-        if(agent){
-            agent.is_selected = true;
-            this.bp.agent = agent;
-
-            AgentManager.agents[agent.uid] = agent;
-            AgentManager.addPropertiesToLog(agent.properties);
-            AgentManager.agent_selected = agent;
-        }
-
-        //User
-        if(env.user){
-            let user = new User(env.user);
-            this.env_tree.children.push({id:user.uid, type: "user"});
-            this.interface.tree.insertItem({id:user.uid, type: "user"},"Environment");
-            
-            this.bp.user = user;
-
-            UserManager.users[user.uid] = user;
-            UserManager.addPropertiesToLog(user.properties);
-
-            this.interface.tree.setSelectedItem(this.env_tree.id, true, this.interface.createNodeInspector({
-                detail: {
-                    data: {
-                        id: this.env_tree.id,
-                        type: this.env_tree.type
-                    }
-                }
-            }));
-        }
-
-        //Gestures
-        if(env.gestures){
-            this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
-            for(var i in env.gestures){
-                GestureManager.createGesture(env.gestures[i]);
-            }
-            GestureManager.createGestureInspector();
-        }
-        //Entities
-        if(env.entities){
-            for(var tag in env.entities){
-                EntitiesManager.addWordsToWorld(tag,env.entities[tag]);
-            }
-        }*/
         this.bp.loadEnvironment(data);
-        if(this.bp._agent)
+        if(this.bp.agent)
         {
-            this.env_tree.children.push({id:this.bp._agent.uid, type: "agent"});
-            this.interface.tree.insertItem({id:this.bp._agent.uid, type: "agent"},"Environment");
+            this.env_tree.children.push({id:this.bp.agent.uid, type: "agent"});
+            this.interface.tree.insertItem({id:this.bp.agent.uid, type: "agent"},"Environment");
+            AgentManager.agents[this.bp.agent.uid] = this.bp.agent;
+            AgentManager.addPropertiesToLog(this.bp.agent.properties);
+            AgentManager.agent_selected = this.bp.agent;
         }
-        if(this.bp._user)
+        if(this.bp.user)
         {
-            this.env_tree.children.push({id:this.bp._user.uid, type: "user"});
-            this.interface.tree.insertItem({id:this.bp._user.uid, type: "user"},"Environment");
+            this.env_tree.children.push({id:this.bp.user.uid, type: "user"});
+            this.interface.tree.insertItem({id:this.bp.user.uid, type: "user"},"Environment");
+            
+            UserManager.users[this.bp.user.uid] = this.bp.user;
+            UserManager.addPropertiesToLog(this.bp.user.properties);
+        }
+        if(this.bp.hbt_graph)
+        {
+            GraphManager.addGraph(this.bp.hbt_graph);
         }
         if(env.iframe)
         {

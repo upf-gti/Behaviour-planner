@@ -1,5 +1,4 @@
 
-//Expand B_TYPE list from HBTree.js
 var B_TYPE = {
 	moveToLocation:0,
 	lookAt:1,

@@ -506,13 +506,7 @@ class BehaviourPlanner{
             if(graph.behaviour){
                 if(graph.behaviour){
                     let hbt_graph = this.loadGraph(graph.behaviour);
-                    GraphManager.addGraph(hbt_graph);
                 }
-            }else{
-                var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
-                graph.name =i;
-                g.graph.configure(graph);
-
             }
         }
 
@@ -527,28 +521,15 @@ class BehaviourPlanner{
             agent.is_selected = true;
             this.agent = agent;
 
-            AgentManager.agents[agent.uid] = agent;
-            AgentManager.addPropertiesToLog(agent.properties);
-            AgentManager.agent_selected = agent;
+    
         }
 
         //User
         if(env.user){
             let user = new User(env.user);
             this.user = user;
-
-            UserManager.users[user.uid] = user;
-            UserManager.addPropertiesToLog(user.properties);
         }
 
-        //Gestures
-        if(env.gestures){
-           /* this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
-           */ for(var i in env.gestures){
-                GestureManager.createGesture(env.gestures[i]);
-            }
-            GestureManager.createGestureInspector();
-        }
         //Entities
         if(env.entities){
             for(var tag in env.entities){

@@ -1,3 +1,7 @@
+/*Dependences:
+* LiteGraph
+* TimelineEditor
+*/
 LiteGraph.allow_scripts = true;
 //-----------------------GRAPH EDITOR------------------------------------//
 function GraphEditor(data){
@@ -1142,6 +1146,14 @@ NodeScript.prototype.onInspect = function(inspector)
     // inspector.addCode("Function","return A;")
 }
 
+TimelineIntent.prototype.onDblClick = function(){
+    TIMELINE_EDITOR.project = this;
+    TIMELINE_EDITOR.project.name = name;
+ 
+    TIMELINE_EDITOR.clearUndo();
+    TIMELINE_EDITOR.setTime(this.current_time)
+    TIMELINE_EDITOR.showTimeline(true);
+}
 
 //TODO ParseEvent not updated to new events!
 /*

@@ -1,4 +1,4 @@
-/** BEHAVIOUR NODES:
+/** BEHAVIOR NODES:
  * It contains the definition/redefinition of nodes and its execution used in the Behaviour Planner
  */
 
@@ -1053,14 +1053,6 @@ TimelineIntent.prototype.tick = function(agent, dt, info){
     return {STATUS:STATUS.success, data:behaviours};
 }
 
-TimelineIntent.prototype.onDblClick = function(){
-    ANIMED.project = this;
-    ANIMED.project.name = name;
- 
-    ANIMED.clearUndo();
-    ANIMED.setTime(this.current_time)
-    ANIMED.showTimeline(true);
-}
 
 TimelineIntent.prototype.add = function(track){
     if(track.constructor !== ANIM.Track) throw("only tracks allowed to be added to project");
@@ -1086,9 +1078,6 @@ TimelineIntent.prototype.clear = function( skip_default_tracks ){
     this.markers.length = 0;
 }
 
-TimelineIntent.prototype.showClipPanel = function(){
- 
-}
 
 LiteGraph.registerNodeType("btree/TimelineIntent", TimelineIntent);
 

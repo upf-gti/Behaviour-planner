@@ -1,16 +1,17 @@
-
 //BehaviourPlanner manages the core logic of Behaviour Graphs
 
 /**
  * Dependencies:
- *  LiteGraph
  *  HBTree
- *  graphManager
  *  utils
  */
 function _behaviourPlanner(global)
 {
-    
+    var HBTree = global.HBTree;
+    var HBTGraph = HBTree.HBTGraph;
+    var HBTContext = HBTree.HBTContext;
+    entitiesManager = global.EntitiesManager;
+
     class Agent{
         constructor(o ,pos){
             this.uid =  "Agent-" + Date.now();
@@ -140,10 +141,11 @@ function _behaviourPlanner(global)
     }
     global.User = User;
 
-    var STATE = {
-        PLAYING: 1,
+    var BP_STATE = {
         STOP: 0,
+        PLAYING: 1,
     };
+    
 
     var EVENTS = {
         textRecieved: 0,
@@ -159,10 +161,10 @@ function _behaviourPlanner(global)
     var corpus;
 
     var tmp = {
-        vec: vec3.create(),
+      /*  vec: vec3.create(),
         axis: vec3.create(),
         axis2: vec3.create(),
-        inv_mat: mat4.create(),
+        inv_mat: mat4.create(),*/
         agent_anim: null,
         behaviours: null
     };
@@ -170,7 +172,6 @@ function _behaviourPlanner(global)
     //var userText = false;
     //var currentContext = null;
     //var currentHBTGraph = null;
-    var entities = global.entities = ["@people", "@people.FirstName", "@people.LastName","@people.Honorific", "@places", "@places.Country", "@places.City", "@places.Region", "@places.Adress", "@number", '@topic', '@organization', '@organization.SportsTeam', '@organization.Company', '@organization.School', '@phone_number', "@email"];
 
     class BehaviourPlanner{
 
@@ -453,19 +454,19 @@ function _behaviourPlanner(global)
             let context = new HBTContext();
             graph.graph.context = context;
             graph.graph.configure(o);
-    
+
             this.hbt_graph = graph;
-    
+
             return graph;
         }
-    
+
         loadCorpus(o){
             o.array = [];
             for(var i in o.data){
                 o.array.push(i);
             }
             this.corpus = o;
-    
+
             return o;
         }
         loadPlanner(url, on_complete){
@@ -483,49 +484,30 @@ function _behaviourPlanner(global)
                 if(graph.behaviour){
                     if(graph.behaviour){
                         let hbt_graph = this.loadGraph(graph.behaviour);
-                        GraphManager.addGraph(hbt_graph);
                     }
-                }else{
-                    var g = GraphManager.newGraph(GraphManager.BASICGRAPH, graph.name);
-                    graph.name =i;
-                    g.graph.configure(graph);
-    
                 }
             }
-    
+
             //Agent
             let agent = null;
             for(var i in env.agents){
                 var data = env.agents[i];
                 agent = new Agent(data);
             }
-    
+
             if(agent){
                 agent.is_selected = true;
                 this.agent = agent;
-    
-                AgentManager.agents[agent.uid] = agent;
-                AgentManager.addPropertiesToLog(agent.properties);
-                AgentManager.agent_selected = agent;
+
+        
             }
-    
+
             //User
             if(env.user){
                 let user = new User(env.user);
                 this.user = user;
-    
-                UserManager.users[user.uid] = user;
-                UserManager.addPropertiesToLog(user.properties);
             }
-    
-            //Gestures
-            if(env.gestures){
-               /* this.interface.tree.insertItem({id:"Gesture Manager", type: "gesture"},"Environment");
-               */ for(var i in env.gestures){
-                    GestureManager.createGesture(env.gestures[i]);
-                }
-                GestureManager.createGestureInspector();
-            }
+
             //Entities
             if(env.entities){
                 for(var tag in env.entities){
@@ -622,6 +604,165 @@ function _behaviourPlanner(global)
         }
     }
     global.BehaviourPlanner = BehaviourPlanner;
-}
 
-_behaviourPlanner(this);
+    function Loader(options)
+    {
+        options = options || {};
+        this.options = options;
+        this.bp = new BehaviourPlanner() ;
+        this.bp.onActions = this.onActions;
+        this.debug = false;
+        this.autoplay = false;
+        this.skip_play_button = false;
+
+        this.last = this.now = performance.now();
+        //this will repaint every frame and send events when the mouse clicks objects
+        this.state = BehaviourPlanner.Loader.STOPPED;
+
+        //set options
+        this.configure( options );
+        
+    }
+
+    /**
+    * Loads a config file for the player, it could also load an scene if the config specifies one
+    * @method loadConfig
+    * @param {String} url url to the JSON file containing the config
+    * @param {Function} on_complete callback trigged when the config is loaded
+    * @param {Function} on_scene_loaded callback trigged when the scene and the resources are loaded (in case the config contains a scene to load)
+    */
+    Loader.prototype.loadConfig = function( url, on_complete, on_scene_loaded )
+    {
+        var that = this;
+        ONE.Network.requestJSON( url, inner );
+        function inner( data )
+        {
+            that.configure( data, on_scene_loaded );
+            if(on_complete)
+                on_complete(data);
+        }
+    }
+
+    Loader.prototype.configure = function( options, on_scene_loaded )
+    {
+        var that = this;
+
+        if(options.resources !== undefined)
+            ONE.ResourcesManager.setPath( options.resources );
+
+        if(options.proxy)
+            ONE.ResourcesManager.setProxy( options.proxy );
+        if(options.filesystems)
+        {
+            for(var i in options.filesystems)
+                ONE.ResourcesManager.registerFileSystem( i, options.filesystems[i] );
+        }
+
+        if(options.allow_base_files)
+            ONE.ResourcesManager.allow_base_files = options.allow_base_files;
+
+        /*if(options.scene_url)
+            this.loadScene( options.scene_url, on_scene_loaded );*/
+    }
+    Loader.STOPPED = 0;
+    Loader.PLAYING = 1;
+    Loader.PAUSED = 2;
+
+    /**
+    * Loads an scene and triggers start
+    * @method loadPlanner
+    * @param {String} url url to the JSON file containing all the behaviour planner info
+    * @param {Function} on_complete callback trigged when the behaviour planner and the resources are loaded
+    */
+    Loader.prototype.loadPlanner = function(url, on_complete, on_progress)
+    {
+        var that = this;
+        var bp = this.bp;
+        if(this.options.proxy)
+            url = ONE.ResourcesManager.proxy + url;
+        bp.load( url, on_complete, null, inner_progress, inner_start );
+
+        function inner_start()
+        {
+        }
+        function inner_progress(){
+
+        }
+    }
+    Loader.prototype.loadScene = function(url, room)
+    {
+        //LiteSCENE CODE *************************
+        var settings = {
+            alpha: false, //enables to have alpha in the canvas to blend with background
+            stencil: true,
+            redraw: true, //force to redraw
+            autoplay: true,
+            resources: "https://webglstudio.org/fileserver/files",
+            autoresize: true, //resize the 3D window if the browser window is resized
+            loadingbar: true, //shows loading bar progress
+            proxy: "https://webglstudio.org/fileserver/files" //allows to proxy request to avoid cross domain problems, in this case the @ means same domain, so it will be http://hostname/proxy
+        };
+        /*SETTINGS_SETUP*/
+
+        var player = new LS.Player(settings);
+
+        var allow_remote_scenes = false; //allow scenes with full urls? this could be not safe...
+
+        //support for external server
+        var data = localStorage.getItem("wgl_user_preferences" );
+        if(data)
+        {
+            var config = JSON.parse(data);
+            if(config.modules.Drive && config.modules.Drive.fileserver_files_url)
+            {
+                allow_remote_scenes = true;
+                LS.ResourcesManager.setPath( config.modules.Drive.fileserver_files_url );
+            }
+        }
+
+        //allow to use Canvas2D call in the WebGLCanvas (this is not mandatory, just useful)
+        if( window.enableWebGLCanvas )
+            enableWebGLCanvas( gl.canvas );
+        
+        //this code defines which scene to load, in case you are loading an specific scene replce it by player.loadScene( scene_url )
+        player.loadScene( url, inner_scene_loaded.bind(room, this) );
+        function inner_scene_loaded(bpLoader, a){
+            that.room = this.toString();
+            if(LS)
+                    LS.Globals.sendMsg = bpLoader.bp.onData.bind(bpLoader.bp)
+            bpLoader.animate(that);
+        }
+    
+        /*else if( allow_remote_scenes || url && url.indexOf("://") == -1) //for safety measures
+            player.loadScene( url ); //the url must be something like: fileserver/files/guest/projects/Lee_FX.json
+        else 
+            player.loadConfig("config_BPplayer.json",player.loadScene);*/
+    }
+    Loader.prototype.animate = function(player){
+        var that = this;
+        player.ws = LS.Globals.ws = null;
+    // if(player.ws.readyState == player.ws.OPEN && that.bp.state == BP_STATE.STOP)
+        that.bp.play();
+
+        that.last = that.now;
+        that.now = performance.now();
+        dt = (that.now - that.last) * 0.001;
+        that.bp.update(dt);
+        requestAnimationFrame(that.animate.bind(that, player));
+    }
+    Loader.prototype.update = function(dt)
+    {
+        //BP  
+        this.bp.update(dt);
+    }
+    global.Loader = Loader;
+}
+if(typeof module !== "undefined"){
+	module.exports = function(HBTree,  behaviourNodes, entitiesManager){
+		var global = { HBTree: HBTree, behaviourNodes: behaviourNodes, EntitiesManager: entitiesManager};
+		_behaviourPlanner(global);
+		return global;
+	}
+}else{
+	_behaviourPlanner(this);
+}

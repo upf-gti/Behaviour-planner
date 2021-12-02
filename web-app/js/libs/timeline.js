@@ -9,31 +9,38 @@ function Timeline()
 	this.current_time = 0;
 	this.framerate = 30;
 	this.opacity = 0.8;
-	this.sidebar_width = 120;
+	this.sidebar_width = 200;
+	this.top_margin = 20;
 
 	//do not change, it will be updated when called draw
 	this.duration = 100;
 	this.position = [0,0];
-	this.size = [600,300];
+	this.size = [300,150];
 
 	this.current_scroll = 0; //in percentage
 	this.current_scroll_in_pixels = 0; //in pixels
-	this.scrollable_height = 600; //true height of the timeline content
+	this.scrollable_height = 0; //true height of the timeline content
 
 	this._seconds_to_pixels = 100;
 	this._pixels_to_seconds = 1/this._seconds_to_pixels;
 	this._canvas = null;
 	this._grab_time = 0;
 	this._start_time = 0;
-	this._end_time = 5;
+	this._end_time = 1;
 
 	this._last_mouse = [0,0];
 
+	this._tracks_drawn = [];
+
 	this.onDrawContent = null; //onDrawContent( ctx, time_start, time_end, timeline );
-	this.extended=true
 }
 
 global.Timeline = Timeline;
+
+Object.defineProperty( Timeline.prototype, "height", {
+	get: function() { return this.size[1]; },
+	set: function(v) { this.size[1] = v; }
+});
 
 //project must have .duration in seconds
 Timeline.prototype.draw = function( ctx, project, current_time, rect )
@@ -49,21 +56,21 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	this.position[1] = rect[1];
 	var w = this.size[0] = rect[2];
 	var h = this.size[1] = rect[3];
-	var timeline_height= h;
 	var P2S = this._pixels_to_seconds;
 	var S2P = this._seconds_to_pixels;
+	var timeline_height = this.size[1];
 
 	this.current_time = current_time;
 	var duration = this.duration = project.duration;
 	this.current_scroll_in_pixels = this.scrollable_height <= h ? 0 : (this.current_scroll * (this.scrollable_height - timeline_height));
 
 	ctx.save();
-	ctx.translate( this.position[0], this.position[1] + 20 ); //20 is the top margin area
+	ctx.translate( this.position[0], this.position[1] + this.top_margin ); //20 is the top margin area
 
 	//background
 	ctx.fillStyle = "#000";
 	ctx.globalAlpha = this.opacity * 0.5;
-	ctx.fillRect(0,-20,w,20);
+	ctx.fillRect(0,-this.top_margin,w,this.top_margin);
 	ctx.globalAlpha = this.opacity;
 	ctx.fillRect(0,0,w,h);
 	ctx.globalAlpha = 1;
@@ -92,8 +99,10 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	//this ones are limited to the true timeline (not the visible area)
 	var start = Math.ceil( Math.max(0,time_start) );
 	var end = Math.floor( Math.min(duration,time_end) + 0.01 );
-
+	
 	//calls using as 0,0 the top-left of the tracks area (not the top-left of the timeline but 20 pixels below)
+	this._tracks_drawn.length = 0;
+
 	if(this.onDrawContent)
 		this.onDrawContent( ctx, time_start, time_end, this );
 
@@ -136,13 +145,13 @@ Timeline.prototype.draw = function( ctx, project, current_time, rect )
 	var linex = this.timeToX( 0 );
 	if( linex > sidebar )
 	{
-		ctx.moveTo( linex, 20.5);
+		ctx.moveTo( linex, this.top_margin + 0.5);
 		ctx.lineTo( linex, h );
 	}
 	var linex = this.timeToX( duration );
 	if( linex > sidebar && linex < w )
 	{
-		ctx.moveTo( linex, 20.5);
+		ctx.moveTo( linex, this.top_margin + 0.5);
 		ctx.lineTo( linex, h );
 	}
 	ctx.stroke();
@@ -245,32 +254,46 @@ Timeline.prototype.drawMarkers = function( ctx, markers )
 }
 
 //helper function, you can call it from onDrawContent to render all the keyframes
-Timeline.prototype.drawTrackWithKeyframes = function( ctx, y, track_height, title, subtitle, track, track_index, prev_ref )
+Timeline.prototype.drawTrackWithKeyframes = function( ctx, y, track_height, title, subtitle, track, track_index, prev_ref, bullet_callback )
 {
 	track_index = track_index || 0;
+	var margin_left = 0;
 
 	if( track_index % 2 )
 	{
-		ctx.fillColor = [1,1,1,0.1];
+		ctx.fillStyle = "rgba(255,255,255,0.1)";
 		ctx.fillRect( 0, y, this.size[0], track_height );
 	}
 
+	if(track.enabled === false)
+		ctx.globalAlpha = 0.4;
+
+	if( bullet_callback )
+	{
+		ctx.fillStyle = "#AAA";
+		ctx.fillRect( 12, y+6, 14, 14 );
+		margin_left += 28;
+	}
+
+	this._track_bullet_callback = bullet_callback || null;
+	this._tracks_drawn.push([track,y+this.top_margin,track_height]);
+
 	ctx.font = Math.floor( track_height * 0.7) + "px Arial";
 	ctx.textAlign = "left";
-	ctx.fillColor = [1,1,1,0.8];
+	ctx.fillStyle = "rgba(255,255,255,0.8)";
 
 	if(prev_ref && prev_ref != this._last_ref)
-		ctx.fillText( title, 10, y + track_height * 0.75 );
+		ctx.fillText( title, margin_left + 10, y + track_height * 0.75 );
 	this._last_ref = prev_ref;
 
 	if(subtitle != null)
 	{
 		var info = ctx.measureText( title );
-		ctx.fillColor = [0.6, 0.8, 1, 0.8];
-		ctx.fillText( subtitle, 10 + info.width, y + track_height * 0.75 );
+		ctx.fillStyle = "rgba(100,180,255,0.8)";
+		ctx.fillText( subtitle, margin_left + 10 + info.width, y + track_height * 0.75 );
 	}
 
-	ctx.fillColor = [0.9,0.8,0.5,1];
+	ctx.fillStyle = "rgba(220,200,150,1)";
 	var keyframes = track.data;
 
 	if(keyframes)
@@ -285,9 +308,11 @@ Timeline.prototype.drawTrackWithKeyframes = function( ctx, y, track_height, titl
 			if( keyframe_posx > this.sidebar_width )
 				ctx.fillRect( keyframe_posx - 4, y + 4, 8, track_height - 8);
 		}
+
+	ctx.globalAlpha = 1;
 }
 
-//converts a time to
+//converts a time to 
 Timeline.prototype.xToTime = function( x, global )
 {
 	if( global )
@@ -316,7 +341,7 @@ Timeline.prototype.setScale = function(v)
 	this._seconds_to_pixels = v;
 	if( this._seconds_to_pixels > 1000 )
 		this._seconds_to_pixels = 1000;
-	this._pixels_to_seconds = 1/this._seconds_to_pixels;
+	this._pixels_to_seconds = 1/this._seconds_to_pixels;		
 }
 
 Timeline.prototype.processMouse = function(e)
@@ -332,6 +357,8 @@ Timeline.prototype.processMouse = function(e)
 	var y = e.offsetY;
 	e.deltax = x - this._last_mouse[0];
 	e.deltay = y - this._last_mouse[1];
+	var local_x = e.offsetX - this.position[0];
+	var local_y = e.offsetY - this.position[1];
 	this._last_mouse[0] = x;
 	this._last_mouse[1] = y;
 	var timeline_height = this.size[1];
@@ -340,6 +367,18 @@ Timeline.prototype.processMouse = function(e)
 
 	var is_inside = x >= this.position[0] && x <= (this.position[0] + this.size[0]) &&
 					y >= this.position[1] && y <= (this.position[1] + this.size[1]);
+
+	var track = null;
+	for(var i = this._tracks_drawn.length - 1; i >= 0; --i)
+	{
+		var t = this._tracks_drawn[i];
+		if( local_y >= t[1] && local_y < (t[1] + t[2]) )
+		{
+			track = t[0];
+			break;
+		}
+	}
+	e.track = track;
 
 	if( e.type == "mouseup" )
 	{
@@ -359,6 +398,9 @@ Timeline.prototype.processMouse = function(e)
 	if( e.type == "mousedown")
 	{
 		this._click_time = getTime();
+
+		if(this._track_bullet_callback && e.track)
+			this._track_bullet_callback(e.track,e,this,[local_x,local_y]);
 
 		if( timeline_height < this.scrollable_height && x > w - 10)
 		{
