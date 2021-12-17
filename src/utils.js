@@ -202,6 +202,10 @@ var UTILS = {
 		if (arr && arr.length == 2) {
 			return arr[1];
 		}
+	},
+	isTag(value)
+	{
+		return value.constructor === String && value.length && value[0] == "#";
 	}
 }
 

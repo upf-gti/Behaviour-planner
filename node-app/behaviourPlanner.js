@@ -1,17 +1,16 @@
 //BehaviourPlanner manages the core logic of Behaviour Graphs
 
+
 /**
  * Dependencies:
  *  HBTree
- *  utils
  */
-function _behaviourPlanner(global)
+(function _behaviourPlanner(global)
 {
-    var HBTree = global.HBTree;
+   /* var HBTree = global.HBTree;
     var HBTGraph = HBTree.HBTGraph;
     var HBTContext = HBTree.HBTContext;
-    entitiesManager = global.EntitiesManager;
-
+    entitiesManager = global.EntitiesManager;*/
     class Agent{
         constructor(o ,pos){
             this.uid =  "Agent-" + Date.now();
@@ -263,7 +262,7 @@ function _behaviourPlanner(global)
         init(){
             this.user = new User();
             this.agent = new Agent();
-            this.entitiesManager = entitiesManager;
+            this.entitiesManager = EntitiesManager;
             this.state = BP_STATE.STOP;
             this.accumulate_time = 0;
             this.execution_t = 1;
@@ -756,8 +755,8 @@ function _behaviourPlanner(global)
         this.bp.update(dt);
     }
     global.Loader = Loader;
-}
-if(typeof module !== "undefined"){
+})(this)
+/*if(typeof module !== "undefined"){
 	module.exports = function(HBTree,  behaviourNodes, entitiesManager){
 		var global = { HBTree: HBTree, behaviourNodes: behaviourNodes, EntitiesManager: entitiesManager};
 		_behaviourPlanner(global);
@@ -765,4 +764,4 @@ if(typeof module !== "undefined"){
 	}
 }else{
 	_behaviourPlanner(this);
-}
+}*/

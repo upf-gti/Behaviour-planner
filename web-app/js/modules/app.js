@@ -37,16 +37,16 @@ class App{
 	    this.currentGraph = null;
 	    this.graphManager = GraphManager;
 	    this.interface = CORE.Interface;
+        var token = UTILS.rand();
 	    this.env_tree = {
 	        id: "Environment",
 	        type:"env",
-	        token: UTILS.rand(),
 	        children: []
 	    };
-
-	    this.streamer = new Streamer("wss://webglstudio.org/port/9003/ws/");
+        this.streamData = {url: "wss://webglstudio.org/port/9003/ws/", room: token}
+	    this.streamer = new Streamer();
 	    this.streamer.onDataReceived = this.onDataReceived.bind(this);
-			this.streamer.onConnect = this.onWSconnected.bind(this);
+		this.streamer.onConnect = this.onWSconnected.bind(this);
 
 	    this.chat = new Chat();
 		this.iframe =   CORE.Interface.iframe;
@@ -123,7 +123,7 @@ class App{
     }
 
 	onWSconnected(){
-		this.streamer.createRoom(this.env_tree.token);
+		this.streamer.createRoom(this.streamData.room);
 	}
 
     getUserById(id){
@@ -142,8 +142,18 @@ class App{
             CORE.App.bp.play();
             if(this.iframe.contentWindow)//LS.Player from iframe
             {
-                LS.Globals.room = this.env_tree.token;
+                LS.Globals.room = this.streamData.room;
+                LS.Globals.sendMsg = this.onDataReceived.bind(this)
                 this.iframe.contentWindow.player.play();
+                if(this.streamer.is_connected)
+                {
+                    LS.Globals.streaming = true;
+                    if(LS.Globals.streamer)
+                          LS.Globals.streamer.connectRoom(this.streamData.room)
+
+                }else
+                    LS.Globals.streaming = false;
+
             }
         }else{
             CORE.App.state = STOP;
@@ -242,11 +252,6 @@ class App{
         if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
             for(var m of actions){
                 this.streamer.sendMessage(m.type, m.data);
-                if(LS){
-                  //state = LS.Globals.SPEAKING;
-                  m.control = LS.Globals.SPEAKING;
-                  LS.Globals.processMsg(JSON.stringify(m.data), true);
-                }
                 /*if(m.type == "custom_action"){ //Placeholder stuff
                     this.placeholderProcessRequest(m);
                 }*/
@@ -259,10 +264,27 @@ class App{
                     }
                 }
             }
+        }else if(LS){
+            for(var m of actions){
+                //state = LS.Globals.SPEAKING;
+                m.control = LS.Globals.SPEAKING;
+                LS.Globals.processMsg(JSON.stringify(m), true);
+            
+                if(m.type == "behaviours"){
+                    for(var b of m.data){
+                        if(b.type == "speech" || b.type == "lg"){
+                            this.chat.showMessage(b.text, "me");
+                        }
+                    }
+                }
+            }
         }
     }
 
     onDataReceived(msg){
+        if(typeof(msg) == "string")
+         msg = JSON.parse(msg)
+
 	    var type = msg.type;
 	    var data = msg.data;
 	    switch(type)
@@ -324,9 +346,13 @@ class App{
             env.token = this.interface.tree.tree.token;
         }else{
             this.interface.tree.tree.token = env.token;
-            this.streamer.createRoom(env.token);
+            this.streamData.room = env.token;
+            //this.streamer.createRoom(env.token);
         }
-
+        if(env.stream_url)
+        {
+            this.streamData.url = env.streamData.url;
+        }
         this.env_tree = {
             id: "Environment",
             type:"env",

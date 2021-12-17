@@ -278,8 +278,9 @@ class Interface {
             }}); // load behaviour tree to the server and execute it permanently
             
             // LiteGUI.menubar.add("Actions");
-            LiteGUI.menubar.add("Edit/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
-            LiteGUI.menubar.add("Edit/Scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)
+            LiteGUI.menubar.add("Actions/Parse text entities", {callback: this.showEditEntitiesDialog}); // edit entities (compromise library)
+            LiteGUI.menubar.add("Actions/Change scene iframe", {callback: this.showEditIframeDialog.bind(this)}); // change iframe (WebGLStudio)
+            LiteGUI.menubar.add("Actions/Stream", {callback: this.showStreamDialog.bind(this)}); // change iframe (WebGLStudio)
             
             LiteGUI.menubar.add("About", {callback: this.showAppInfo})
 
@@ -1457,6 +1458,22 @@ class Interface {
             }
         );
     }
+
+    showStreamDialog()
+    {
+        var dialog = new LiteGUI.Dialog({ title:"Websocket connection", width: 350, closable:true });
+        var inspector = new LiteGUI.Inspector();
+        var tag = "";
+        var words = "";
+        inspector.addString("Url", CORE.App.streamData.url, { callback: function(v){ CORE.App.streamData.url = v; }});
+        inspector.addString("Room", CORE.App.streamData.room, {callback: function(v){ CORE.App.streamData.room = v; }});
+        inspector.addButton(null,"Connect",{callback: function(){
+                CORE.App.streamer.connect(CORE.App.streamData.url)
+            }})
+        dialog.adjustSize(4);
+        dialog.add(inspector);
+        dialog.makeModal();
+    }
     /* ----------------------------------------------------------------------------------------------------------------------- */
 
     showContent(data)
@@ -1611,7 +1628,7 @@ class Interface {
                 inspector.clear();
 
                 inspector.addSection("Environment properties");
-                inspector.addString("Token", CORE.App.env_tree.token, {width:"calc(100% - 45px)",callback: function(v){
+                /*inspector.addString("Token", CORE.App.env_tree.token, {width:"calc(100% - 45px)",callback: function(v){
                   CORE.App.env_tree.token = v;
                   that.tree.tree.token = v;
                   CORE.App.streamer.createRoom(v);
@@ -1625,7 +1642,7 @@ class Interface {
                   }
                   inspector.refresh();
                     
-                }})
+                }})*/
               /*  var btn = inspector.addButton(null, "Add Agent", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});
                 btn.getElementsByTagName("button")[0].className = "btn btn-str";
                 var btn = inspector.addButton(null, "Add User", {className:"btn btn-str", width:"100%", callback: that.createNode.bind(this, {id: "Environment"})});

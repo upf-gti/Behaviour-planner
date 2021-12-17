@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "compromise": "^13.11.4",
+    "compromise-dates": "^2.2.1",
+    "compromise-numbers": "^1.4.0",
+    "gl-matrix": "^3.4.3",
+    "node-fetch": "^2.6.6",
+    "xmlhttprequest": "^1.8.0"
+  }
+}

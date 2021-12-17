@@ -1,93 +1,96 @@
-const { LiteGraph } = require("../src/libs/litegraph");
+//const { LiteGraph } = require("../src/libs/litegraph");
 
 /*
 * David Moreno - UPF
 */
-function _HBTree(global)
-{
-	/*Structure used in the HBTNodes*/
-	//LiteGraph = global.LiteGraph;
+(function _HBTree(global){
 	LGraph = LiteGraph.LGraph;
 	STATUS = {
 
 		success:0, 
 		running:1, 
 		fail:2
-	}
+	};
+	var HBTree = (global.HBTree = {
+		/*Structure used in the HBTNodes*/
+		//LiteGraph = global.LiteGraph;
+		
+		
 
-	function onConfig(info, graph)
-	{
-		if(!info.outputs)
-			return
-
-		for(let i in info.outputs)
+		onConfig : function(info, graph)
 		{
-			var output = info.outputs[i];
-			for(let j in output.links)
-			{   
-				var link_id = output.links[j];
-				var link = getLinkById(link_id, graph);
+			if(!info.outputs)
+				return
 
-				var node = graph.getNodeById(link.origin_id);
-				var origin_slot = link.origin_slot;
-				var target_node = graph.getNodeById(link.target_id);
-				var target_slot = link.target_slot;
-				var type = link.type;
+			for(let i in info.outputs)
+			{
+				var output = info.outputs[i];
+				for(let j in output.links)
+				{   
+					var link_id = output.links[j];
+					var link = getLinkById(link_id, graph);
+
+					var node = graph.getNodeById(link.origin_id);
+					var origin_slot = link.origin_slot;
+					var target_node = graph.getNodeById(link.target_id);
+					var target_slot = link.target_slot;
+					var type = link.type;
+				}
 			}
-		}
-	}  
+		},  
 
-	function getLinkById(id,graph)
-	{
-		for(var i in graph.links)
+		getLinkById : function(id,graph)
 		{
-			var link = graph.links[i];
-			if(link.id == id)
-				return link;
-		}
-	}
+			for(var i in graph.links)
+			{
+				var link = graph.links[i];
+				if(link.id == id)
+					return link;
+			}
+		},
 
-	//to know if a node was executed the previous evaluation
-	function nodePreviouslyEvaluated(agent, node_id)
-	{
-		for(var i in agent.last_evaluation_trace)
-			if(agent.last_evaluation_trace[i] == node_id)
-				return true;
-		return false;
-	}
-
-	function resetHBTreeProperties(agent)
-	{
-		//running nodes params
-		// agent.bt_info.running_node_id = null;
-		// agent.bt_info.running_node_index = null;
-		//random selector nodes params
-		agent.bt_info.random_index_data = null;
-		agent.bt_info.rand_selection_index = null;  
-		agent.bt_info.random_period = null;
-	}
-
-	//editor stuff: highlighst the connections
-	function highlightLink(node, child)
-	{
-		if(child.inputs)
+		//to know if a node was executed the previous evaluation
+		nodePreviouslyEvaluated : function(agent, node_id)
 		{
-			var chlid_input_link_id = child.inputs[0].link;
-			node.triggerSlot(0, null, chlid_input_link_id);
-		}
+			for(var i in agent.last_evaluation_trace)
+				if(agent.last_evaluation_trace[i] == node_id)
+					return true;
+			return false;
+		},
 
-		if(child.description)
+		resetHBTreeProperties : function(agent)
 		{
-			var graph = child.graph;
-			graph.description_stack.push(child.description); 
-		} 
-	}
+			//running nodes params
+			// agent.bt_info.running_node_id = null;
+			// agent.bt_info.running_node_index = null;
+			//random selector nodes params
+			agent.bt_info.random_index_data = null;
+			agent.bt_info.rand_selection_index = null;  
+			agent.bt_info.random_period = null;
+		},
+
+		//editor stuff: highlighst the connections
+		highlightLink : function(node, child)
+		{
+			if(child.inputs)
+			{
+				var chlid_input_link_id = child.inputs[0].link;
+				node.triggerSlot(0, null, chlid_input_link_id);
+			}
+
+			if(child.description)
+			{
+				var graph = child.graph;
+				graph.description_stack.push(child.description); 
+			} 
+		}
+	});
 
 	function Blackboard()
 	{
-	if(this.constructor !== Blackboard)
-		throw("You must use new to create a Blackboard");
-		this._ctor();
+		if(this.constructor !== Blackboard)
+			throw("You must use new to create a Blackboard");
+			this._ctor();
 	}
 
 	Blackboard.prototype._ctor = function()
@@ -249,7 +252,9 @@ function _HBTree(global)
 		}
 		
 	}
-	function addPropertyToAgents(type, name)
+	global.InterestPoint = InterestPoint;
+
+	/*function addPropertyToAgents(type, name)
 	{
 		for(var i in CORE.AgentManager.agents)
 		{
@@ -265,7 +270,7 @@ function _HBTree(global)
 				}
 			}
 		}
-	}
+	}/
 	/*******************************************************************************************************************/
 
 	/********************************************** HBTGraph ***********************************************************/
@@ -483,6 +488,7 @@ function _HBTree(global)
 	}
 
 	LiteGraph.registerNodeType("btree/Root", RootNode);
+	global.RootNode = RootNode;
 
 	/*******************************************************************************************************************/
 	function Conditional()
@@ -3008,7 +3014,7 @@ function _HBTree(global)
 		action:8,
 		conditional:9
 	}
-
+	global.B_TYPE = B_TYPE;
 	/*To encapsulate the result somewhere*/
 	function Behaviour()
 	{
@@ -3159,20 +3165,21 @@ function _HBTree(global)
 		console.warn("entityInTarget() Must be implemented to use HBTree system");
 	}
 	global.Facade = Facade;
-
-	function expand(obj){
+	
+	global.expand = function(obj){
 		let props = Object.getOwnPropertyNames(obj.prototype);
 		for(let prop of props){
-			_HBTree.prototype[prop] = obj.prototype[prop];
+			global.prototype[prop] = obj.prototype[prop];
 		}
 	}
-}
-if(typeof module !== "undefined"){
-	module.exports = function(LiteGraph){
+		
+})(this)
+/*if(typeof module !== "undefined"){
+	module.exports = function(){
 		var global = {LiteGraph: LiteGraph};
 		_HBTree(global);
 		return global;
 	}
 }else{
 	_HBTree(this);
-}
+}*/

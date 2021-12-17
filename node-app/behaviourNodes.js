@@ -3,26 +3,37 @@
  * This library expands HBTree with new nodes
  * 
  * Dependences:
+ * 
  * LiteGraph
  * HBTree
+ * xmlhttprequest
+ * timelineContent
  */
 
-function _behaviourNodes(global)
+ /*LiteGraph = require("../src/libs/litegraph")
+ EntitiesManager = require("./entitiesManager")
+
+ var {HBTreeExtension} = require("./HBTreeExtension");*/
+const ANIM = require("./timelineContent").ANIM;
+//const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const fetch = require('node-fetch');
+const https = require('https');
+
+(function _behaviourNodes(global)
 {
 
-  var LiteGraph = global.LiteGraph;
+  //var LiteGraph = global.LiteGraph;
 
-  var HBTree = global.HBTree;
+  /*var HBTree = global.HBTree;
   var Behaviour = HBTree.Behaviour;
   var STATUS = HBTree.STATUS;
-  var onConfig = HBTree.onConfig;
-  var getLinkById = HBTree.getLinkById;
-  var nodePreviouslyEvaluated = HBTree.nodePreviouslyEvaluated;
-  var highlightLink = HBTree.highlightLink;
+  var onConfig = HBTree.onConfig;*/
+ // var getLinkById = HBTree.getLinkById;
+  //var nodePreviouslyEvaluated = HBTree.nodePreviouslyEvaluated;
+  /*var highlightLink = HBTree.highlightLink;*/
 
-  let entitiesManager = new global.EntitiesManager();
-  B_TYPE = HBTree.B_TYPE;
-  onConfig = HBTree.onConfig;
+  let entitiesManager = new EntitiesManager();
+  /*B_TYPE = HBTree.B_TYPE;*/
   
   function ParseCompare(){
      this.shape = 2;
@@ -1422,28 +1433,67 @@ function _behaviourNodes(global)
   }
 
   CustomRequest.prototype.tick = function(agent, dt, info){
-      this.behaviour.type = B_TYPE.request;
+    this.behaviour.type = B_TYPE.request;
 
-      var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
-      if(info){
-          for(var p in parameters){
-              var value = parameters[p];
-              if(info.tags && value.constructor === String && value[0] == "#"){ //Try to match a tag from info
-                  if(info.tags[value]){
-                      parameters[p] = info.tags[value];
-                  }
-              }else if(info[p]!=undefined){
-                  parameters[p] = info[p];
-              }
-          }
-      }
-      
-
-      this.behaviour.setData({type: this.properties.type, parameters: parameters});
-      this.behaviour.STATUS = STATUS.success;
-      this.graph.evaluation_behaviours.push(this.behaviour);
-      return this.behaviour;
-  }
+    var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
+    
+    for(var p in parameters){
+        var value = parameters[p];
+        if(info){
+            if(info.tags && value.constructor === String && value[0] == "#"){ //Try to match a tag from info
+                if(info.tags[value]){
+                    parameters[p] = info.tags[value];
+                }
+            }else if(info[p]!=undefined){
+                parameters[p] = info[p];
+            }
+        }
+        if(UTILS.isTag(p))
+        {
+            var blackboard = this.graph.context.blackboard;
+            var keys = Object.keys(blackboard);
+            for(var i in keys)
+            {
+                var key = keys[i];
+                if(!blackboard[key])
+                    continue;
+                var properties =  {};
+                if(blackboard[key].properties)
+                    properties = Object.assign({},blackboard[key].properties);
+                else
+                    properties = Object.assign({},blackboard[key]);
+                if(this.findProperty(parameters, p, properties ))
+                    break;
+                
+            }
+        }
+    }
+    
+    this.behaviour.setData({type: this.properties.type, parameters: parameters});
+    this.behaviour.STATUS = STATUS.success;
+    this.graph.evaluation_behaviours.push(this.behaviour);
+    return this.behaviour;
+}
+CustomRequest.prototype.findProperty = function(body, p, obj) 
+{
+    var value = body[p]
+    for(var prop in obj)
+    {    
+        if(!obj[prop]) continue;
+        if(obj[prop].constructor == Object)
+        {
+            var found = this.findProperty(body, p, obj[prop] )
+           if(found) return true;
+        }
+        else if(p == prop)
+        {
+            body[p] = obj[p];
+            return true;
+        }
+       
+    } 
+    return false;  
+}
 
   CustomRequest.prototype.onGetInputs = function(){
       var inputs = [];
@@ -2605,9 +2655,141 @@ function _behaviourNodes(global)
   }
 
   LiteGraph.registerNodeType("btree/SubRoot", SubRoot);
-}
+  var UTILS = {
+    request: function(request)
+      {
+        var parameters = request.parameters || {};
+        var headers = request.headers || {};
+        var data = request.data || null;
 
-if(typeof module !== "undefined"){
+        var dataType = parameters.dataType || "text";
+        if(dataType == "json") //parse it locally
+        {
+          dataType = "application/json";
+          data = JSON.stringify(data);
+        }
+        else if(dataType == "xml") //parse it locally
+          dataType = "text";
+        else if (dataType == "binary")
+        {
+          //request.mimeType = "text/plain; charset=x-user-defined";
+          dataType = "arraybuffer";
+          parameters.mimeType = "application/octet-stream";
+        }
+
+        //regular case, use AJAX call
+        
+       
+       /* var xhr = new XMLHttpRequest();*/
+
+        var method = data ? 'POST' : 'GET';
+
+        if(parameters.method && parameters.method.length)
+          method = parameters.method;
+
+        var asyncRequest = true;
+
+        if(parameters.async !== undefined)
+          asyncRequest = parameters.async;
+
+           /* xhr.open( method, parameters.url, asyncRequest);
+            /*if(dataType)
+                xhr.responseType = dataType;*/
+            /*if (parameters.mimeType)
+                xhr.overrideMimeType( parameters.mimeType );*/
+
+        /*for(var h in headers)
+        {
+          xhr.setRequestHeader(h, headers[h]);
+        }*/
+       // headers["mime-type"] = parameters.mimeType;
+        headers["Cache-Control"] = "no-cache";
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+        let options = { 
+          method,
+          headers,
+          body: JSON.stringify(data),
+          agent
+        };
+        
+       
+        fetch(parameters.url, options)
+        .then(response=>response.json())
+          .then(function(response)
+        /*xhr.onload = function(load)*/
+          {
+
+            if(request.onload){
+              request.onload(this, parameters);
+              return;
+            }
+
+            //var response = this.response;
+            if(this.status != 200)
+            {
+              var err = "Error " + this.status;
+              if(request.error)
+                request.error(err, response, this);
+              return;
+            }
+
+            if(parameters.dataType == "json") //chrome doesnt support json format
+            {
+              try
+              {
+                response = JSON.parse(response);
+              }
+              catch (err)
+              {
+                if(request.error)
+                  request.error(err, response, this);
+                else
+                  throw err;
+              }
+            }
+            else if(parameters.dataType == "xml")
+            {
+              try
+              {
+                var xmlparser = new DOMParser();
+                response = xmlparser.parseFromString(response,"text/xml");
+              }
+              catch (err)
+              {
+                if(request.error)
+                  request.error(err, response, this);
+                else
+                  throw err;
+              }
+            }
+            
+            if(request.success)
+              request.success.call(this, response, this);
+          }
+          )
+          .catch(function(err){
+          //  xhr.onerror = function(err) {
+            if(request.error)
+              request.error(err, this);
+          }
+        )
+
+        /*var formData = new FormData();
+        if( data )
+        {
+          for(var i in data)
+            formData.append(i, data[i]);
+        }*/
+
+         //   xhr.send( data );
+        //return xhr;
+      }
+    }
+})(this)
+
+/*if(typeof module !== "undefined"){
 	module.exports = function(LiteGraph, HBTree, entitiesManager){
 		var global = {LiteGraph: LiteGraph, HBTree: HBTree, EntitiesManager: entitiesManager};
 		_behaviourNodes(global);
@@ -2616,3 +2798,4 @@ if(typeof module !== "undefined"){
 }else{
 	_behaviourNodes(this);
 }
+*/

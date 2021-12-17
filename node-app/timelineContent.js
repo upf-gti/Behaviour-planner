@@ -1693,8 +1693,14 @@ function AudioClip()
 	this.scale = new Float32Array([1,1]);
 	this.clip_color = "#7c0022";
 	this.color = "white";
-	this._audio = new Audio();
-	this._audio.onloadedmetadata = function(v){this.duration = this._audio.duration}.bind(this)
+	if(typeof(Audio) == "function")
+	{
+		this._audio = new Audio()
+		this._audio.onloadedmetadata = function(v){this.duration = this._audio.duration}.bind(this)
+	}
+	else
+		this._audio	 = {};
+	
 }
 AudioClip.type = "lg"
 AudioClip.id = ANIM.AUDIO;

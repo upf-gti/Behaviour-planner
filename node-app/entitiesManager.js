@@ -5,12 +5,13 @@
  * Dependencies:
  *  Compromise Cool
  */
- const nlp = require('compromise')
- nlp.extend(require('compromise-numbers'))
- nlp.extend(require('compromise-dates'))
 
- function _entities(global)
+
+ (function _entities(global)
  {
+    const nlp = require('compromise')
+    nlp.extend(require('compromise-numbers'))
+    nlp.extend(require('compromise-dates'))
     class EntitiesManager{
         constructor(){
 
@@ -222,5 +223,4 @@
             }
         }
     }
-}
-_entities(this);
+})(this)

@@ -1,5 +1,6 @@
  //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
 
+//const { LiteGraph } = require("../src/libs/litegraph");
 const HBTree = require("./HBTree");
 
 /* * DEPENDENCES: 
@@ -8,22 +9,28 @@ const HBTree = require("./HBTree");
  * Blackboard (HBTree)
  * Facade (HBTree)
  * */
- function _HBTreeExtension(global){
+ (function _HBTreeExtension(global){
    
-    Selector = global.HBTree.Selector;
-    Sequencer = global.HBTree.Sequencer;
-    Parallel = global.HBTree.Parallel;
-    Conditional = global.HBTree.Conditional;
-    BoolConditional = global.HBTree.BoolConditional;
-    HBTproperty = global.HBTree.HBTproperty;
+    /*HBTree = global.HBTree;*/
+   /* LiteGraph = global.HBTree.LiteGraph;*/
+    Selector = HBTree.Selector;
+    Sequencer = HBTree.Sequencer;
+    Parallel = HBTree.Parallel;
+    Conditional = HBTree.Conditional;
+    BoolConditional = HBTree.BoolConditional;
+    HBTproperty = HBTree.HBTproperty;
     
-    LiteGraph = global.LiteGraph;
-    HBTGraph = global.HBTree.HBTGraph;
-    Blackboard = global.HBTree.Blackboard;
-    Facade = global.HBTree.Facade;
-
-    nodePreviouslyEvaluated = global.HBTree.nodePreviouslyEvaluated;
-    B_TYPE = global.HBTree.B_TYPE;
+    LiteGraph = LiteGraph;
+    HBTGraph = HBTree.HBTGraph;
+    HBTContext = HBTree.HBTContext;
+    Blackboard = HBTree.Blackboard;
+    Facade = HBTree.Facade;
+    Behaviour = HBTree.Behaviour;
+    onConfig = HBTree.HBTree.onConfig;
+    getLinkById = HBTree.HBTree.getLinkById
+    nodePreviouslyEvaluated = HBTree.HBTree.nodePreviouslyEvaluated;
+    highlightLink = HBTree.HBTree.highlightLink;
+    B_TYPE = HBTree.B_TYPE;
 
     Selector.prototype.tick = function(agent, dt, info){
         //there is a task node in running state
@@ -110,7 +117,7 @@ const HBTree = require("./HBTree");
 
     }
     //global.HBTree.Selector = Selector;
-    global.HBTree.expand(Selector)
+    //global.expand(Selector)
 
     Sequencer.prototype.tick = function(agent, dt, info){
         //check if this node was executed the previous evaluation
@@ -194,7 +201,7 @@ const HBTree = require("./HBTree");
         }
         }
     }
-    global.HBTree.Sequencer = Sequencer;
+    //global.HBTree.Sequencer = Sequencer;
 
     Parallel.prototype.tick = function(agent, dt, info){
         this.behaviour.STATUS = STATUS.fail;
@@ -219,7 +226,7 @@ const HBTree = require("./HBTree");
             return value;
         }
     }
-    global.HBTree.Parallel = Parallel;
+   // global.HBTree.Parallel = Parallel;
 
     Conditional.prototype.tick = function(agent, dt, info )
     {
@@ -284,7 +291,7 @@ const HBTree = require("./HBTree");
         return this.behaviour;
         }
     }
-    global.HBTree.Conditional = Conditional;
+   // global.HBTree.Conditional = Conditional;
 
     BoolConditional.prototype.tick = function(agent, dt, info )
     {
@@ -347,7 +354,8 @@ const HBTree = require("./HBTree");
         return this.behaviour;
         }
     }
-    global.HBTree.BoolConditional = BoolConditional;
+    //global.HBTree.BoolConditional = BoolConditional;
+    //global.expand(BoolConditional)
 
     HBTproperty.prototype.onNodeAdded = function(){
         this.properties.property_type = this.property_type;
@@ -371,7 +379,8 @@ const HBTree = require("./HBTree");
         this.setOutputData(1,name);
         this.setOutputData(2,type);
     }
-    global.HBTree.HBTproperty = HBTproperty;
+    //global.HBTree.HBTproperty = HBTproperty;
+    //global.expoand(HBTproperty);
 
     //Expand B_TYPE list from HBTree.js
     B_TYPE = {
@@ -394,7 +403,7 @@ const HBTree = require("./HBTree");
         http_request:19,
         http_response:20
     }
-    global.HBTree.B_TYPE = B_TYPE;
+    
     //-----------------------LITEGRAPH SUBGRAPH INPUT FOR HBT------------------------------------//
     LiteGraph.Subgraph.prototype.onSubgraphNewInput = function(name, type) {
         var slot = this.findInputSlot(name);
@@ -470,7 +479,7 @@ const HBTree = require("./HBTree");
         
         return behaviours;
     }
-    global.LiteGraph = LiteGraph;
+    //global.LiteGraph = LiteGraph;
 
     HBTGraph.prototype.getEvaluationBehaviours = function(){
         return this.graph.getEvaluationBehaviours();
@@ -530,7 +539,7 @@ const HBTree = require("./HBTree");
         }
         return false;
     }
-    global.HBTGraph = HBTGraph;
+    //global.expand(HBTGraph);
 
     //BP Blackboard: HBTGraph context blackboard will be created with these attributes instead
     //Data is always inside properties in each attribute
@@ -580,7 +589,7 @@ const HBTree = require("./HBTree");
     Blackboard.prototype.getValue = function(attr, name){
         return this[attr] ? this[attr].properties[name] : null;
     }
-    global.HBTree.Blackboard = Blackboard;
+    //global.expand(Blackboard)
     //Implementation of Facade methods of HBTree
 
     /* 
@@ -682,15 +691,18 @@ const HBTree = require("./HBTree");
             entity.inspector.refresh()
         console.warn("entityInTarget() Must be implemented to use HBTree system");
     }
-    global.HBTree.Facade = Facade
-    
- }
- if(typeof module !== "undefined"){
-	module.exports = function(LiteGraph,HBTree){
-		var global = {LiteGraph: LiteGraph,HBTree: HBTree};
+    /*global.expand(Facade);*/
+
+    /*global.HBTree = HBTree;
+    return global;*/
+ })(this)
+ /*if(typeof module !== "undefined"){
+	module.exports = function(){
+		var global = {HBTree: HBTree};
+        _HBTreeExtension(global);
 		return global;
 	}
 }else{
 	_HBTreeExtension(this);
-}
+}*/
 

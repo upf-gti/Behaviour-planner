@@ -1414,9 +1414,10 @@ CustomRequest.prototype.tick = function(agent, dt, info){
     this.behaviour.type = B_TYPE.request;
 
     var parameters = Object.assign({}, this.properties.parameters); //Clone so changes on values if there is any tag doesn't change original one
-    if(info){
-        for(var p in parameters){
-            var value = parameters[p];
+    
+    for(var p in parameters){
+        var value = parameters[p];
+        if(info){
             if(info.tags && value.constructor === String && value[0] == "#"){ //Try to match a tag from info
                 if(info.tags[value]){
                     parameters[p] = info.tags[value];
@@ -1425,15 +1426,52 @@ CustomRequest.prototype.tick = function(agent, dt, info){
                 parameters[p] = info[p];
             }
         }
+        if(UTILS.isTag(p))
+        {
+            var blackboard = this.graph.context.blackboard;
+            var keys = Object.keys(blackboard);
+            for(var i in keys)
+            {
+                var key = keys[i];
+                if(!blackboard[key])
+                    continue;
+                var properties =  {};
+                if(blackboard[key].properties)
+                    properties = Object.assign({},blackboard[key].properties);
+                else
+                    properties = Object.assign({},blackboard[key]);
+                if(this.findProperty(parameters, p, properties ))
+                    break;
+                
+            }
+        }
     }
     
-
     this.behaviour.setData({type: this.properties.type, parameters: parameters});
     this.behaviour.STATUS = STATUS.success;
     this.graph.evaluation_behaviours.push(this.behaviour);
     return this.behaviour;
 }
-
+CustomRequest.prototype.findProperty = function(body, p, obj) 
+{
+    var value = body[p]
+    for(var prop in obj)
+    {    
+        if(!obj[prop]) continue;
+        if(obj[prop].constructor == Object)
+        {
+            var found = this.findProperty(body, p, obj[prop] )
+           if(found) return true;
+        }
+        else if(p == prop)
+        {
+            body[p] = obj[p];
+            return true;
+        }
+       
+    } 
+    return false;  
+}
 CustomRequest.prototype.onGetInputs = function(){
     var inputs = [];
     var parameters = this.properties.parameters;
@@ -1571,10 +1609,6 @@ HttpRequest.prototype.onExecute = function()
     }
 }
 
-HttpRequest.prototype.isTag = function(value)
-{
-    return value.constructor === String && value.length && value[0] == "#";
-}
 
 HttpRequest.prototype.tick = function(agent, dt, info)
 {
@@ -1667,7 +1701,7 @@ HttpRequest.prototype.findPlaceholders = function(body, info, blackboard)
             this.findPlaceholders(body[p], info, blackboard);
         if(info && info.tags) {
             // Try to match a tag from info
-            if(this.isTag(body[p])&& info.tags[value]){ 
+            if(UTILS.isTag(body[p])&& info.tags[value]){ 
                 body[p] = info.tags[value];
                 continue;
             }
@@ -1706,7 +1740,7 @@ HttpRequest.prototype.findProperty = function(body, p, obj)
             var found = this.findProperty(body, p, obj[prop] )
            if(found) return true;
         }
-        else if(this.isTag(value) && value == prop)
+        else if(UTILS.isTag(value) && value == prop)
         {
             body[p] = obj[value];
             return true;
