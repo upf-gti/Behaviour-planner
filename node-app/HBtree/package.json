@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "litegraph.js": "^0.7.10"
+  },
+  "name": "hbtree",
+  "version": "1.0.0",
+  "description": "Library for decision making using Hybrid Behaviour Trees, an evolution of classic Behaviour Trees, which adds a dregree of freedom to the user, allowing to mix flow graphs with Behaviour Trees. The idea is to be able to tweak and play with scenario and virtual characters properties before using them to determine the behaviour",
+  "main": "HBTree.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upf-gti/HBTreeJS.git"
+  },
+  "keywords": [
+    "javascript",
+    "behaviour-tree",
+    "agents",
+    "behaviours",
+    "graphs"
+  ],
+  "author": "David Moreno Esteban",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/upf-gti/HBTreeJS/issues"
+  },
+  "homepage": "https://github.com/upf-gti/HBTreeJS#readme"
+}

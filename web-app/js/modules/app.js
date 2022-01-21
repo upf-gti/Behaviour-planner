@@ -501,8 +501,8 @@ class App{
                         obj.env.gestures = gest;
                     }
                 }
-                if(EntitiesManager.customEntities!={}){
-                    obj.env.entities = EntitiesManager.customEntities;
+                if(entitiesManager.customEntities!={}){
+                    obj.env.entities = entitiesManager.customEntities;
                 }
                 for(var i in GraphManager.graphs){
                     var graph = GraphManager.graphs[i];

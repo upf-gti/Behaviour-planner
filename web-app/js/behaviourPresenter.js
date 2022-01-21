@@ -409,7 +409,7 @@ ParseCompare.prototype.onInspect = function(  inspector ){
           return;*/
         newPhrase =   phrase.value;
         if(e.key == "#"){
-            autocomplete(phrase, EntitiesManager.getEntities(), tags, {})
+            autocomplete(phrase, entitiesManager.getEntities(), tags, {})
             //displayEntity(i, phrase, e, tags)
             newPhrase = e.target.value;
         }
@@ -645,7 +645,7 @@ function displayEntity(id, inspector, e, tags){
 
     /*if(t != "")
     {*/
-    autocomplete(inspector, EntitiesManager.getEntities());
+    autocomplete(inspector, entitiesManager.getEntities());
     /*var contextmenu = new LiteGUI.ContextMenu( EntitiesManager.getEntities(), {title: "Entities", callback: function(v){
 
         /*var resp = component.responses[id].text;

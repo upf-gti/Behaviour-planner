@@ -2,7 +2,7 @@
 
 //ANIMATE by Javi Agenjo (@tamat) 2018 and modifyed by Eva Valls (2021) to define Agent Behaviors through the time
 //************************************
-//This file contains the code necessary to define BEHAVIORS (verbal and non-verbal) based on BML standard (Project, Tracks and Clips definitions)
+//This file contains the code necessary to define BEHAVIOURS (verbal and non-verbal) based on BML standard (Project, Tracks and Clips definitions)
 //All the editor features are in timelineEditor.js (TIMELINE_EDITOR)
 /*
 *

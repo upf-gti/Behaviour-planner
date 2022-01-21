@@ -10,30 +10,16 @@
  * timelineContent
  */
 
- /*LiteGraph = require("../src/libs/litegraph")
- EntitiesManager = require("./entitiesManager")
 
- var {HBTreeExtension} = require("./HBTreeExtension");*/
 const ANIM = require("./timelineContent").ANIM;
-//const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const fetch = require('node-fetch');
 const https = require('https');
 
 (function _behaviourNodes(global)
 {
 
-  //var LiteGraph = global.LiteGraph;
-
-  /*var HBTree = global.HBTree;
-  var Behaviour = HBTree.Behaviour;
-  var STATUS = HBTree.STATUS;
-  var onConfig = HBTree.onConfig;*/
- // var getLinkById = HBTree.getLinkById;
-  //var nodePreviouslyEvaluated = HBTree.nodePreviouslyEvaluated;
-  /*var highlightLink = HBTree.highlightLink;*/
-
   let entitiesManager = new EntitiesManager();
-  /*B_TYPE = HBTree.B_TYPE;*/
+
   
   function ParseCompare(){
      this.shape = 2;
@@ -259,17 +245,6 @@ const https = require('https');
       this.title = "Event "+this.id;
       //this.widgetId = this.addWidget("info","id", this.properties.id, null, {editable:false});
   }
-
-  /*EventNode.prototype.onDrawForeground = function(ctx)
-  {
-    if(this.flags.collapsed)
-      return;
-    ctx.save();
-    ctx.fillColor = "black";
-    ctx.font = "12px Arial";
-    ctx.fillText("Id: "+ this.id, 20, 50);
-    ctx.restore();
-  }*/
 
   //Does not get called
   EventNode.prototype.onPropertyChanged = function(name, value){

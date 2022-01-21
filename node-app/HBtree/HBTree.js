@@ -1,5 +1,5 @@
 //const { LiteGraph } = require("../src/libs/litegraph");
-//const { LiteGraph } = require("litegraph.js");
+
 /*
 * David Moreno - UPF
 */

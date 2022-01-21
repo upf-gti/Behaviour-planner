@@ -1197,7 +1197,7 @@ GestureClip.prototype.showInfo = function(panel)
 /*----------------------------------Head Behaviour-----------------------------------*/
 //HeadClip
 HeadClip.type = "head";
-HeadClip.lexemes = ["NOD", "SHAKE", "TILD"];
+HeadClip.lexemes = ["NOD", "SHAKE", "TILT"];
 function HeadClip()
 {
 	this.id= "head-"+Math.ceil(getTime());;
@@ -1325,6 +1325,7 @@ HeadClip.prototype.showInfo = function(panel)
 			}
 		}
 	}
+
 }
 
 //HeadDirectionShiftClip

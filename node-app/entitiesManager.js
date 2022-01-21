@@ -19,34 +19,10 @@
         this.properties_log = {};
         this.entities= [];
         this.customEntities = {};
-        /*this.preInit();*/
+       
         }
-        /*preInit(){
-            var that = this;
-            var compromise = document.createElement('script');
-            compromise.src = "https://unpkg.com/compromise";
-            var compromise_numbers = document.createElement('script');
-            compromise_numbers.src = "https://unpkg.com/compromise-numbers";
-            var compromise_dates = document.createElement('script');
-            compromise_dates.src = "https://unpkg.com/compromise-dates";
-            document.head.appendChild(compromise);
-            document.head.appendChild(compromise_numbers);
-            document.head.appendChild(compromise_dates);
-            compromise.onload = this.initData.bind(that);
-
-        }*/
+       
         initData(){
-           /* var that = this;
-           
-            if(!compromiseNumbers ||!compromiseDates)
-            {   
-                setTimeout(this.initData.bind(that), 1000);
-                return;
-            }
-
-            nlp.extend(compromiseNumbers)
-            nlp.extend(compromiseDates);*/
-
             for(var i in nlp.world().tags)
                 this.entities.push("#"+i);
         }

@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "litegraph.js": "^0.7.10",
+    "hbtree": "1.0.0"
+  },
+  "name": "hbtree-extension",
+  "version": "0.0.1",
+  "description": "HBTree library extension. Adds the functionality to pass information from each node to its children.",
+  "main": "HBTreeExtension.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "behaviour-tree",
+    "agents",
+    "behaviours",
+    "graphs"
+  ],
+  "author": "Eva Valls Garolera",
+  "license": "MIT"
+}

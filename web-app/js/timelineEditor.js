@@ -991,90 +991,198 @@ var TIMELINE_EDITOR = {
 			this.clip_in_panel.duration = v;
 			}.bind(this)})
 			panel.addSection("Content");
-
-			for(var i in clip.properties)
-			{
+			
 			if(clip.showInfo)
 			{
 				clip.showInfo(panel);
-				return;
 			}
-
-			var property = clip.properties[i];
-			switch(property.constructor)
-			{
-
-				case String:
-				panel.addString(i, property, {callback: function(i,v)
+			else{
+				for(var i in clip.properties)
 				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this, i)});
-				break;
-				case Number:
-				if(i=="amount")
-				{
-					panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+					var property = clip.properties[i];
+					switch(property.constructor)
 					{
-					this.clip_in_panel.properties[i] = v;
-					}.bind(this,i)});
+
+						case String:
+						panel.addString(i, property, {callback: function(i,v)
+						{
+							this.clip_in_panel.properties[i] = v;
+						}.bind(this, i)});
+						break;
+						case Number:
+						if(i=="amount")
+						{
+							panel.addNumber(i, property, {min:0, max:1,callback: function(i,v)
+							{
+							this.clip_in_panel.properties[i] = v;
+							}.bind(this,i)});
+						}
+						else{
+							panel.addNumber(i, property, {callback: function(i,v)
+							{
+							this.clip_in_panel.properties[i] = v;
+							}.bind(this,i)});
+						}
+						break;
+						case Boolean:
+						panel.addCheckbox(i, property, {callback: function(i,v)
+						{
+							this.clip_in_panel.properties[i] = v;
+						}.bind(this,i)});
+							break;
+						case Array:
+						panel.addArray(i, property, {callback: function(i,v)
+						{
+							this.clip_in_panel.properties[i] = v;
+						}.bind(this,i)});
+							break;
+					}
 				}
-				else{
-					panel.addNumber(i, property, {callback: function(i,v)
-					{
-					this.clip_in_panel.properties[i] = v;
-					}.bind(this,i)});
-				}
-				break;
-				case Boolean:
-				panel.addCheckbox(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this,i)});
-					break;
-				case Array:
-				panel.addArray(i, property, {callback: function(i,v)
-				{
-					this.clip_in_panel.properties[i] = v;
-				}.bind(this,i)});
-					break;
-			}
 			}
 			var editor = clip.constructor.editor;
-			/*if(editor && editor.onPanel)
-				editor.onPanel( panel, clip );
-		*/
-			/*
-			panel.addSection("FX");
-			panel.addProperty( "type",clip, "fx_type", String );
-			panel.addProperty( "param",clip, "fx_param", Number );
-			*/
+			var c = document.createElement("canvas");
+			c.width = panel.root.clientWidth-10;
+			c.height = 150;
+			var ctx = c.getContext("2d");
+			this.drawCurvesView(clip, c, ctx)
+			panel.root.appendChild(c)
 
-			/*panel.addSection("Control Channels");
-			if( clip.control_channels )
-			for(var i = 0; i < clip.control_channels.length; ++i)
-			{
-				var cc = clip.control_channels[i];
-				panel.addString( cc.name, cc, "name");
-			}
-			panel.addButton("Add new control channel",{callback:function(){
-				TIMELINE_EDITOR.addControlChannel( clip );
-				TIMELINE_EDITOR.showClipInfo(clip);
-			}});
-			if( TIMELINE_EDITOR.timeline_mode != "clip" )
-			{
-				panel.addButton("Open Editor", {callback:function(){
-					TIMELINE_EDITOR.timeline_mode = "clip";
-					TIMELINE_EDITOR.showClipInfo(clip);
-				}});
-			}
-			else
-			{
-				panel.addButton("Exit Editor", {callback:function(){
-					TIMELINE_EDITOR.timeline_mode = "tracks";
-					TIMELINE_EDITOR.showClipInfo(clip);
-				}});
-			}*/
+			
 		},
+		drawCurvesView : function(clip, canvas, ctx)
+		{
+			var duration = clip.duration;
+			var h = canvas.height;
+			var margin = 5;
+	
+			ctx.fillStyle = "black";
+			ctx.beginPath();
+			ctx.rect( 0, 0, canvas.width, canvas.height);
+			ctx.fill();
+			ctx.clip();
+
+			//base lines
+			var base_line_y = this.convertValueToCanvas(h-margin, 0 );
+			//ctx.globalAlpha = 0.2;
+			ctx.fillStyle = "white";
+			//ctx.fillRect( margin, base_line_y, canvas.width - margin, 1 );
+			ctx.fillStyle = "#555";
+		
+			ctx.globalAlpha = 1;
+			var type = clip.constructor.name;
+			//keyframes
+			var start = 0;
+			
+			if(type.includes("Face") || type.includes("Gaze")){
+				
+				var attackPeak = clip.properties.attackPeak;
+				var relax = clip.properties.relax;
+				if(type.includes("Gaze"))
+				 	attackPeak = clip.properties.ready;
+
+				ctx.fillRect( attackPeak*canvas.width/duration, 0, 1, canvas.height-margin );
+				ctx.fillRect( relax*canvas.width/duration, 0, 1, canvas.height-margin );
+				var y = 0;
+				var inter = 0;
+				ctx.moveTo(0,h)
+				ctx.strokeStyle = "white";
+				ctx.beginPath();
+				for(var i= 0; i< clip.duration; i= i+0.01)
+				{
+					// Trans 1
+					if (i < attackPeak){
+						inter = (i-start)/(attackPeak-start);
+						// Cosine interpolation
+						inter = Math.cos(Math.PI*inter+Math.PI)*0.5 + 0.5;
+						//inter = Math.cos(Math.PI*inter+Math.PI)*0.5 + 0.5; // to increase curve, keep adding cosines
+						// Interpolation
+						
+						y = 0*(1-inter) + clip.properties.amount*inter;
+						
+					}
+					
+					// Trans 2
+					if (i > relax && relax >= attackPeak){
+						inter = (i-relax)/(clip.duration-relax);
+						// Cosine interpolation
+						inter = Math.cos(Math.PI*inter)*0.5 + 0.5;
+						// Interpolation
+						y = clip.properties.amount*inter;
+					}
+					
+					var v = this.convertValueToCanvas(h-margin, y);
+					var x = i*canvas.width/duration
+					ctx.lineTo(x, v );
+
+				}
+				ctx.stroke();
+				ctx.restore(); //clip
+			}
+
+			if(type.includes("Head")){
+				
+				var ready = clip.properties.ready ;
+				var strokeStart = clip.properties.strokeStart;
+				var stroke = clip.properties.stroke;
+				var strokeEnd = clip.properties.strokeEnd;
+				var relax = clip.properties.relax; 
+
+				ctx.fillRect( ready*canvas.width/duration, 0, 1, canvas.height-margin );
+				ctx.fillRect( strokeStart*canvas.width/duration, 0, 1, canvas.height-margin );
+				ctx.fillRect( stroke*canvas.width/duration, 0, 1, canvas.height-margin );
+				ctx.fillRect( strokeEnd*canvas.width/duration, 0, 1, canvas.height-margin );
+				ctx.fillRect( relax*canvas.width/duration, 0, 1, canvas.height-margin );
+				var y = 0;
+				var inter = 0;
+				ctx.moveTo(0,h)
+				ctx.strokeStyle = "white";
+				ctx.beginPath();
+				for(var i= 0; i< clip.duration; i= i+0.01)
+				{
+					if (i < ready){
+						inter = (i-start)/(ready-start);
+						// Cosine interpolation
+						inter = Math.cos(Math.PI*inter+Math.PI)*0.5 + 0.5;
+					
+						y = 0*(1-inter) + clip.properties.amount*inter;
+					}		
+								
+					// Stroke (phase 1)
+					else if (i > strokeStart && i < stroke){
+						inter = (i-strokeStart)/(stroke-strokeStart);
+						// Cosine interpolation
+						inter = Math.cos(Math.PI*inter+Math.PI)*0.5 + 0.5;
+					
+						y = 0*(1-inter) + clip.properties.amount*inter;
+						
+					}
+					
+					// Stroke (phase 2)
+					else if (i > stroke && i < strokeEnd){
+						inter = (i-stroke)/(strokeEnd-stroke);
+						// Cosine interpolation
+						inter = Math.cos(Math.PI*inter+Math.PI)*0.5 + 0.5;
+						y = 0*(1-inter) + clip.properties.amount*inter;
+					}
+					var v = this.convertValueToCanvas(h-margin, y);
+					var x = i*canvas.width/duration
+					ctx.lineTo(x, v );
+
+				}
+				ctx.stroke();
+				ctx.restore(); //clip
+			}
+			
+		},
+		convertValueToCanvas : function(h, v)
+		{
+			return Math.round(h - h*v )// + 0.5;
+		},
+
+		convertCanvasToValue : function(h,v)
+		{
+			return -( v - h * 0.5 );
+		}
 }
 
 //clip editors ****************************************************

@@ -1434,7 +1434,7 @@ class Interface {
         inspector.addString("Entity", tag, {placeHolder:"FirstName", callback: function(v){ tag = v; }});
         inspector.addString("Words", words, {placeHolder:"Tom,Emily,John,...", callback: function(v){ words = v; }});
         inspector.addButton(null,"Add",{callback: function(){
-                EntitiesManager.addWordsToWorld(tag,words)
+                entitiesManager.addWordsToWorld(tag,words)
                 dialog.close();
             }})
         dialog.adjustSize(4);
