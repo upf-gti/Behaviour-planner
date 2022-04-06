@@ -13,11 +13,11 @@ class EntitiesManager{
     preInit(){
         var that = this;
         var compromise = document.createElement('script');
-        compromise.src = "https://unpkg.com/compromise";
+        compromise.src = "https://unpkg.com/compromise@13.11.0/builds/compromise.js";
         var compromise_numbers = document.createElement('script');
-        compromise_numbers.src = "https://unpkg.com/compromise-numbers";
+        compromise_numbers.src = "https://unpkg.com/compromise-numbers@1.3.0/builds/compromise-numbers.min.js";
         var compromise_dates = document.createElement('script');
-        compromise_dates.src = "https://unpkg.com/compromise-dates";
+        compromise_dates.src = "https://unpkg.com/compromise-dates@2.0.0/builds/compromise-dates.min.js";
         document.head.appendChild(compromise);
         document.head.appendChild(compromise_numbers);
         document.head.appendChild(compromise_dates);
@@ -126,11 +126,13 @@ class EntitiesManager{
     addWordsToWorld(tag, words){
         if(this.entities.length == 0)
             this.initData()
+       
         this.customEntities[tag] = words;
         words = words.replace(", ",",").split(",");
         var map = {};
         for(var i=0; i<words.length; i++)
         {
+            nlp(words[i]).tag(tag).out('tags')
             map[words[i]] = tag;
         }
         if(this.entities.indexOf("#"+tag)<0)

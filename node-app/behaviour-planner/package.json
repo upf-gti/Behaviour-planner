@@ -1,0 +1,37 @@
+{
+  "name": "behaviour-planner.js",
+  "version": "1.0.6",
+  "description": "Javascript library for making decisions about the verbal and non-verbal behaviour of an embodied conversational agent using hybrid behaviour trees. It is based on the SAIBA multi-modal Behaviour Generation Framework and acts as a Behaviour Planner.",
+  "main": "behaviourPlanner.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "behaviour planner",
+    "BML",
+    "ECA",
+    "virtual agents",
+    "virtual assistans",
+    "character controller",
+    "behaviour trees",
+    "hybrid behaviour trees",
+    "decision making"
+  ],
+  "author": "Eva Valls Garolera",
+  "license": "MIT",
+  "dependencies": {
+    "gl-matrix": "^3.4.3",
+    "compromise": "^13.11.4",
+    "compromise-dates": "^2.2.1",
+    "compromise-numbers": "^1.4.0",
+    "hbtree-extension": "^0.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upf-gti/behaviour-planner.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/upf-gti/behaviour-planner.js/issues"
+  },
+  "homepage": "https://github.com/upf-gti/behaviour-planner.js#readme"
+}

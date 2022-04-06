@@ -4,7 +4,7 @@
     "hbtree": "1.0.0"
   },
   "name": "hbtree-extension",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "HBTree library extension. Adds the functionality to pass information from each node to its children.",
   "main": "HBTreeExtension.js",
   "devDependencies": {},

@@ -1,7 +1,7 @@
  //-----------------------MODIFIED FROM HBTREE.JS------------------------------------//
 
 //const { LiteGraph } = require("../src/libs/litegraph");
-const HBTree = require("./HBTree");
+const HBTree = require("hbtree");
 
 /* * DEPENDENCES: 
  * LiteGraph (HBTree)
