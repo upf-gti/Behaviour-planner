@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "compromise-dates": "^2.2.1",
-    "litegraph.js": "^0.7.10"
-  }
-}

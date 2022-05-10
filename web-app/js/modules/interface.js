@@ -1775,7 +1775,8 @@ class Interface {
         }
     }
     showAppInfo(){
-        readTextFile("https://webglstudio.org/users/evalls/Behaviour-planner/README.md",
+        open("https://github.com/upf-gti/Behaviour-planner/blob/main/README.md")
+        /*readTextFile("https://webglstudio.org/users/evalls/Behaviour-planner/README.md",
         function(data){
             var dialog = new LiteGUI.Dialog({ title:"About the application", width: 800, closable: true });
             var inspector = new LiteGUI.Inspector();
@@ -1783,7 +1784,7 @@ class Interface {
             dialog.add(inspector)
             dialog.show()
             
-        })
+        })*/
     }
 }
 function readTextFile(file, callback)
