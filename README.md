@@ -27,7 +27,7 @@ The library provides the necessary nodes to plan the behaviour of an agent, alth
 - **Sequencer**: Execute child nodes from left to right until one fails. As its name indicates, it is useful for a sequence of actions/conditions.
 - **Parallel**: Execute all child nodes parallelly.
 
-<img alt="alt_text" width="100px"  src="./imgs/nodes/conditional.png" />
+<img alt="alt_text" width="100px"  src="https://github.com/upf-gti/Behaviour-planner/blob/dev/web-app/imgs/nodes/conditional.png" />
 
 - **Conditional / BoolConditional**: This node takes a value from the left inputs and compares it with the one set in the inner widgets. If the condition is passed, the execution continues by this branch. If not, the execution comes back to the parent. 
 - **Timeline Intent**: This is the most complex node. It allows you to generate verbal and non-verbal behaviours at specific times and with specific duration. Users can generate different kinds of actions, such as facial expressions, gaze control, speech, gesture, etc. And place them at the time the user thinks it fits best, and with a custom duration. These actions follow the BML specifications.
