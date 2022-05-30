@@ -2607,7 +2607,7 @@ SetProperty.prototype.onExecute = function()
 SetProperty.prototype.onGetInputs = function()
 {
 	this.size[1] +=30;
-	return [["value", "",{dir:LiteGraph.LEFT, pos: [0, this.size[1]-30]}]];
+	return [["value", "",{dir:LiteGraph.LEFT, pos: [0, 75]}]];
 }
 
 SetProperty.prototype.tick = function(agent, dt)
@@ -2938,6 +2938,12 @@ TriggerSubtree.prototype.onConfigure = function(info){
 }
 
 LiteGraph.registerNodeType("btree/TriggerSubtree", TriggerSubtree);
+
+
+// RootNode.prototype.onSerialize = function(o)
+// {
+//     o.graph = this.graph;
+// }
 
 function SubRoot()
 {

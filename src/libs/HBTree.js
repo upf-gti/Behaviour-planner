@@ -451,7 +451,8 @@ RootNode.prototype.tick = function(agent, dt)
 RootNode.prototype.onConfigure = function(info)
 {
     onConfig(info, this.graph);
-	this.graph.root_node =  this;
+	if(this.graph)
+		this.graph.root_node =  this;
 }
 
 RootNode.title = "Root";

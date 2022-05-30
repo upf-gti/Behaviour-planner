@@ -5482,8 +5482,9 @@ LGraphNode.prototype.executeAction = function(action)
         this._key_callback = this.processKey.bind(this);
 
         canvas.addEventListener("keydown", this._key_callback, true);
+        canvas.addEventListener("keyup", this._key_callback, true);
+        document.addEventListener("keydown", this._key_callback, true); 
         document.addEventListener("keyup", this._key_callback, true); //in document, otherwise it doesn't fire keyup
-
         //Dropping Stuff over nodes ************************************
         this._ondrop_callback = this.processDrop.bind(this);
 
@@ -5662,6 +5663,8 @@ LGraphNode.prototype.executeAction = function(action)
 
     LGraphCanvas.prototype.processMouseDown = function(e) {
 
+        e.preventDefault();
+        e.stopPropagation();
 		if( this.set_canvas_dirty_on_mouse_event )
 			this.dirty_canvas = true;
 		
@@ -6388,8 +6391,8 @@ LGraphNode.prototype.executeAction = function(action)
         var is_primary = ( e.isPrimary === undefined || e.isPrimary );
     	//early exit for extra pointer
     	if(!is_primary){
-    		/*e.stopPropagation();
-        	e.preventDefault();*/
+    		e.stopPropagation();
+        	e.preventDefault();
     		//console.log("pointerevents: processMouseUp pointerN_stop "+e.pointerId+" "+e.isPrimary);
     		return false;
     	}
@@ -6982,7 +6985,8 @@ LGraphNode.prototype.executeAction = function(action)
     };
 
     LGraphCanvas.prototype.pasteFromClipboard = function() {
-        var data = localStorage.getItem("litegrapheditor_clipboard");
+       // var data = localStorage.getItem("litegrapheditor_clipboard");
+       var data = globalThis.localStorage.getItem("litegrapheditor_clipboard");
         if (!data) {
             return;
         }
@@ -7011,7 +7015,7 @@ LGraphNode.prototype.executeAction = function(action)
         var nodes = [];
         for (var i = 0; i < clipboard_info.nodes.length; ++i) {
             var node_data = clipboard_info.nodes[i];
-            var node = LiteGraph.createNode(node_data.type);
+            var node = LiteGraph.createNode(node_data.type, node_data.title, {pos: node_data.pos});
             if (node) {
                 
 				//paste in last known mouse position
@@ -12804,6 +12808,7 @@ LGraphNode.prototype.executeAction = function(action)
     };
 
     LGraphCanvas.prototype.processContextMenu = function(node, event) {
+        event.preventDefault();
         var that = this;
         var canvas = LGraphCanvas.active_canvas;
         var ref_window = canvas.getCanvasWindow();
@@ -13409,6 +13414,7 @@ LGraphNode.prototype.executeAction = function(action)
         }
 
         function inner_over(e) {
+            e.preventDefault();
             var value = this.value;
             if (!value || !value.has_submenu) {
                 return;
@@ -13419,6 +13425,7 @@ LGraphNode.prototype.executeAction = function(action)
 
         //menu option clicked
         function inner_onclick(e) {
+            e.preventDefault();
             var value = this.value;
             var close_parent = true;
 
