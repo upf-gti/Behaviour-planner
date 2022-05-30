@@ -2606,7 +2606,7 @@ SetProperty.prototype.onExecute = function()
 }
 SetProperty.prototype.onGetInputs = function()
 {
-	this.size[1] +=30;
+	//this.size[1] +=30;
 	return [["value", "",{dir:LiteGraph.LEFT, pos: [0, 75]}]];
 }
 

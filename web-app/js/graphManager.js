@@ -78,12 +78,19 @@ var GraphManager = {
             graph.id = "graph-canvas-"+graph.name;
 
             this.graphs[graph_name] = graph;
-            CORE.Interface.tabsRefresh();
+            
+            if(!this.currentCanvas)
+            {
+                CORE.Interface.tabsRefresh();
+                this.currentCanvas = new HBTEditor(graph.id);
+                this.currentCanvas.init(graph);
+            }
+            this.currentCanvas.graph_canvas.setGraph(graph.graph,false)
+            this.currentCanvas.graph = graph.graph;
+            this.currentCanvas.graph_canvas.graph = graph.graph;
 
-            let hbt_canvas = new HBTEditor(graph.id);
-            hbt_canvas.init(graph);
-            GraphManager.graph_canvas[graph.id] = hbt_canvas;
-            LGraphCanvas.active_canvas = this.currentCanvas = hbt_canvas;
+            GraphManager.graph_canvas[graph.id] = this.currentCanvas;
+            LGraphCanvas.active_canvas = this.currentCanvas ;
         }
     },
     onGraphSelected(id)
