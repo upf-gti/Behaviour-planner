@@ -7015,7 +7015,7 @@ LGraphNode.prototype.executeAction = function(action)
         var nodes = [];
         for (var i = 0; i < clipboard_info.nodes.length; ++i) {
             var node_data = clipboard_info.nodes[i];
-            var node = LiteGraph.createNode(node_data.type, node_data.title, {pos: node_data.pos});
+            var node = LiteGraph.createNode(node_data.type, node_data.title, node_data);
             if (node) {
                 
 				//paste in last known mouse position

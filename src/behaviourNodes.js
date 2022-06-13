@@ -975,6 +975,10 @@ TimelineIntent.prototype.onConfigure = function(o){
     this.current_time = o.current_time;
 }
 
+TimelineIntent.prototype.onNodeCreated = function() {
+    this.onConfigure(Object.assign({},this));
+}
+
 TimelineIntent.prototype.onSerialize = function(o){ 
     o.tracks = [];
     for(var i = 0; i < this.tracks.length; ++i) o.tracks.push(this.tracks[i].toJSON());
