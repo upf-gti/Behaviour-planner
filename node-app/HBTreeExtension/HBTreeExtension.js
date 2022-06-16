@@ -237,6 +237,10 @@ const HBTree = require("hbtree");
                 this.properties.limit_value = info.tags[i];
             }
         }
+        if(this.properties.value_to_compare == "" || this.properties.value_to_compare == " "){
+            var data = this.getInputData(1);
+            if(data) this.properties.value_to_compare = data;
+        }
         //condition not passed
         if(this.evaluateCondition && !this.evaluateCondition())
         {

@@ -9,7 +9,7 @@
  * ParseCompare
  * This node compares the user text from the path with its phrases. If there is a match it continues execution to the child nodes.
  */
-let entitiesManager = new EntitiesManager();
+ let entitiesManager = new EntitiesManager();
  function ParseCompare(){
     this.shape = 2;
     var w = 150;
@@ -974,11 +974,10 @@ TimelineIntent.prototype.onConfigure = function(o){
     this.duration = o.duration;
     this.current_time = o.current_time;
 }
-
 TimelineIntent.prototype.onNodeCreated = function() {
     this.onConfigure(Object.assign({},this));
-}
 
+}
 TimelineIntent.prototype.onSerialize = function(o){ 
     o.tracks = [];
     for(var i = 0; i < this.tracks.length; ++i) o.tracks.push(this.tracks[i].toJSON());
@@ -2430,6 +2429,10 @@ Conditional.prototype.tick = function(agent, dt, info )
         {
             this.properties.limit_value = info.tags[i];
         }
+    }
+    if(this.properties.value_to_compare == "" || this.properties.value_to_compare == " "){
+        var data = this.getInputData(1);
+        if(data) this.properties.value_to_compare = data;
     }
 	//condition not passed
 	if(this.evaluateCondition && !this.evaluateCondition())
