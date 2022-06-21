@@ -1,15 +1,15 @@
 /* Interface - Graph extension */
 var GraphManager = {
-   graphs: {},
-   graph_canvas: {},
-   currentCanvas: {},
-   currentHBTGraph: null,
-   currentBasicGraph: null,
-   hbt_context : null,
-   graphSelected: null,
+    graphs: {},
+    graph_canvas: {},
+    currentCanvas: {},
+    currentHBTGraph: null,
+    currentBasicGraph: null,
+    hbt_context : null,
+    graphSelected: null,
     HBTGRAPH : 0,
     BASICGRAPH : 1,
-    newGraph(type, name){
+    newGraph(type, name, agentId){
         var graph = null;
         switch(type)
         {
@@ -20,6 +20,7 @@ var GraphManager = {
 
                 graph.graph.context = hbt_context;
                 graph.id = "graph-canvas-"+graph.name;
+                graph.agentId = agentId;
                 this.graphs[graph.name] = graph;
                 CORE.Interface.tabsRefresh();
 
@@ -76,21 +77,21 @@ var GraphManager = {
             let graph_name = graph.name || "default";
             graph.name = graph_name;
             graph.id = "graph-canvas-"+graph.name;
-
+            
             this.graphs[graph_name] = graph;
             
             if(!this.currentCanvas)
             {
-                CORE.Interface.tabsRefresh();
                 this.currentCanvas = new HBTEditor(graph.id);
                 this.currentCanvas.init(graph);
             }
             this.currentCanvas.graph_canvas.setGraph(graph.graph,false)
             this.currentCanvas.graph = graph.graph;
             this.currentCanvas.graph_canvas.graph = graph.graph;
-
+            
             GraphManager.graph_canvas[graph.id] = this.currentCanvas;
             LGraphCanvas.active_canvas = this.currentCanvas ;
+            CORE.Interface.tabsRefresh();
         }
     },
     onGraphSelected(id)
@@ -100,6 +101,11 @@ var GraphManager = {
         {
             var name = id.substr(13);
             GraphManager.graphSelected = GraphManager.graphs[name];
+            if(GraphManager.currentCanvas)
+            {
+                GraphManager.currentCanvas.dirty_canvas = true;
+                GraphManager.currentCanvas.init(GraphManager.graphSelected)
+            }
         }
 
 
@@ -198,20 +204,27 @@ var GraphManager = {
     },
     removeGraph(name)
     {
+        let removed = false;
         if(!name)
         {
             var graph = this.graphSelected;
-            if(graph.name)
+            if(graph.name){
+                removed = this.graphs[graph.name];
                 delete this.graphs[graph.name];
-            else
-                delete this.graphs[graph.id]
+            }
+            else{
+                removed = this.graphs[graph.id];
+                delete this.graphs[graph.id];
+            }
         }
         else
         {
-            if(this.graphs[name])
+            if(this.graphs[name]){
+                removed = this.graphs[name];
                 delete this.graphs[name];
+            }
         }
-
+        return removed;
     },
     removeAllGraphs()
     {

@@ -205,6 +205,8 @@ class BehaviourPlanner{
 
         this._hbt_graph = null;
 
+        this.graphs = [];
+
         this.state = BP_STATE.STOP;
         this.accumulate_time = 0;
         this.execution_t = 1;
@@ -304,8 +306,13 @@ class BehaviourPlanner{
 
     stop(){
         this.state = BP_STATE.STOP;
+        for(let i = 0; i < this.graphs.length; i++)
+        {
+            this.graphs[i].graph.context.last_event_node = null;
+            this.graphs[i].graph.context.running_nodes = null;
+        }
         this.context.last_event_node = null;
-        this.context.running_nodes = null
+        this.context.running_nodes = null;
     }
 
     update(dt){
@@ -313,24 +320,29 @@ class BehaviourPlanner{
             this.accumulate_time += dt;
             if(this.accumulate_time >= this.execution_t){
                 //Evaluate agent on the graph
-                if(this.agent && this.hbt_graph){
-                    let context = this.context;
-
-                    if(context.running_nodes && context.running_nodes.length){
-                        var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, context.running_nodes[0]);
-                        this.accumulate_time = 0; //runBehaviour expects time between calls
-                        if(this.onBehaviours) this.onBehaviours(behaviours);
-                        this.processBehaviours(behaviours);
-                        if(!context.running_nodes || !context.running_nodes[0])
-                            this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
-                    }
-                    else if(context.last_event_node == null || context.last_event_node == undefined){
-                        var behaviours = this.hbt_graph.runBehaviour(this.agent, context, this.accumulate_time);
-                        this.accumulate_time = 0; //runBehaviour expects time between calls
-
-                        if(this.onBehaviours) this.onBehaviours(behaviours);
-                        this.processBehaviours(behaviours);
-                        this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+                for(let i = 0; i < this.graphs.length; i++)
+                {
+                    let hbt_graph = this.graphs[i];
+                    if(this.agent && hbt_graph){//if(this.agent && this.hbt_graph){
+                        //let context = this.context;
+                        let context = hbt_graph.graph.context;
+                                               
+                        if(context.running_nodes && context.running_nodes.length){
+                            var behaviours = hbt_graph.runBehaviour(this.agent, context, this.accumulate_time, context.running_nodes[0]);
+                            this.accumulate_time = 0; //runBehaviour expects time between calls
+                            if(this.onBehaviours) this.onBehaviours(behaviours);
+                            this.processBehaviours(behaviours);
+                            if(!context.running_nodes || !context.running_nodes[0])
+                                hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+                        }
+                        else if(context.last_event_node == null || context.last_event_node == undefined){
+                            var behaviours = hbt_graph.runBehaviour(this.agent, context, this.accumulate_time);
+                            this.accumulate_time = 0; //runBehaviour expects time between calls
+                            
+                            if(this.onBehaviours) this.onBehaviours(behaviours);
+                            this.processBehaviours(behaviours);
+                            hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+                        }
                     }
                 }
             }
@@ -339,14 +351,19 @@ class BehaviourPlanner{
 
     onEvent(e){
         if(this.state == BP_STATE.PLAYING){
-            var node = this.hbt_graph.processEvent(e);
-            if(node){
-                var behaviours = this.hbt_graph.runBehaviour(this.agent, this.context, this.accumulate_time, node);
-                this.accumulate_time = 0; //runBehaviour expects time between calls
-
-                if(this.onBehaviours) this.onBehaviours(behaviours);
-                this.processBehaviours(behaviours);
-                this.hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+            for(let i = 0; i < this.graphs.length; i++)
+            {
+                let hbt_graph = this.graphs[i];
+                let context = hbt_graph.graph.context;
+                var node = hbt_graph.processEvent(e);
+                if(node){
+                    var behaviours = hbt_graph.runBehaviour(this.agent, context, this.accumulate_time, node);
+                    this.accumulate_time = 0; //runBehaviour expects time between calls
+    
+                    if(this.onBehaviours) this.onBehaviours(behaviours);
+                    this.processBehaviours(behaviours);
+                    hbt_graph.graph.evaluation_behaviours = []; //TODO are subgraphs evaluation_behaviours emptied?
+                }
             }
         }
     }
@@ -471,8 +488,8 @@ class BehaviourPlanner{
     }
 
     //o must be graph data (data.behaviour)
-    loadGraph(o){
-        let graph = new HBTGraph();
+    loadGraph(o, name = null){
+        let graph = new HBTGraph(name);
         let context = new HBTContext();
         graph.graph.context = context;
         graph.graph.configure(o);
@@ -499,14 +516,15 @@ class BehaviourPlanner{
     loadEnvironment(data)
     {
         var env = data.env;
-        
+        this.graphs = [];
         //Graphs
         for(var i in env.graphs){
             var graph = env.graphs[i];
             if(graph.behaviour){
-                if(graph.behaviour){
-                    let hbt_graph = this.loadGraph(graph.behaviour);
-                }
+            
+                let hbt_graph = this.loadGraph(graph.behaviour, graph.name);
+                this.graphs.push(hbt_graph);
+            
             }
         }
 
@@ -519,9 +537,7 @@ class BehaviourPlanner{
 
         if(agent){
             agent.is_selected = true;
-            this.agent = agent;
-
-    
+            this.agent = agent;    
         }
 
         //User
@@ -608,8 +624,9 @@ class BehaviourPlanner{
             if(response.env.user)
                 that.user.configure(response.env.user);
             if(response.env.agents[0])
-             that.agent.configure(response.env.agents[0])
-            that.loadGraph(response.env.graphs[0].behaviour)
+                that.agent.configure(response.env.agents[0])
+            let hbt_graph = that.loadGraph(response.env.graphs[0].behaviour)
+            that.graphs.push(hbt_graph);
 
             if(LS)
                 LS.Globals.sendMsg = that.onData.bind(that)

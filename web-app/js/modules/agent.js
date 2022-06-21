@@ -181,6 +181,7 @@ var AgentManager = {
 
                     inspector.refresh();
                 }});
+                
             }
         }
         /*var container = document.getElementById("agent-content")

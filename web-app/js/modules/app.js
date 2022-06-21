@@ -63,7 +63,7 @@ class App{
         this.bp.onActions = this.onActions.bind(this);
         let hbt_graph = GraphManager.newGraph(GraphManager.HBTGRAPH);
         this.bp.hbt_graph = hbt_graph;
-
+        this.bp.graphs.push(hbt_graph);
         this.env_tree.children.push({id:agent.uid, type: "agent"});
 
         UserManager.users[user.uid] = user;
@@ -218,7 +218,7 @@ class App{
         //BP  
         
         this.bp.update(dt);
-}
+    }
 
     onBehaviours(behaviours){
 
@@ -252,10 +252,7 @@ class App{
         if(this.streamer && this.streamer.ws &&  this.streamer.is_connected){
             for(var m of actions){
                 this.streamer.sendMessage(m.type, m.data);
-                /*if(m.type == "custom_action"){ //Placeholder stuff
-                    this.placeholderProcessRequest(m);
-                }*/
-                
+                                
                 if(m.type == "behaviours"){
                     for(var b of m.data){
                         if(b.type == "speech" || b.type == "lg"){
@@ -335,7 +332,7 @@ class App{
 
     loadBehaviour(data){
         if(data.behaviour){
-            let hbt_graph = this.bp.loadGraph(data.behaviour);
+            let hbt_graph = this.bp.loadGraph(data.behaviour, data.name);
             GraphManager.addGraph(hbt_graph);
         }
     }
@@ -382,9 +379,9 @@ class App{
             UserManager.users[this.bp.user.uid] = this.bp.user;
             UserManager.addPropertiesToLog(this.bp.user.properties);
         }
-        if(this.bp.hbt_graph)
+        for(let i = 0; i < this.bp.graphs.length; i++)
         {
-            GraphManager.addGraph(this.bp.hbt_graph);
+            GraphManager.addGraph(this.bp.graphs[i]);
         }
         if(env.iframe)
         {
@@ -508,7 +505,8 @@ class App{
                     var graph = GraphManager.graphs[i];
                     if(graph.constructor == HBTGraph) data = GraphManager.exportBehaviour(graph.graph);
                     else if(graph.constructor == LGraph) data = GraphManager.exportBasicGraph(graph);
-
+                    if(graph.name) data.name = graph.name;
+                    if(graph.agentId) data.agentId = graph.agentId;
                     obj.env.graphs.push(data);
                 }
                 obj.env.iframe = this.iframe.src;
@@ -543,48 +541,6 @@ class App{
         document.body.appendChild(downloadAnchorNode); // required for firefox
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
-    }
-
-    placeholderData = {
-        phoneNumber: "5552020",
-        code: "1234",
-        documentID: "00000000A",
-        faceMatching: false,
-    };
-
-    placeholderProcessRequest(msg){
-        var msg_data = msg.data;
-        var type = msg_data.type;
-        var params = msg_data.parameters;
-        var placeholderResponse = {
-            type: "data",
-            data: {
-                user: {
-
-                }
-            }
-        };
-        switch(type){
-            case "InfoCert_sendSMS":
-                placeholderResponse.data.user.codeSended = (params.phoneNumber == this.placeholderData.phoneNumber);
-                break;
-            case "InfoCert_confirmSMSCode":
-                placeholderResponse.data.user.codeConfirmed = (params.code.toString() == this.placeholderData.code);
-                break;
-            case "InfoCert_confirmDocumentID":
-                placeholderResponse.data.user.documentIDconfirmed = (params.documentID.toString().includes(this.placeholderData.documentID));
-                break;
-            case "InfoCert_faceMatching":
-                placeholderResponse.data.user.faceMatching = this.placeholderData.faceMatching;
-                break;
-            default:
-                for(var i in params)
-                    placeholderResponse.data[i] = params[i];
-                break;
-            
-        }
-
-        this.onDataReceived(placeholderResponse);
     }
 }
 

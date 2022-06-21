@@ -556,7 +556,7 @@ class Interface {
 
         var tab = this._newGraphTab(g);
 
-        this._newPlusTab();
+        //this._newPlusTab();
 
         GraphManager.graphSelected = g;
         this.graphTabs.selectTab(tab);
@@ -573,7 +573,7 @@ class Interface {
         }
         this.graphTabs.selectTab(tab);
 
-        this._newPlusTab();
+        //this._newPlusTab();
 
         var canvas = document.getElementsByClassName("graph-content");
         if(canvas.length)
@@ -596,28 +596,42 @@ class Interface {
     onCloseTab(data) {
 
         var that = this;
-        GraphManager.removeGraph(data.id);
+        //GraphManager.removeGraph(data.id);
         //that.tabsRefresh()
         var currentTab = that.graphTabs.selected;
+        
+        if(data.id != currentTab ) 
+            return;
+        
         var tabs = that.graphTabs.tabs_by_index;
-        for(var i in tabs)
+        for(let i = 0; i < tabs.length; i++)
         {
-            if(currentTab == tabs[i].id && i>0)
+            if(currentTab == tabs[i].id )
             {
-                var prevTab = that.graphTabs.getTabByIndex(i-1);
+                let idx = 0;
+                if(i > 0){
+                    
+                    idx = i-1;
+                }
+                else if(i < tabs.length-1){
+                    idx = i+1;
+                }
+                else 
+                    return;
+                var prevTab = that.graphTabs.getTabByIndex(idx);
                 that.graphTabs.selectTab(prevTab);
             }
         }
     }
 
-    newGraphDialog() {
+    newGraphDialog(data) {
         var that = this;
-        LiteGUI.choice("Select type", ["HBT Graph", "Basic Graph"], that.onNewGraphSelected.bind(that), {title:"New graph"} )
+        LiteGUI.choice("Select type", ["HBT Graph", "Basic Graph"], that.onNewGraphSelected.bind(that, data), {title:"New graph"} )
     }
 
-    onNewGraphSelected(data) {
+    onNewGraphSelected(data = null, nameType) {
         var type;
-        switch(data){
+        switch(nameType){
             case "HBT Graph":
                 type = GraphManager.HBTGRAPH;
                 break;
@@ -626,9 +640,17 @@ class Interface {
                 break;
         }
         var that = this;
-        var graph = GraphManager.newGraph(type, "new_graph");
-        if(data == "HBT Graph")
-            CORE.App.agent_selected.hbt_graph = graph.name;
+        var id = null;
+        if(data) id = data.id;
+        var graph = GraphManager.newGraph(type, "new_graph", id);
+        
+        if(nameType == "HBT Graph")
+        {
+            CORE.App.bp._hbt_graph = graph;
+            CORE.App.bp.graphs.push(graph)
+
+        }
+        that.createNodeInspector({detail : {data : { id: AgentManager.agent_selected.uid, type: "agent"}}})
     }
 
     openTemplateLoader(callback) {
@@ -1609,6 +1631,10 @@ class Interface {
                 CORE.App.env_tree.children.push({id: "Gesture Manager", type: "gesture"})
                 this.tree.setSelectedItem("Gesture Manager", true, this.createNodeInspector({detail:{data:{id: "Gesture Manager", type: "gesture"}}}))
                 break;
+
+            case "Add Behaviour Tree":
+                this.newGraphDialog(data);
+                break;
         }
 
     }
@@ -1665,8 +1691,31 @@ class Interface {
                 /*var gest_btn = inspector.addButton(null, "Add Gesture Manager", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 gest_btn.getElementsByTagName("button")[0].className = "btn btn-str";*/
                 inspector = AgentManager.createAgentInspector(inspector, agent);
+                inspector.widgets_per_row = 3;
+                inspector.addTitle("Behaviours Trees")
+
+                let graphs = CORE.App.bp.graphs;
+                for(let i = 0; i < graphs.length; i++){
+                    if(!graphs[i].angentId || graphs[i].angentId == id){
+                        inspector.addString("name", graphs[i].name, {width: "calc(100% - 80px)", callback: function(v){ graphs[i].name = v;this.tabsRefresh()}.bind(this)})
+                        inspector.addButton(null, this.icons.edit, {width: "40px", callback: function(){
+                            GraphManager.addGraph(graphs[i])
+                        }});
+                        inspector.addButton(null, this.icons.trash, {width: "40px", callback: function(){
+                            
+                            var removed = GraphManager.removeGraph(graphs[i].name);
+                            var idx = CORE.App.bp.graphs.indexOf(removed);
+                            CORE.App.bp.graphs.splice(idx,1);
+                            console.log("Graph removed: "+ removed.name)
+                            this.createNodeInspector({detail : {data : { id: AgentManager.agent_selected.uid, type: "agent"}}})
+                           
+                        }.bind(this)});
+                            
+                    }
+                }
                 var graph_btn = inspector.addButton(null, "Add Behaviour Tree", { className:"litebutton btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 graph_btn.getElementsByTagName("button")[0].className = "litebutton btn btn-str";
+
 
               /*  inspect_area.clear();
                 if(inspec_area.childNodes.length>0)

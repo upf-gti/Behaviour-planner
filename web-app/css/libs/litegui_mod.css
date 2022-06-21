@@ -1735,8 +1735,8 @@ button.litebutton.close-button {
 }
 
 .litetabs li.wtab.selected {
-	/* color: var(--text-normal); */
-	/* background-color: var(--background-modifier-accent); */
+	color: var(--text-normal); 
+	background-color: var(--background-modifier-accent); 
 	/*border: 1px solid #888;*/
 	/* border-bottom: 0; */
 	/* box-shadow: 0 -2px 2px rgba(0,0,0,0.5); */
