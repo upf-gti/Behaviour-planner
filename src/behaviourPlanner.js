@@ -323,7 +323,7 @@ class BehaviourPlanner{
                 for(let i = 0; i < this.graphs.length; i++)
                 {
                     let hbt_graph = this.graphs[i];
-                    if(this.agent && hbt_graph){//if(this.agent && this.hbt_graph){
+                    if(this.agent && hbt_graph && hbt_graph.active){//if(this.agent && this.hbt_graph){
                         //let context = this.context;
                         let context = hbt_graph.graph.context;
                                                
@@ -354,6 +354,9 @@ class BehaviourPlanner{
             for(let i = 0; i < this.graphs.length; i++)
             {
                 let hbt_graph = this.graphs[i];
+                if(!hbt_graph.active) 
+                    continue;
+
                 let context = hbt_graph.graph.context;
                 var node = hbt_graph.processEvent(e);
                 if(node){
@@ -488,9 +491,10 @@ class BehaviourPlanner{
     }
 
     //o must be graph data (data.behaviour)
-    loadGraph(o, name = null){
+    loadGraph(o, name = null, active = true){
         let graph = new HBTGraph(name);
         let context = new HBTContext();
+        graph.active = active;
         graph.graph.context = context;
         graph.graph.configure(o);
 
@@ -522,7 +526,7 @@ class BehaviourPlanner{
             var graph = env.graphs[i];
             if(graph.behaviour){
             
-                let hbt_graph = this.loadGraph(graph.behaviour, graph.name);
+                let hbt_graph = this.loadGraph(graph.behaviour, graph.name, graph.active);
                 this.graphs.push(hbt_graph);
             
             }

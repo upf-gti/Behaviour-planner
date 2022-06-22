@@ -1691,13 +1691,16 @@ class Interface {
                 /*var gest_btn = inspector.addButton(null, "Add Gesture Manager", { className:"btn btn-str", width:"100%", callback:that.createNode.bind(this,{id: agent.uid})});
                 gest_btn.getElementsByTagName("button")[0].className = "btn btn-str";*/
                 inspector = AgentManager.createAgentInspector(inspector, agent);
-                inspector.widgets_per_row = 3;
-                inspector.addTitle("Behaviours Trees")
+                inspector.widgets_per_row = 4;
+                inspector.addSection("Behaviour Trees")
 
                 let graphs = CORE.App.bp.graphs;
                 for(let i = 0; i < graphs.length; i++){
                     if(!graphs[i].angentId || graphs[i].angentId == id){
-                        inspector.addString("name", graphs[i].name, {width: "calc(100% - 80px)", callback: function(v){ graphs[i].name = v;this.tabsRefresh()}.bind(this)})
+                        inspector.addCheckbox("", graphs[i].active,  {width: "20px", title: "active", callback: function(v){
+                            graphs[i].active = v;
+                        }})
+                        inspector.addString("Graph", graphs[i].name, {width: "calc(100% - 80px - 25px)", callback: function(v){ graphs[i].name = v;this.tabsRefresh()}.bind(this)})
                         inspector.addButton(null, this.icons.edit, {width: "40px", callback: function(){
                             GraphManager.addGraph(graphs[i])
                         }});
@@ -1708,7 +1711,7 @@ class Interface {
                             CORE.App.bp.graphs.splice(idx,1);
                             console.log("Graph removed: "+ removed.name)
                             this.createNodeInspector({detail : {data : { id: AgentManager.agent_selected.uid, type: "agent"}}})
-                           
+                            this.tabsRefresh();
                         }.bind(this)});
                             
                     }

@@ -9,13 +9,14 @@ var GraphManager = {
     graphSelected: null,
     HBTGRAPH : 0,
     BASICGRAPH : 1,
-    newGraph(type, name, agentId){
+    newGraph(type, name, agentId, active = true){
         var graph = null;
         switch(type)
         {
             case this.HBTGRAPH:
                 var graph = new HBTGraph(name);
                 graph.type = GraphManager.HBTGRAPH;
+                graph.active = active;
                 var hbt_context = new HBTContext();
 
                 graph.graph.context = hbt_context;
@@ -63,8 +64,9 @@ var GraphManager = {
         }
 
         if(data.behaviour){
-            graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph_name);
+            graph = GraphManager.newGraph(GraphManager.HBTGRAPH, graph_name, data.behaviour.active);
             graph.graph.configure(data.behaviour);
+            
         }else{
             graph = GraphManager.newGraph(GraphManager.BASICGRAPH, graph_name);
             graph.graph.configure(data);

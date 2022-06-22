@@ -507,6 +507,7 @@ class App{
                     else if(graph.constructor == LGraph) data = GraphManager.exportBasicGraph(graph);
                     if(graph.name) data.name = graph.name;
                     if(graph.agentId) data.agentId = graph.agentId;
+                    if(graph.active != undefined) data.active = graph.active;
                     obj.env.graphs.push(data);
                 }
                 obj.env.iframe = this.iframe.src;
