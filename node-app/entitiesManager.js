@@ -48,7 +48,7 @@
                 if(!numbers.length)
                     return false;
                 text = numbers.join("");
-                if(!nlp(text).match("#NumericValue").found())
+                if(!nlp(text).match("#NumericValue").found)
                     return false;
                 if(entity == "#PhoneNumber")
                     return this.checkPhoneFormatValidity(text)
