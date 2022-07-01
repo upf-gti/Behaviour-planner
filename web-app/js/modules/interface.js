@@ -836,7 +836,12 @@ class Interface {
             var FS = CORE["FileSystem"];
 
             var path = folder_selected + "/" + filename + ".json";
-            CORE['Interface'].lastLoadedFile = path;
+            CORE['Interface'].lastLoadedFile = {
+                filename: filename,
+                path: folder_selected + "/",
+                fullpath: CORE["FileSystem"].root + folder_selected + "/" + filename + ".json",
+                relativepath: path
+            };
             
             console.warn("Uploading file: " + path);
 
@@ -1443,7 +1448,8 @@ class Interface {
             "File name",
             CORE.App.downloadJSON.bind(CORE.App, id),
             {
-                title: "Export file"
+                title: "Export file",
+                value: this.lastLoadedFile ? this.lastLoadedFile.filename : ""
             }
         );
     }
