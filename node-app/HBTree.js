@@ -622,7 +622,7 @@
 		var value = null;
 		//if the input is a number, the limit value must be converted to a number
 		if(typeof(this.properties.value_to_compare) == "number")
-			value = isNaN(parseFloat(this.properties.limit_value)) ? this.properties.limit_valu :parseFloat(this.properties.limit_value) ;
+			value = isNaN(parseFloat(this.properties.limit_value)) ? this.properties.limit_value :parseFloat(this.properties.limit_value) ;
 		// if the input is a string, leave the limit value as a string
 		else if(typeof(this.properties.value_to_compare) == "string"){
 			this.properties.value_to_compare = this.properties.value_to_compare.toUpperCase()

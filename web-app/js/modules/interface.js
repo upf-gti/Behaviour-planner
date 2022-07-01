@@ -836,7 +836,8 @@ class Interface {
             var FS = CORE["FileSystem"];
 
             var path = folder_selected + "/" + filename + ".json";
-
+            CORE['Interface'].lastLoadedFile = path;
+            
             console.warn("Uploading file: " + path);
 
             // upload file
