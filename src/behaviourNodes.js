@@ -1965,7 +1965,7 @@ LiteGraph.registerNodeType("btree/HttpRequest", HttpRequest);
  * HttpResponse
  * Compare the HTTPresponse code. If there is a match it continues execution to the child nodes.
  */
- HttpResponse.CODES = [200, 201, 400];
+ HttpResponse.CODES = [100, 101, 200, 201, 400, 404];
 
  function HttpResponse(){
     this.shape = 2;
@@ -2025,60 +2025,63 @@ HttpResponse.prototype.tick = function(agent, dt, info) {
     }
 
     var response = this.parseResponse(info.data);
-    response = this.extractData(response);
-    
-    console.log(response);    
-    // ...
-    if(response.status == this.properties.code){
-        var info = {data: response.data}
-        //this.description = this.properties.property_to_compare + ' property passes the threshold';
-        if(this.outputs)
-            {
-                for(var o in this.outputs){
-                    var output = this.outputs[o];
-                    if(output.name == "")
-                        continue;
-                    if(output.dataPath){
-                        var path = output.dataPath.join(".");
-                        var dd = Object.byString(response.data, path)
-                        if(dd!=undefined && dd[output.name]!=undefined){    
-                            this.setOutputData(o, dd[output.name]);
+    if(response){
+
+        response = this.extractData(response);
+        
+        console.log(response);    
+        // ...
+        if(response.status == this.properties.code){
+            var info = {data: response.data}
+            //this.description = this.properties.property_to_compare + ' property passes the threshold';
+            if(this.outputs)
+                {
+                    for(var o in this.outputs){
+                        var output = this.outputs[o];
+                        if(output.name == "")
                             continue;
-                    }
-                
-                }
-                    this.setOutputsFromObject(response.data, output,o)
+                        if(output.dataPath){
+                            var path = output.dataPath.join(".");
+                            var dd = Object.byString(response.data, path)
+                            if(dd!=undefined && dd[output.name]!=undefined){    
+                                this.setOutputData(o, dd[output.name]);
+                                continue;
+                        }
                     
+                    }
+                        this.setOutputsFromObject(response.data, output,o)
+                        
+                    }
                 }
+            var children = this.getOutputNodes(0);
+            //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
+            if(children.length == 0){
+                this.behaviour.type = B_TYPE.http_response;
+                this.behaviour.STATUS = STATUS.success;
+                return this.behaviour;
             }
-        var children = this.getOutputNodes(0);
-        //Just in case the conditional is used inside a sequencer to accomplish several conditions at the same time
-        if(children.length == 0){
-            this.behaviour.type = B_TYPE.http_response;
-            this.behaviour.STATUS = STATUS.success;
-            return this.behaviour;
-        }
-        
-        
-        for(let n in children){
-            var child = children[n];
-            var value = child.tick(agent, dt, info);
-            if(value && value.STATUS == STATUS.success){
-                agent.evaluation_trace.push(this.id);
-                /* MEDUSA Editor stuff, not part of the core */
-                if(agent.is_selected)
-                    highlightLink(this, child);
-
-                
-                return value;
-            }
-            else if(value && value.STATUS == STATUS.running){
-                agent.evaluation_trace.push(this.id);
-                /* MEDUSA Editor stuff, not part of the core */
-                if(agent.is_selected)
-                    highlightLink(this, child)
-
-                return value;
+            
+            
+            for(let n in children){
+                var child = children[n];
+                var value = child.tick(agent, dt, info);
+                if(value && value.STATUS == STATUS.success){
+                    agent.evaluation_trace.push(this.id);
+                    /* MEDUSA Editor stuff, not part of the core */
+                    if(agent.is_selected)
+                        highlightLink(this, child);
+    
+                    
+                    return value;
+                }
+                else if(value && value.STATUS == STATUS.running){
+                    agent.evaluation_trace.push(this.id);
+                    /* MEDUSA Editor stuff, not part of the core */
+                    if(agent.is_selected)
+                        highlightLink(this, child)
+    
+                    return value;
+                }
             }
         }
     }
