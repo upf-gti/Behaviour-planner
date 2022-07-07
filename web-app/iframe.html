@@ -16,6 +16,7 @@
 	</style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="./css/player.css"></link>
+   
     <link rel="shortcut icon" href="imgs/favicon.png">
 </head>
 <body >
@@ -32,6 +33,7 @@
             <div class="text"></div>
             <div class="user-input"></div>
             <div class="bottom-bar-center">
+                <div class="options-container"></div>
                 <div class="bottom-center">
                     <div class="input-container">
                         <div></div>
@@ -97,14 +99,14 @@
     <script src="js/libs/litegraph.js"></script>-->
 
     <!--Web app core-->
+    <script src="../src/timelineContent.js"></script>
+    <script src="../src/utils.js"></script>
     <script src="../src/entitiesManager.js"></script>
     <script src="../src/behaviourNodes.js"></script>
     <script src="../src/behaviourGraph.js"></script>
     <script src="../src/behaviourPlanner.js"></script>
     <!--<script src="../src/behaviourPresenter.js"></script>-->
-    <script src="../src/timelineContent.js"></script>
-    <script src="../src/utils.js"></script>
-
+  
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 
  
@@ -248,6 +250,19 @@
                                 }
                             }
                         }
+                        else if(m.type == "custom_action" ){
+                            switch(m.data.type){
+                                case "showOptions":
+                                    let options = null;
+                                    if(m.data.parameters)
+                                        options = m.data.parameters.options
+                                    showVenuesOptions(options);
+                                    break;
+                                case "hideOptions":
+                                    closeCalendar();
+                                    break;
+                            }
+                        }
                     }
                 }
             }
@@ -271,7 +286,7 @@
         }
         // Close the dropdown if the user clicks outside of it
         document.onclick = function(event) {
-            event.preventDefault()
+            //event.preventDefault()
             if (!event.target.matches('#menu')) {
                 var options = document.getElementsByClassName("menu-options");
                 for(var i = 0; i < options.length; i++) {
@@ -301,6 +316,7 @@
             } 
                 
         })*/
+
         function updateChat(){
             var chat = document.getElementsByClassName("transcript-chat")[0];
             chat.innerHTML = "";
@@ -347,6 +363,7 @@
         dragElement(document.getElementById("chat-container"), document.getElementsByClassName("transcript-header")[0] );
 
         function dragElement(elmnt, header) {
+            
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             if (header) {
                 header.draggable = true;
@@ -451,6 +468,314 @@
             let m = addZero(d.getMinutes());
             let s = addZero(d.getSeconds());
             return h + ":" + m + ":" + s;
+        }
+        //---------------------------------------------------------------------------------------------------//
+        //----------------------------------------- RAO-VC USE CASE -----------------------------------------//
+        //---------------------------------------------------------------------------------------------------//
+        
+        let bookVenue = "";
+        function showVenuesOptions(options = null){
+            if(!options)
+                options = ["Aranyó hall", "Auditorium", "Plaça Gutenberg", "Computer room"]
+            
+            if(typeof(options) == 'string')
+                options = JSON.parse(options);
+            var bottomBar = document.getElementsByClassName("options-container")[0];
+            
+            for(let i in options){
+                let div = document.createElement("div");
+                div.className = "option";
+                let option = document.createElement("button");
+                option.innerText = options[i];
+                option.onclick = onSelectedOption;
+                div.appendChild(option);
+                bottomBar.appendChild(div);
+            }
+            
+        }  
+        
+        function onSelectedOption(e){
+            bookVenue = e.currentTarget.innerText;
+            var bottomBar = document.getElementsByClassName("options-container")[0];
+            bottomBar.innerHTML = "";
+            
+            var msg = {
+                type:"data",
+                data:{ user: {text: bookVenue}}
+            }
+            BP.bp.onData(msg)
+        }
+
+        function onSelectedVenue(e){
+            bookVenue = e.currentTarget.innerText;
+            var bottomBar = document.getElementsByClassName("options-container")[0];
+            bottomBar.innerHTML = "";
+            // for(let i in bottomBar.childNodes)
+            // {
+            //     bottomBar.removeChild(bottomBar.childNodes[i]);
+            // }
+            // let calendar = document.getElementById("calendar");
+            // calendar.classList.remove("hidden");
+            createCalendar()
+            var msg = {
+                type:"data",
+                data:{ user: {selectedOption: bookVenue}}
+            }
+            BP.bp.onData(msg)
+        }
+
+        let bookDate = "";
+
+        function onSelectedTime(){
+
+            let bookTime = document.querySelector("#inputTime");
+            let bookDuration = document.querySelector("#inputHours");
+
+            let msg = {
+                type: "data",
+                data: { user: { selectedTime: { date: bookDate, time: bookTime, durantion: bookDuration} }}
+            }
+            BP.bp.onData(msg);
+        }
+
+        function createCalendar(month = null){
+            
+            let bottomBar = document.getElementsByClassName("options-container")[0];
+            bottomBar.innerHTML = "";
+
+            let container = document.createElement("div");
+            container.className = "calendar-container ";
+            container.id = "calendar";
+            let calendar = document.createElement("div");
+            calendar.className = "calendar";
+
+            let front = document.createElement("div");
+            front.className = "front";
+
+            var dt = new Date();
+            if(month)
+                dt.setMonth(month,0);
+            else
+                month = dt.getMonth(); // read the current month
+            var year = dt.getFullYear(); // read the current year
+            
+            //dt = new Date(year, month, 01);//Year , month,date format
+            
+            // let weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ];
+            let weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" ];
+
+            let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+                
+            let currentDate = document.createElement("div");
+            currentDate.className = "current-date";
+            
+            let today = dt.getDate();
+            let currentM = new Date().getMonth();
+
+            let prevMonth = document.createElement("h1");
+            
+            prevMonth.innerText = currentM != month ? "<" : "";
+            prevMonth.onclick = function (){
+                createCalendar(month-1)
+            }
+            currentDate.appendChild(prevMonth);
+
+            let currentDay = document.createElement("h1");
+            currentDay.innerText = months[month ] + " " + dt.getFullYear() ;
+            currentDate.appendChild(currentDay);
+
+            let nextMonth = document.createElement("h1");
+            nextMonth.innerText = ">";
+            currentDate.appendChild(nextMonth);
+            nextMonth.onclick = function (){
+                createCalendar(month+1)
+            }
+
+            let currentMonth = document.createElement("div");
+            currentMonth.className = "current-month";
+
+            let ulDays = document.createElement("ul");
+            ulDays.className = "week-days";
+
+            for(let i in weekDays){
+                let li = document.createElement("li");
+                li.innerText = weekDays[i];
+                ulDays.appendChild(li);
+            }
+
+            currentMonth.appendChild(ulDays);
+            let weeks = document.createElement("div");
+            weeks.className = "weeks";
+
+            
+           
+            // var first_day = dt.getDay(); //, first day of present month
+            // //document.write("first_day=" + first_day + "<br><br>");
+
+            // dt.setMonth(month+1,0); // Set to next month and one day backward.
+            // var last_date = dt.getDate(); // Last date of present month
+            // document.write(dt); // Last date in full
+            // document.write("<br><br> Last Date of the month =" + last_date + "<br><br>");
+
+            //document.write ("<table><tr><td>Su</td><td>Mon</td><td>Tue</td><td>Wed</td><td>Thu</td><td>Fri</td><td>Sat</td>");
+
+                
+            var dy = 1; // day variable for adjustment of starting date.
+                
+            var first_day = dt.getDay(); //, first day of present month
+            //document.write("first_day=" + first_day + "<br><br>");
+
+            dt.setMonth(month+1,0); // Set to next month and one day backward.
+            var last_date = dt.getDate();
+           
+            let week = document.createElement("div");
+            let next = 1;
+            for( i = 0; i <= 41; i++ ){
+
+                if( i!=0 && (i%7) == 0 ){
+                    weeks.appendChild(week);
+                    week = document.createElement("div")
+                    //document.write("</tr><tr>");
+                } // if week is over then start a new line
+                if( ( i >= first_day ) && ( dy <= last_date ) ){
+                    //document.write("<td>"+ dy +"</td>");
+                    
+                    let span = document.createElement("span");
+                    
+                    if(month == currentM && dy == today)
+                        span.className = "active";
+                    else if(month <= currentM && dy < today)
+                        span.className = "last-month";
+                    span.innerText = dy;
+                    span.onclick = function(e){
+                        bookDate = e.currentTarget.innerText + " " + currentDay.innerText;
+                        
+                        swap(calendar,front, back);
+                        // settings.buttons.onclick = function(){
+                        //     instance.swap(settings.form, settings.calendar);
+                        // };
+                    }
+                    week.appendChild(span);
+                    dy = dy+1;
+                }
+                else {
+                    let span = document.createElement("span");
+                    span.className = "last-month";
+                    if( i < first_day ){
+                        span.innerText = "";
+                    }
+                    else if(i > last_date){
+                        dt.setMonth(month-1);
+                        var l = dt.getDate();
+                        span.innerText = next;
+                        next++;
+                    }
+                    week.appendChild(span);
+                } // Blank dates.
+            } // end of for loop
+            
+            currentMonth.appendChild(weeks);
+            front.appendChild(currentDate);
+            front.appendChild(currentMonth);
+            calendar.appendChild(front);
+
+            let back = document.createElement("div");
+            back.className ="back";
+
+            let info = document.createElement("div");
+            info.className = "info";
+            
+            let infoVenue = document.createElement("p");
+            infoVenue.id = "infoVenue";
+            infoVenue.className = "info venue";
+
+            let infoDate = document.createElement("p");
+            infoDate.id = "infoDate";
+            infoDate.className = "info date";
+            infoDate.innerText = "Date: ";
+
+            let input = document.createElement("input");
+            input.id = "inputTime"
+            input.setAttribute("type", "time");
+            input.setAttribute("min", "8:30");
+            input.setAttribute("max", "18:30");
+            input.setAttribute("name", "appt");
+            input.required = true;
+
+            let infoTime = document.createElement("p");
+            infoTime.id = "infoTime";
+            infoTime.className = "info time";
+            infoTime.innerText = "Time: ";
+            infoTime.appendChild(input)
+            
+            let inputHours = document.createElement("input");
+            inputHours.id = "inputHours"
+            inputHours.setAttribute("type", "number");
+            inputHours.setAttribute("min", 1);
+            inputHours.setAttribute("max", 8);
+            inputHours.setAttribute("value", 1);
+            inputHours.style.width = "100px";
+            inputHours.required = true;
+
+            let infoHours = document.createElement("p");
+            infoHours.id = "infoHours";
+            infoHours.className = "info time";
+            infoHours.innerText = "Hours: ";
+            infoHours.appendChild(inputHours)
+
+            let observations = document.createElement("div");
+            observations.className = "observations";
+            observations.innerHTML = "<p>Observations: <span>Be there 15 minutes earlier.</span></p>";
+            
+            let actions = document.createElement("div");
+            actions.className = "actions";
+
+            let saveBtn = document.createElement("button");
+            saveBtn.className = "save";
+            saveBtn.innerHTML =  'Save <i class="ion-checkmark"></i>';
+            saveBtn.onclick = onSelectedTime;
+            actions.appendChild(saveBtn);
+
+            let cancelBtn = document.createElement("button");
+            cancelBtn.className = "dismiss";
+            cancelBtn.innerHTML =  'Dismiss <i class="ion-android-close"></i>';
+            actions.appendChild(cancelBtn);
+           
+            info.appendChild(infoVenue);
+            info.appendChild(infoDate);
+            info.appendChild(infoTime);
+            info.appendChild(infoHours);
+            info.appendChild(observations);
+            info.appendChild(actions);
+            back.appendChild(info);
+            calendar.appendChild(back);
+
+            container.appendChild(calendar);
+            //dragElement( container,calendar );
+            bottomBar.appendChild(container);
+
+            container.addEventListener("mouseover",function(){
+                currentMonth.dispatchEvent(new Event("mouseover"))
+            })
+
+
+            function swap(elem, currentSide, desiredSide) {
+                let date = desiredSide.querySelector("#infoDate");
+                date.innerHTML = "Date: " + "<span>" + bookDate + "</span>"
+                let venue = desiredSide.querySelector("#infoVenue");
+                venue.innerText = bookVenue;
+                elem.classList.add('flip');
+                // currentSide.fadeOut(900);
+                // currentSide.hide();
+                // desiredSide.show();
+
+            }
+     
+        }
+        
+        function closeCalendar(){
+            let bottomBar = document.getElementsByClassName("options-container")[0];
+            bottomBar.innerHTML = "";
         }
         
     </script>
