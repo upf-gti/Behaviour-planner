@@ -2437,6 +2437,11 @@ Conditional.prototype.tick = function(agent, dt, info )
         var data = this.getInputData(1);
         if(data) this.properties.value_to_compare = data;
     }
+
+    // var data = this.getInputData(1);
+   
+    // if(data) this.properties.value_to_compare = data;
+    
 	//condition not passed
 	if(this.evaluateCondition && !this.evaluateCondition())
 	{

@@ -1287,7 +1287,7 @@ class Interface {
                 {
                     if(lg_user === "guest")
                         CORE["Interface"].importFromURL(
-                            baseURL+"/projects/present/repository/files/evalls/default.json",
+                            baseURL+"/projects/present/repository/files/evalls/conversation.json",
                             SESSION.IS_GUEST
                         );
                     else if(lg_user === "arodriguez")
